@@ -1,30 +1,55 @@
 # Arquivo: main.py
 
+# --- 1. Importações e Configuração Inicial ---
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from typing import List, Dict, Any
 
-app = FastAPI(title="API MEDSYNC", version="0.1.0")
-origins = ["http://localhost:5173"]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app = FastAPI(
+    title="API MEDSYNC",
+    description="API para a plataforma de aprendizado médico MEDSYNC.",
+    version="0.1.0"
+)
 
-# --- Modelos de Dados ---
+# --- Configuração do CORS Corrigida ---
+# Adiciona a URL do seu site na Vercel à lista de origens permitidas.
+origins = [
+    "http://localhost:5173",
+    "https://medsync-frontend-three.vercel.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# --- 2. Modelos de Dados (Schemas com Pydantic) ---
+
+# Modelos de Usuário
 class UserCreate(BaseModel): nome: str; email: EmailStr; password: str
 class UserResponse(BaseModel): id: int; nome: str; email: EmailStr
 class UserLogin(BaseModel): email: EmailStr; password: str
 class Token(BaseModel): access_token: str; token_type: str
+
+# Modelos de Casos Clínicos
 class CasoClinico(BaseModel): id: int; titulo: str; especialidade: str; nivel_dificuldade: str
 class CasoClinicoDetalhes(CasoClinico):
     historia_clinica: str
     exame_fisico: str
     exames_disponiveis: List[Dict[str, Any]]
 
+# Modelos para o Progresso do Usuário
 class ProgressoCreate(BaseModel): id_caso: int; respostas_usuario: Dict[str, Any]; pontuacao: int
 class ProgressoResponse(ProgressoCreate): id: int; id_usuario: int
 
-# --- Banco de Dados Falso com os 40 Casos Clínicos Reais ---
+
+# --- 3. "Bancos de Dados" Falsos com os 40 Casos Clínicos Corrigidos ---
 fake_user_db = []
 fake_casos_db = [
     {
@@ -118,7 +143,6 @@ fake_casos_db = [
             {"id": "transaminases", "nome": "Transaminases", "resultado": "Elevação em 4 vezes o limite superior de normalidade."}
         ]
     },
-    # Adicionando mais 30 casos resumidos...
     {
         "id": 11, "titulo": "Macroprolactinoma", "especialidade": "Endocrinologia", "nivel_dificuldade": "Intermediário",
         "historia_clinica": "C.M.F, 32 anos, feminino, casada. Queixas de cefaleia intensa e diplopia visual. Relata desregulação menstrual, dispareunia, ressecamento vaginal, redução da libido, infertilidade e galactorreia há 1 mês, com caráter progressivo.",
@@ -302,15 +326,20 @@ fake_casos_db = [
 ]
 fake_progresso_db = []
 
-# --- Lógica de Autenticação e Endpoints (restante do código) ---
+
+# --- 4. SIMULAÇÃO DE AUTENTICAÇÃO ---
 async def get_current_user():
-    if not fake_user_db: raise HTTPException(status_code=401, detail="Nenhum usuário cadastrado.")
+    if not fake_user_db:
+        raise HTTPException(status_code=401, detail="Nenhum usuário cadastrado para simular login.")
     return fake_user_db[0]
 
+
+# --- 5. Endpoints de Usuários ---
 @app.post("/usuarios/registrar", response_model=UserResponse, tags=["Usuários"])
 async def registrar_usuario(user: UserCreate):
-    for u in fake_user_db:
-        if u["email"] == user.email: raise HTTPException(status_code=400, detail="Email já cadastrado.")
+    for existing_user in fake_user_db:
+        if existing_user["email"] == user.email:
+            raise HTTPException(status_code=400, detail="Este email já está cadastrado.")
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
     new_user = {"id": len(fake_user_db) + 1, "nome": user.nome, "email": user.email, "senha_hash": hashed_password.decode('utf-8')}
     fake_user_db.append(new_user)
@@ -318,28 +347,42 @@ async def registrar_usuario(user: UserCreate):
 
 @app.post("/usuarios/login", response_model=Token, tags=["Usuários"])
 async def login_usuario(form_data: UserLogin):
-    user = next((u for u in fake_user_db if u["email"] == form_data.email), None)
+    user = next((db_user for db_user in fake_user_db if db_user["email"] == form_data.email), None)
     if not user or not bcrypt.checkpw(form_data.password.encode('utf-8'), user["senha_hash"].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
-    return {"access_token": f"fake-token-for-{user['email']}", "token_type": "bearer"}
+    access_token = f"fake-token-for-{user['email']}"
+    return {"access_token": access_token, "token_type": "bearer"}
 
+
+# --- 6. Endpoints dos Casos Clínicos ---
 @app.get("/casos-clinicos/", response_model=List[CasoClinico], tags=["Casos Clínicos"])
-async def listar_casos_clinicos(): return fake_casos_db
+async def listar_casos_clinicos():
+    return fake_casos_db
 
 @app.get("/casos-clinicos/{caso_id}", response_model=CasoClinicoDetalhes, tags=["Casos Clínicos"])
 async def obter_caso_clinico(caso_id: int):
     caso = next((c for c in fake_casos_db if c["id"] == caso_id), None)
-    if caso is None: raise HTTPException(status_code=404, detail="Caso não encontrado")
+    if caso is None:
+        raise HTTPException(status_code=404, detail="Caso clínico não encontrado")
     return caso
 
+
+# --- 7. Endpoints de Progresso do Usuário ---
 @app.post("/progresso/registrar", response_model=ProgressoResponse, tags=["Progresso do Usuário"])
 async def registrar_progresso(progresso: ProgressoCreate, current_user: dict = Depends(get_current_user)):
-    entry = {"id": len(fake_progresso_db) + 1, "id_usuario": current_user["id"], **progresso.dict()}
-    fake_progresso_db.append(entry)
-    print("Progresso salvo:", entry)
-    return entry
+    new_progress_entry = {
+        "id": len(fake_progresso_db) + 1,
+        "id_usuario": current_user["id"],
+        "id_caso": progresso.id_caso,
+        "respostas_usuario": progresso.respostas_usuario,
+        "pontuacao": progresso.pontuacao
+    }
+    fake_progresso_db.append(new_progress_entry)
+    print("Progresso salvo:", new_progress_entry)
+    return new_progress_entry
 
 @app.get("/progresso/meu", response_model=List[ProgressoResponse], tags=["Progresso do Usuário"])
 async def obter_meu_progresso(current_user: dict = Depends(get_current_user)):
-    return [p for p in fake_progresso_db if p["id_usuario"] == current_user["id"]]
+    meu_progresso = [p for p in fake_progresso_db if p["id_usuario"] == current_user["id"]]
+    return meu_progresso
 
