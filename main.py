@@ -15,10 +15,7 @@ app = FastAPI(
 
 # --- Configuração do CORS Corrigida ---
 # Adiciona a URL do seu site na Vercel à lista de origens permitidas.
-origins = [
-    "http://localhost:5173",
-    "https://medsync-frontend-three.vercel.app",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
