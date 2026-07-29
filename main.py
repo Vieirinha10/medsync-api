@@ -1,33 +1,101 @@
 # Arquivo: main.py
 
-from fastapi import FastAPI, HTTPException, Depends
+import os
+from typing import Any, Dict, List
+
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
-import bcrypt
-from typing import List, Dict, Any
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-app = FastAPI(title="API MEDSYNC", version="0.1.0")
+from database import Base, engine, get_db
+from models import Progresso, User
+from security import (
+    create_access_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
 
-# Configuração do CORS para permitir todas as origens
-origins = ["*"]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app = FastAPI(title="API MEDSYNC", version="0.2.0")
+
+origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "*").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials="*" not in origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+Base.metadata.create_all(bind=engine)
 
 # --- Modelos de Dados ---
-class UserCreate(BaseModel): nome: str; email: EmailStr; password: str
-class UserResponse(BaseModel): id: int; nome: str; email: EmailStr
-class UserLogin(BaseModel): email: EmailStr; password: str
-class Token(BaseModel): access_token: str; token_type: str
-class CasoClinico(BaseModel): id: int; titulo: str; especialidade: str; nivel_dificuldade: str
+class UserCreate(BaseModel):
+    nome: str = Field(min_length=2, max_length=120)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=72)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        return str(value).strip().lower()
+
+
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nome: str
+    email: EmailStr
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        return str(value).strip().lower()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class CasoClinico(BaseModel):
+    id: int
+    titulo: str
+    especialidade: str
+    nivel_dificuldade: str
+
+
 class CasoClinicoDetalhes(CasoClinico):
     historia_clinica: str
     exame_fisico: str
     exames_disponiveis: List[Dict[str, Any]]
 
-class ProgressoCreate(BaseModel): id_caso: int; respostas_usuario: Dict[str, Any]; pontuacao: int
-class ProgressoResponse(ProgressoCreate): id: int; id_usuario: int
+class ProgressoCreate(BaseModel):
+    id_caso: int = Field(gt=0)
+    respostas_usuario: Dict[str, Any]
+    pontuacao: int = Field(ge=0, le=100)
+
+
+class ProgressoResponse(ProgressoCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    id_usuario: int
 
 # --- Banco de Dados Falso com os 40 Casos Clínicos Detalhados ---
-fake_user_db = []
 fake_casos_db = [
     {
         "id": 1, "titulo": "Diagnóstico diferencial de dor torácica", "especialidade": "Cardiologia", "nivel_dificuldade": "Intermediário",
@@ -270,47 +338,110 @@ fake_casos_db = [
         "exames_disponiveis": [{"id": "urina1", "nome": "Sumário de Urina", "resultado": "Urina turva, proteinúria, leucocitúria, nitrito positivo, cilindros leucocitários.", "correto": True}, {"id": "urocultura", "nome": "Urocultura com Antibiograma", "resultado": "Identifica o agente e a sensibilidade a antibióticos.", "correto": True}, {"id": "hemo", "nome": "Hemograma", "resultado": "Leucocitose com desvio à esquerda.", "correto": True}]
     }
 ]
-fake_progresso_db = []
+@app.get("/health", tags=["Sistema"])
+def health_check():
+    return {"status": "ok"}
 
-# --- Lógica de Autenticação e Endpoints (sem alterações) ---
-async def get_current_user():
-    if not fake_user_db: raise HTTPException(status_code=401, detail="Nenhum usuário cadastrado.")
-    return fake_user_db[0]
 
-@app.post("/usuarios/registrar", response_model=UserResponse, tags=["Usuários"])
-async def registrar_usuario(user: UserCreate):
-    for u in fake_user_db:
-        if u["email"] == user.email: raise HTTPException(status_code=400, detail="Email já cadastrado.")
-    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
-    new_user = {"id": len(fake_user_db) + 1, "nome": user.nome, "email": user.email, "senha_hash": hashed_password.decode('utf-8')}
-    fake_user_db.append(new_user)
+@app.post(
+    "/usuarios/registrar",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Usuários"],
+)
+def registrar_usuario(user: UserCreate, db: Session = Depends(get_db)):
+    new_user = User(
+        nome=user.nome.strip(),
+        email=str(user.email),
+        password_hash=hash_password(user.password),
+    )
+    db.add(new_user)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email já cadastrado."
+        )
+    db.refresh(new_user)
     return new_user
 
+
 @app.post("/usuarios/login", response_model=Token, tags=["Usuários"])
-async def login_usuario(form_data: UserLogin):
-    user = next((u for u in fake_user_db if u["email"] == form_data.email), None)
-    if not user or not bcrypt.checkpw(form_data.password.encode('utf-8'), user["senha_hash"].encode('utf-8')):
-        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
-    return {"access_token": f"fake-token-for-{user['email']}", "token_type": "bearer"}
+def login_usuario(form_data: UserLogin, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.email == str(form_data.email)))
+    if user is None or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou senha incorretos.",
+        )
+    return {
+        "access_token": create_access_token(user.id),
+        "token_type": "bearer",
+    }
 
-@app.get("/casos-clinicos/", response_model=List[CasoClinico], tags=["Casos Clínicos"])
-async def listar_casos_clinicos(): return fake_casos_db
 
-@app.get("/casos-clinicos/{caso_id}", response_model=CasoClinicoDetalhes, tags=["Casos Clínicos"])
-async def obter_caso_clinico(caso_id: int):
-    # Encontrar o caso pelo ID
+@app.get("/usuarios/me", response_model=UserResponse, tags=["Usuários"])
+def obter_usuario_atual(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@app.get(
+    "/casos-clinicos/", response_model=List[CasoClinico], tags=["Casos Clínicos"]
+)
+def listar_casos_clinicos(current_user: User = Depends(get_current_user)):
+    return fake_casos_db
+
+
+@app.get(
+    "/casos-clinicos/{caso_id}",
+    response_model=CasoClinicoDetalhes,
+    tags=["Casos Clínicos"],
+)
+def obter_caso_clinico(
+    caso_id: int, current_user: User = Depends(get_current_user)
+):
     caso = next((c for c in fake_casos_db if c["id"] == caso_id), None)
-    if caso is None: raise HTTPException(status_code=404, detail="Caso não encontrado")
+    if caso is None:
+        raise HTTPException(status_code=404, detail="Caso não encontrado")
     return caso
 
-@app.post("/progresso/registrar", response_model=ProgressoResponse, tags=["Progresso do Usuário"])
-async def registrar_progresso(progresso: ProgressoCreate, current_user: dict = Depends(get_current_user)):
-    entry = {"id": len(fake_progresso_db) + 1, "id_usuario": current_user["id"], **progresso.dict()}
-    fake_progresso_db.append(entry)
-    print("Progresso salvo:", entry)
+
+@app.post(
+    "/progresso/registrar",
+    response_model=ProgressoResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Progresso do Usuário"],
+)
+def registrar_progresso(
+    progresso: ProgressoCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not any(caso["id"] == progresso.id_caso for caso in fake_casos_db):
+        raise HTTPException(status_code=404, detail="Caso não encontrado.")
+
+    entry = Progresso(
+        id_usuario=current_user.id,
+        **progresso.model_dump(),
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
     return entry
 
-@app.get("/progresso/meu", response_model=List[ProgressoResponse], tags=["Progresso do Usuário"])
-async def obter_meu_progresso(current_user: dict = Depends(get_current_user)):
-    return [p for p in fake_progresso_db if p["id_usuario"] == current_user["id"]]
 
+@app.get(
+    "/progresso/meu",
+    response_model=List[ProgressoResponse],
+    tags=["Progresso do Usuário"],
+)
+def obter_meu_progresso(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return db.scalars(
+        select(Progresso)
+        .where(Progresso.id_usuario == current_user.id)
+        .order_by(Progresso.id.desc())
+    ).all()
