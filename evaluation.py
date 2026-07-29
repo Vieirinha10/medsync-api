@@ -1,10 +1,13 @@
 import json
+import logging
 import os
 import re
 import unicodedata
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 
 class SimulationSubmission(BaseModel):
@@ -373,4 +376,8 @@ def enhance_narrative_with_ai(
             return fallback, "agente_regras", None
         return response.output_parsed, "openai", model
     except Exception:
+        logger.exception(
+            "Falha ao gerar feedback clínico com OpenAI usando o modelo %s",
+            model,
+        )
         return fallback, "agente_regras", None
