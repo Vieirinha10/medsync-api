@@ -11,6 +11,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import Base, engine, get_db
+from evaluation import (
+    SimulationEvaluation,
+    SimulationSubmission,
+    enhance_narrative_with_ai,
+    evaluate_objective,
+    is_v2_case,
+)
 from models import Progresso, User
 from security import (
     create_access_token,
@@ -76,6 +83,7 @@ class CasoClinico(BaseModel):
     titulo: str
     especialidade: str
     nivel_dificuldade: str
+    avaliacao_2_disponivel: bool = False
 
 
 class CasoClinicoDetalhes(CasoClinico):
@@ -390,7 +398,13 @@ def obter_usuario_atual(current_user: User = Depends(get_current_user)):
     "/casos-clinicos/", response_model=List[CasoClinico], tags=["Casos Clínicos"]
 )
 def listar_casos_clinicos(current_user: User = Depends(get_current_user)):
-    return fake_casos_db
+    return [
+        {
+            **caso,
+            "avaliacao_2_disponivel": is_v2_case(caso["id"]),
+        }
+        for caso in fake_casos_db
+    ]
 
 
 @app.get(
@@ -404,7 +418,118 @@ def obter_caso_clinico(
     caso = next((c for c in fake_casos_db if c["id"] == caso_id), None)
     if caso is None:
         raise HTTPException(status_code=404, detail="Caso não encontrado")
-    return caso
+    return {
+        **caso,
+        "avaliacao_2_disponivel": is_v2_case(caso["id"]),
+    }
+
+
+@app.post(
+    "/simulacoes/{caso_id}/finalizar",
+    response_model=SimulationEvaluation,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Simulação Clínica 2.0"],
+)
+def finalizar_simulacao(
+    caso_id: int,
+    submission: SimulationSubmission,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    caso = next((c for c in fake_casos_db if c["id"] == caso_id), None)
+    if caso is None:
+        raise HTTPException(status_code=404, detail="Caso não encontrado.")
+    if not is_v2_case(caso_id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Este caso ainda não possui gabarito revisado para a "
+                "Simulação Clínica 2.0."
+            ),
+        )
+
+    valid_exam_ids = {
+        exam["id"] for exam in caso.get("exames_disponiveis", [])
+    }
+    unknown_exam_ids = set(submission.exames_solicitados) - valid_exam_ids
+    if unknown_exam_ids:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A submissão contém exames que não pertencem a este caso.",
+        )
+
+    score, exam_feedback, context = evaluate_objective(caso, submission)
+    narrative, feedback_source, model = enhance_narrative_with_ai(
+        caso,
+        submission,
+        score,
+        exam_feedback,
+        context,
+    )
+    total_score = score.exames + score.hipotese + score.conduta
+
+    evaluation_data = {
+        "caso_id": caso_id,
+        "caso_titulo": caso["titulo"],
+        "pontuacao_total": total_score,
+        "pontuacao": score.model_dump(),
+        "exames": exam_feedback.model_dump(),
+        "feedback": narrative.model_dump(),
+        "fonte_feedback": feedback_source,
+        "modelo_ia": model,
+        "aviso_educacional": SimulationEvaluation.model_fields[
+            "aviso_educacional"
+        ].default,
+    }
+    answers_with_evaluation = {
+        **submission.model_dump(),
+        "_avaliacao": evaluation_data,
+    }
+    entry = Progresso(
+        id_usuario=current_user.id,
+        id_caso=caso_id,
+        respostas_usuario=answers_with_evaluation,
+        pontuacao=total_score,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+
+    return {
+        "progresso_id": entry.id,
+        **evaluation_data,
+    }
+
+
+@app.get(
+    "/simulacoes/resultados/{progresso_id}",
+    response_model=SimulationEvaluation,
+    tags=["Simulação Clínica 2.0"],
+)
+def obter_resultado_simulacao(
+    progresso_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    progress = db.scalar(
+        select(Progresso).where(
+            Progresso.id == progresso_id,
+            Progresso.id_usuario == current_user.id,
+        )
+    )
+    if progress is None:
+        raise HTTPException(status_code=404, detail="Resultado não encontrado.")
+
+    evaluation_data = progress.respostas_usuario.get("_avaliacao")
+    if evaluation_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Este registro pertence à versão anterior da simulação.",
+        )
+    return {
+        "progresso_id": progress.id,
+        **evaluation_data,
+    }
 
 
 @app.post(

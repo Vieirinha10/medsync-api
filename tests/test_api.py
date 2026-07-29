@@ -84,3 +84,87 @@ def test_progress_is_persistent_and_isolated_by_user():
     )
     assert len(first_progress.json()) == 1
     assert second_progress.json() == []
+
+
+def test_v2_case_is_identified_in_case_catalog():
+    token = _register_and_login("catalogo-v2@example.com")
+    response = client.get(
+        "/casos-clinicos/",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+
+    cases = response.json()
+    pilot = next(case for case in cases if case["id"] == 8)
+    legacy = next(case for case in cases if case["id"] == 1)
+    assert pilot["avaliacao_2_disponivel"] is True
+    assert legacy["avaliacao_2_disponivel"] is False
+
+
+def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
+    token = _register_and_login("simulacao-v2@example.com")
+    response = client.post(
+        "/simulacoes/8/finalizar",
+        json={
+            "exames_solicitados": ["angiotc", "doppler_mmss", "gaso"],
+            "hipotese_diagnostica": "Tromboembolismo pulmonar agudo",
+            "conduta_proposta": (
+                "Estabilização pelo ABC, oxigenoterapia, anticoagulação com "
+                "heparina, estratificação de risco e internação para monitorização."
+            ),
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 201
+    result = response.json()
+    assert result["pontuacao_total"] == 100
+    assert result["pontuacao"] == {
+        "exames": 40,
+        "hipotese": 30,
+        "conduta": 30,
+    }
+    assert result["fonte_feedback"] == "agente_regras"
+    assert result["exames"]["essenciais_ausentes"] == []
+    assert result["exames"]["desnecessarios"] == []
+    assert result["feedback"]["feedback_seguranca"]
+
+    saved = client.get(
+        f"/simulacoes/resultados/{result['progresso_id']}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert saved.status_code == 200
+    assert saved.json() == result
+
+
+def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():
+    token = _register_and_login("simulacao-parcial@example.com")
+    response = client.post(
+        "/simulacoes/8/finalizar",
+        json={
+            "exames_solicitados": ["angiotc", "dimerod"],
+            "hipotese_diagnostica": "Trombose venosa",
+            "conduta_proposta": "Iniciar anticoagulação com heparina.",
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 201
+    result = response.json()
+    assert result["pontuacao"]["exames"] < 40
+    assert result["pontuacao"]["hipotese"] == 15
+    assert result["pontuacao"]["conduta"] == 12
+    assert result["exames"]["desnecessarios"] == ["D-dímero"]
+    assert len(result["exames"]["essenciais_ausentes"]) == 2
+
+
+def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
+    token = _register_and_login("caso-legado@example.com")
+    response = client.post(
+        "/simulacoes/1/finalizar",
+        json={
+            "exames_solicitados": ["ecg"],
+            "hipotese_diagnostica": "Pericardite aguda",
+            "conduta_proposta": "Monitorização e tratamento conforme avaliação.",
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 409
