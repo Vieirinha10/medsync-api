@@ -4,14 +4,24 @@ import sys
 import uuid
 from pathlib import Path
 
+from alembic.config import Config
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 
+from alembic import command
 
 TEST_DB = Path("/tmp") / f"medsync-{uuid.uuid4().hex}.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB}"
 os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+command.upgrade(Config("alembic.ini"), "head")
+from database import SessionLocal
+from models import ClinicalCase, ClinicalExam, ClinicalRubric
+from services.clinical_content import seed_clinical_content
+
+with SessionLocal() as db:
+    seed_clinical_content(db)
 main = importlib.import_module("main")
 client = TestClient(main.app)
 
@@ -34,6 +44,35 @@ def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+    assert response.headers["x-request-id"]
+    assert response.headers["x-content-type-options"] == "nosniff"
+
+    ready = client.get("/ready")
+    assert ready.status_code == 200
+    assert ready.json() == {"status": "ready", "database": "ok"}
+
+
+def test_login_rate_limit_can_be_enabled():
+    os.environ["RATE_LIMIT_ENABLED"] = "true"
+    limited_client = TestClient(main.create_app())
+    payload = {"email": "inexistente@example.com", "password": "senha-invalida"}
+    for _ in range(10):
+        assert limited_client.post("/usuarios/login", json=payload).status_code == 401
+    limited = limited_client.post("/usuarios/login", json=payload)
+    assert limited.status_code == 429
+    assert int(limited.headers["retry-after"]) >= 1
+    os.environ["RATE_LIMIT_ENABLED"] = "false"
+
+
+def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
+    with SessionLocal() as db:
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 40
+        assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
+        rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
+        assert rubric is not None
+        assert rubric.versao == 1
+        assert rubric.status == "revisada"
+        assert seed_clinical_content(db) is False
 
 
 def test_duplicate_registration_is_rejected():

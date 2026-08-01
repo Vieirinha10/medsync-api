@@ -1,0 +1,46 @@
+name: API CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: sqlite:////tmp/medsync-ci.db
+      JWT_SECRET_KEY: ci-secret-with-at-least-32-characters
+      ENVIRONMENT: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Validate formatting
+        run: ruff format --check .
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Validate migrations and seed
+        run: |
+          alembic upgrade head
+          python -m scripts.seed_clinical_content
+          alembic current
+
+      - name: Test
+        run: pytest -q

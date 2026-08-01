@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -31,7 +30,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def create_access_token(user_id: int) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": str(user_id),
         "iat": now,
@@ -50,7 +49,7 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     if credentials is None:
-        raise unauthorized
+        raise unauthorized from None
 
     try:
         payload = jwt.decode(
@@ -58,7 +57,7 @@ def get_current_user(
         )
         user_id = int(payload["sub"])
     except (InvalidTokenError, KeyError, TypeError, ValueError):
-        raise unauthorized
+        raise unauthorized from None
 
     user = db.get(User, user_id)
     if user is None:

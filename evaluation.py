@@ -167,17 +167,15 @@ def _contains_any(text: str, terms: list[str]) -> bool:
 
 
 def _exam_name_map(case: dict[str, Any]) -> dict[str, str]:
-    return {
-        exam["id"]: exam["nome"]
-        for exam in case.get("exames_disponiveis", [])
-    }
+    return {exam["id"]: exam["nome"] for exam in case.get("exames_disponiveis", [])}
 
 
 def evaluate_objective(
     case: dict[str, Any],
     submission: SimulationSubmission,
+    rubric: dict[str, Any] | None = None,
 ) -> tuple[ScoreBreakdown, ExamFeedback, dict[str, Any]]:
-    rubric = PILOT_RUBRICS[case["id"]]
+    rubric = rubric or PILOT_RUBRICS[case["id"]]
     names = _exam_name_map(case)
     selected = set(submission.exames_solicitados)
     essential = set(rubric["exames_essenciais"])
@@ -223,12 +221,8 @@ def evaluate_objective(
     )
     exam_feedback = ExamFeedback(
         adequados=[names[exam_id] for exam_id in sorted(accepted)],
-        essenciais_ausentes=[
-            names[exam_id] for exam_id in sorted(missing_essential)
-        ],
-        desnecessarios=[
-            names[exam_id] for exam_id in sorted(selected_unnecessary)
-        ],
+        essenciais_ausentes=[names[exam_id] for exam_id in sorted(missing_essential)],
+        desnecessarios=[names[exam_id] for exam_id in sorted(selected_unnecessary)],
         comentario=(
             "A seleção foi comparada ao gabarito clínico estruturado do caso. "
             "Exames essenciais ausentes reduzem a pontuação e exames de baixo valor "
