@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -104,3 +104,40 @@ class ProgressoResponse(ProgressoCreate):
 class ProgressoResetResponse(BaseModel):
     registros_removidos: int
     message: str
+
+
+class VisualChallengeAttempt(BaseModel):
+    desafio_id: str = Field(min_length=1, max_length=120)
+    titulo: str = Field(min_length=2, max_length=240)
+    especialidade: str = Field(min_length=2, max_length=120)
+    dificuldade: str = Field(min_length=2, max_length=40)
+    pergunta: str = Field(min_length=2, max_length=1000)
+    resposta_usuario: str = Field(min_length=1, max_length=500)
+    resposta_correta: str = Field(min_length=1, max_length=500)
+    explicacao: str = Field(min_length=2, max_length=3000)
+    imagem: str | None = Field(default=None, max_length=500)
+
+
+class StudyErrorStatusUpdate(BaseModel):
+    status: Literal["pendente", "revisando", "dominado"]
+
+
+class StudyErrorResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tipo_origem: Literal["desafio_visual", "caso_clinico"]
+    id_origem: str
+    titulo: str
+    especialidade: str
+    dificuldade: str | None
+    pergunta: str
+    resposta_usuario: str
+    resposta_correta: str
+    explicacao: str
+    detalhes: dict[str, Any]
+    status: Literal["pendente", "revisando", "dominado"]
+    quantidade_erros: int
+    visto_primeiro_em: datetime
+    visto_ultimo_em: datetime
+    dominado_em: datetime | None

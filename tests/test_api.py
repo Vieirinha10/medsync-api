@@ -322,6 +322,70 @@ def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():
     assert result["exames"]["desnecessarios"] == ["D-dímero"]
     assert len(result["exames"]["essenciais_ausentes"]) == 2
 
+    notebook = client.get(
+        "/caderno-erros/meu",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert notebook.status_code == 200
+    assert len(notebook.json()) == 1
+    assert notebook.json()[0]["tipo_origem"] == "caso_clinico"
+    assert notebook.json()[0]["id_origem"] == "8"
+    assert notebook.json()[0]["detalhes"]["pontuacao_total"] == result["pontuacao_total"]
+
+
+def test_error_notebook_tracks_recurrence_status_mastery_and_user_isolation():
+    first_token = _register_and_login("caderno@example.com")
+    second_token = _register_and_login("caderno-isolado@example.com")
+    headers = {"Authorization": f"Bearer {first_token}"}
+    attempt = {
+        "desafio_id": "pneumotorax-hipertensivo",
+        "titulo": "Pneumotórax hipertensivo à esquerda",
+        "especialidade": "Radiologia",
+        "dificuldade": "Intermediário",
+        "pergunta": "Qual é o diagnóstico mais provável nesta radiografia?",
+        "resposta_usuario": "Pneumonia lobar",
+        "resposta_correta": "Pneumotórax hipertensivo à esquerda",
+        "explicacao": "A ausência de trama vascular indica ar no espaço pleural.",
+        "imagem": "/images/desafios/pneumotorax.webp",
+    }
+
+    first = client.post("/caderno-erros/desafios", json=attempt, headers=headers)
+    assert first.status_code == 200
+    assert first.json()["status"] == "pendente"
+    assert first.json()["quantidade_erros"] == 1
+
+    repeated = client.post("/caderno-erros/desafios", json=attempt, headers=headers)
+    assert repeated.status_code == 200
+    assert repeated.json()["quantidade_erros"] == 2
+
+    entry_id = repeated.json()["id"]
+    reviewing = client.patch(
+        f"/caderno-erros/{entry_id}/status",
+        json={"status": "revisando"},
+        headers=headers,
+    )
+    assert reviewing.status_code == 200
+    assert reviewing.json()["status"] == "revisando"
+
+    correct_attempt = {
+        **attempt,
+        "resposta_usuario": "Pneumotórax hipertensivo à esquerda",
+    }
+    mastered = client.post(
+        "/caderno-erros/desafios", json=correct_attempt, headers=headers
+    )
+    assert mastered.status_code == 200
+    assert mastered.json()["status"] == "dominado"
+    assert mastered.json()["dominado_em"] is not None
+    assert mastered.json()["quantidade_erros"] == 2
+
+    isolated = client.get(
+        "/caderno-erros/meu",
+        headers={"Authorization": f"Bearer {second_token}"},
+    )
+    assert isolated.status_code == 200
+    assert isolated.json() == []
+
 
 def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
     from evaluation import (
