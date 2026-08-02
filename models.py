@@ -22,6 +22,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(120))
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    periodo_curso: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    faculdade: Mapped[str | None] = mapped_column(String(180), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)

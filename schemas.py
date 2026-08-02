@@ -7,7 +7,17 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 class UserCreate(BaseModel):
     nome: str = Field(min_length=2, max_length=120)
     email: EmailStr
+    periodo_curso: int = Field(ge=1, le=12)
+    faculdade: str = Field(min_length=2, max_length=180)
     password: str = Field(min_length=8, max_length=72)
+
+    @field_validator("nome", "faculdade")
+    @classmethod
+    def normalize_text(cls, value: str) -> str:
+        normalized = " ".join(value.strip().split())
+        if len(normalized) < 2:
+            raise ValueError("O campo deve ter pelo menos 2 caracteres.")
+        return normalized
 
     @field_validator("email")
     @classmethod
@@ -21,6 +31,8 @@ class UserResponse(BaseModel):
     id: int
     nome: str
     email: EmailStr
+    periodo_curso: int | None
+    faculdade: str | None
     created_at: datetime
 
 

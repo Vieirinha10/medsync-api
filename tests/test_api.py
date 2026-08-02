@@ -29,7 +29,13 @@ client = TestClient(main.app)
 def _register_and_login(email: str = "aluno@example.com") -> str:
     response = client.post(
         "/usuarios/registrar",
-        json={"nome": "Aluno MedSync", "email": email, "password": "senha-segura"},
+        json={
+            "nome": "Aluno MedSync",
+            "email": email,
+            "periodo_curso": 6,
+            "faculdade": "Universidade Federal do Maranhão",
+            "password": "senha-segura",
+        },
     )
     assert response.status_code == 201
 
@@ -96,10 +102,42 @@ def test_duplicate_registration_is_rejected():
         json={
             "nome": "Outro nome",
             "email": "ALUNO@example.com",
+            "periodo_curso": 7,
+            "faculdade": "UFMA",
             "password": "outra-senha",
         },
     )
     assert response.status_code == 409
+
+
+def test_registration_saves_academic_profile():
+    response = client.post(
+        "/usuarios/registrar",
+        json={
+            "nome": "  Maria   da Silva  ",
+            "email": "maria.academica@example.com",
+            "periodo_curso": 4,
+            "faculdade": "  Universidade   Federal do Piauí ",
+            "password": "senha-segura",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["nome"] == "Maria da Silva"
+    assert response.json()["periodo_curso"] == 4
+    assert response.json()["faculdade"] == "Universidade Federal do Piauí"
+
+
+def test_registration_requires_valid_academic_profile():
+    payload = {
+        "nome": "Aluno sem perfil",
+        "email": "perfil-invalido@example.com",
+        "password": "senha-segura",
+    }
+    assert client.post("/usuarios/registrar", json=payload).status_code == 422
+
+    payload.update({"periodo_curso": 13, "faculdade": "UFMA"})
+    assert client.post("/usuarios/registrar", json=payload).status_code == 422
 
 
 def test_protected_routes_require_a_valid_token():

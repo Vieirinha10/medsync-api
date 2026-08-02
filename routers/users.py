@@ -21,8 +21,10 @@ router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 )
 def registrar_usuario(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
-        nome=user.nome.strip(),
+        nome=user.nome,
         email=str(user.email),
+        periodo_curso=user.periodo_curso,
+        faculdade=user.faculdade,
         password_hash=hash_password(user.password),
     )
     db.add(new_user)
