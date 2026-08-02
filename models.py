@@ -35,6 +35,9 @@ class User(Base):
     erros_estudo: Mapped[list["StudyError"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
     )
+    progressos_trilhas: Mapped[list["LearningPathProgress"]] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan"
+    )
 
 
 class Progresso(Base):
@@ -90,6 +93,36 @@ class StudyError(Base):
     )
 
     usuario: Mapped[User] = relationship(back_populates="erros_estudo")
+
+
+class LearningPathProgress(Base):
+    __tablename__ = "learning_path_progress"
+    __table_args__ = (
+        UniqueConstraint(
+            "id_usuario",
+            "trilha_id",
+            "atividade_id",
+            name="uq_learning_path_user_activity",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    trilha_id: Mapped[str] = mapped_column(String(100), index=True)
+    atividade_id: Mapped[str] = mapped_column(String(120))
+    tipo_atividade: Mapped[str] = mapped_column(String(30))
+    tentativas: Mapped[int] = mapped_column(Integer, default=1)
+    melhor_pontuacao: Mapped[int] = mapped_column(Integer, default=0)
+    concluido_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    ultima_tentativa_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="progressos_trilhas")
 
 
 class ClinicalCase(Base):

@@ -387,6 +387,65 @@ def test_error_notebook_tracks_recurrence_status_mastery_and_user_isolation():
     assert isolated.json() == []
 
 
+def test_learning_paths_persist_progress_best_score_and_user_isolation():
+    first_token = _register_and_login("trilhas@example.com")
+    second_token = _register_and_login("trilhas-isolado@example.com")
+    headers = {"Authorization": f"Bearer {first_token}"}
+
+    catalog = client.get("/trilhas", headers=headers)
+    assert catalog.status_code == 200
+    assert len(catalog.json()) == 4
+    image_path = next(
+        path for path in catalog.json() if path["id"] == "diagnostico-por-imagem"
+    )
+    assert image_path["progresso"]["percentual"] == 0
+    assert image_path["progresso"]["total"] == 9
+
+    endpoint = "/trilhas/diagnostico-por-imagem/atividades/imagem-pneumonia/concluir"
+    completed = client.post(endpoint, json={"pontuacao": 100}, headers=headers)
+    assert completed.status_code == 200
+    assert completed.json()["tentativas"] == 1
+    assert completed.json()["melhor_pontuacao"] == 100
+
+    repeated = client.post(endpoint, json={"pontuacao": 0}, headers=headers)
+    assert repeated.status_code == 200
+    assert repeated.json()["tentativas"] == 2
+    assert repeated.json()["melhor_pontuacao"] == 100
+
+    updated_catalog = client.get("/trilhas", headers=headers)
+    updated_path = next(
+        path
+        for path in updated_catalog.json()
+        if path["id"] == "diagnostico-por-imagem"
+    )
+    assert updated_path["progresso"]["concluidas"] == 1
+    activity = updated_path["modulos"][0]["atividades"][0]
+    assert activity["progresso"] == {
+        "concluida": True,
+        "tentativas": 2,
+        "melhor_pontuacao": 100,
+        "concluido_em": activity["progresso"]["concluido_em"],
+    }
+
+    isolated_catalog = client.get(
+        "/trilhas",
+        headers={"Authorization": f"Bearer {second_token}"},
+    )
+    isolated_path = next(
+        path
+        for path in isolated_catalog.json()
+        if path["id"] == "diagnostico-por-imagem"
+    )
+    assert isolated_path["progresso"]["concluidas"] == 0
+
+    invalid = client.post(
+        "/trilhas/inexistente/atividades/atividade/concluir",
+        json={"pontuacao": 50},
+        headers=headers,
+    )
+    assert invalid.status_code == 404
+
+
 def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
     from evaluation import (
         SimulationSubmission,

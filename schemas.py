@@ -141,3 +141,20 @@ class StudyErrorResponse(BaseModel):
     visto_primeiro_em: datetime
     visto_ultimo_em: datetime
     dominado_em: datetime | None
+
+
+class LearningPathCompletion(BaseModel):
+    pontuacao: int = Field(ge=0, le=100)
+
+
+class LearningPathProgressResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    trilha_id: str
+    atividade_id: str
+    tipo_atividade: Literal["desafio_visual", "caso_clinico"]
+    tentativas: int
+    melhor_pontuacao: int
+    concluido_em: datetime
+    ultima_tentativa_em: datetime
