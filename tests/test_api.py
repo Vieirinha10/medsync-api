@@ -139,6 +139,49 @@ def test_progress_is_persistent_and_isolated_by_user():
     assert second_progress.json() == []
 
 
+def test_user_can_reset_only_their_own_progress_without_deleting_account():
+    first_token = _register_and_login("reset@example.com")
+    second_token = _register_and_login("preservado@example.com")
+    payload = {
+        "id_caso": 1,
+        "respostas_usuario": {"hipotese_diagnostica": "Pericardite"},
+        "pontuacao": 85,
+    }
+
+    for token in (first_token, second_token):
+        response = client.post(
+            "/progresso/registrar",
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 201
+
+    reset = client.delete(
+        "/progresso/meu",
+        headers={"Authorization": f"Bearer {first_token}"},
+    )
+    assert reset.status_code == 200
+    assert reset.json() == {
+        "registros_removidos": 1,
+        "message": "Estatísticas redefinidas com sucesso.",
+    }
+
+    first_progress = client.get(
+        "/progresso/meu", headers={"Authorization": f"Bearer {first_token}"}
+    )
+    second_progress = client.get(
+        "/progresso/meu", headers={"Authorization": f"Bearer {second_token}"}
+    )
+    current_user = client.get(
+        "/usuarios/me", headers={"Authorization": f"Bearer {first_token}"}
+    )
+
+    assert first_progress.json() == []
+    assert len(second_progress.json()) == 1
+    assert current_user.status_code == 200
+    assert current_user.json()["email"] == "reset@example.com"
+
+
 def test_v2_case_is_identified_in_case_catalog():
     token = _register_and_login("catalogo-v2@example.com")
     response = client.get(

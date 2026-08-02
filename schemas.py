@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -20,6 +21,7 @@ class UserResponse(BaseModel):
     id: int
     nome: str
     email: EmailStr
+    created_at: datetime
 
 
 class UserLogin(BaseModel):
@@ -62,3 +64,9 @@ class ProgressoResponse(ProgressoCreate):
 
     id: int
     id_usuario: int
+    created_at: datetime
+
+
+class ProgressoResetResponse(BaseModel):
+    registros_removidos: int
+    message: str
