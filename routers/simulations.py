@@ -10,6 +10,7 @@ from evaluation import (
     evaluate_objective,
 )
 from models import Progresso, User
+from routers.error_notebook import register_clinical_result
 from security import get_current_user
 from services.clinical_content import get_published_case, serialize_case
 
@@ -37,6 +38,7 @@ def finalizar_simulacao(
         )
 
     case = serialize_case(case_record)
+    case["rubrica"] = case_record.rubrica.definicao
     valid_exam_ids = {exam["id"] for exam in case["exames_disponiveis"]}
     if set(submission.exames_solicitados) - valid_exam_ids:
         raise HTTPException(
@@ -73,6 +75,13 @@ def finalizar_simulacao(
         pontuacao=total_score,
     )
     db.add(entry)
+    register_clinical_result(
+        db,
+        current_user.id,
+        case,
+        submission.model_dump(),
+        evaluation_data,
+    )
     db.commit()
     db.refresh(entry)
     return {"progresso_id": entry.id, **evaluation_data}

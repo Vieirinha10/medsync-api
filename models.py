@@ -32,6 +32,9 @@ class User(Base):
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
     )
+    erros_estudo: Mapped[list["StudyError"]] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan"
+    )
 
 
 class Progresso(Base):
@@ -47,6 +50,46 @@ class Progresso(Base):
     )
 
     usuario: Mapped[User] = relationship(back_populates="progressos")
+
+
+class StudyError(Base):
+    __tablename__ = "study_errors"
+    __table_args__ = (
+        UniqueConstraint(
+            "id_usuario",
+            "tipo_origem",
+            "id_origem",
+            name="uq_study_error_user_source",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    tipo_origem: Mapped[str] = mapped_column(String(30), index=True)
+    id_origem: Mapped[str] = mapped_column(String(120))
+    titulo: Mapped[str] = mapped_column(String(240))
+    especialidade: Mapped[str] = mapped_column(String(120), index=True)
+    dificuldade: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    pergunta: Mapped[str] = mapped_column(Text)
+    resposta_usuario: Mapped[str] = mapped_column(Text)
+    resposta_correta: Mapped[str] = mapped_column(Text)
+    explicacao: Mapped[str] = mapped_column(Text)
+    detalhes: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    status: Mapped[str] = mapped_column(String(20), default="pendente", index=True)
+    quantidade_erros: Mapped[int] = mapped_column(Integer, default=1)
+    visto_primeiro_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    visto_ultimo_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    dominado_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="erros_estudo")
 
 
 class ClinicalCase(Base):

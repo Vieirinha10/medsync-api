@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from middleware import RateLimitMiddleware, SecurityAndObservabilityMiddleware
-from routers import admin, cases, progress, simulations, system, users
+from routers import admin, cases, error_notebook, progress, simulations, system, users
 from settings import cors_origins, rate_limit_enabled
 
 
@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
     application.include_router(cases.router)
     application.include_router(simulations.router)
     application.include_router(progress.router)
+    application.include_router(error_notebook.router)
     application.include_router(admin.router)
     return application
 
