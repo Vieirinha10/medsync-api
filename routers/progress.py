@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Progresso, User
-from schemas import ProgressoCreate, ProgressoResponse
+from schemas import ProgressoCreate, ProgressoResetResponse, ProgressoResponse
 from security import get_current_user
 from services.clinical_content import get_published_case
 
@@ -38,3 +38,18 @@ def obter_meu_progresso(
         .where(Progresso.id_usuario == current_user.id)
         .order_by(Progresso.id.desc())
     ).all()
+
+
+@router.delete("/meu", response_model=ProgressoResetResponse)
+def resetar_meu_progresso(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    result = db.execute(
+        delete(Progresso).where(Progresso.id_usuario == current_user.id)
+    )
+    db.commit()
+    return {
+        "registros_removidos": result.rowcount or 0,
+        "message": "Estatísticas redefinidas com sucesso.",
+    }
