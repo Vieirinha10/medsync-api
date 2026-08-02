@@ -122,6 +122,10 @@ class StudyErrorStatusUpdate(BaseModel):
     status: Literal["pendente", "revisando", "dominado"]
 
 
+class SpacedReviewCreate(BaseModel):
+    avaliacao: Literal["errei", "dificil", "bom", "facil"]
+
+
 class StudyErrorResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -141,6 +145,12 @@ class StudyErrorResponse(BaseModel):
     visto_primeiro_em: datetime
     visto_ultimo_em: datetime
     dominado_em: datetime | None
+    revisoes_realizadas: int
+    sequencia_acertos: int
+    intervalo_dias: int
+    fator_facilidade: float
+    ultima_revisao_em: datetime | None
+    proxima_revisao_em: datetime
 
 
 class LearningPathCompletion(BaseModel):

@@ -387,6 +387,67 @@ def test_error_notebook_tracks_recurrence_status_mastery_and_user_isolation():
     assert isolated.json() == []
 
 
+def test_spaced_review_builds_daily_queue_and_updates_schedule():
+    token = _register_and_login("revisao-espacada@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    attempt = {
+        "desafio_id": "revisao-ecg",
+        "titulo": "Ritmo irregular no ECG",
+        "especialidade": "Cardiologia",
+        "dificuldade": "Intermediário",
+        "pergunta": "Qual é o diagnóstico mais provável?",
+        "resposta_usuario": "Flutter atrial",
+        "resposta_correta": "Fibrilação atrial",
+        "explicacao": "A irregularidade dos intervalos RR favorece fibrilação atrial.",
+        "imagem": "/images/desafios/ecg.webp",
+    }
+
+    created = client.post("/caderno-erros/desafios", json=attempt, headers=headers)
+    assert created.status_code == 200
+    entry_id = created.json()["id"]
+    assert created.json()["revisoes_realizadas"] == 0
+
+    due = client.get("/caderno-erros/revisoes-hoje", headers=headers)
+    assert due.status_code == 200
+    assert [entry["id"] for entry in due.json()] == [entry_id]
+
+    first = client.post(
+        f"/caderno-erros/{entry_id}/revisar",
+        json={"avaliacao": "bom"},
+        headers=headers,
+    )
+    assert first.status_code == 200
+    assert first.json()["revisoes_realizadas"] == 1
+    assert first.json()["sequencia_acertos"] == 1
+    assert first.json()["intervalo_dias"] == 1
+    assert first.json()["status"] == "revisando"
+
+    assert client.get("/caderno-erros/revisoes-hoje", headers=headers).json() == []
+
+    second = client.post(
+        f"/caderno-erros/{entry_id}/revisar",
+        json={"avaliacao": "bom"},
+        headers=headers,
+    )
+    assert second.json()["intervalo_dias"] == 7
+    third = client.post(
+        f"/caderno-erros/{entry_id}/revisar",
+        json={"avaliacao": "bom"},
+        headers=headers,
+    )
+    assert third.json()["intervalo_dias"] == 15
+    assert third.json()["status"] == "dominado"
+
+    forgotten = client.post(
+        f"/caderno-erros/{entry_id}/revisar",
+        json={"avaliacao": "errei"},
+        headers=headers,
+    )
+    assert forgotten.json()["sequencia_acertos"] == 0
+    assert forgotten.json()["intervalo_dias"] == 1
+    assert forgotten.json()["status"] == "pendente"
+
+
 def test_learning_paths_persist_progress_best_score_and_user_isolation():
     first_token = _register_and_login("trilhas@example.com")
     second_token = _register_and_login("trilhas-isolado@example.com")
