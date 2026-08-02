@@ -37,7 +37,9 @@ def schedule_review(
         entry.dominado_em = None
     elif rating == "dificil":
         entry.sequencia_acertos += 1
-        interval = 1 if not previous_interval else max(2, round(previous_interval * 1.5))
+        interval = (
+            1 if not previous_interval else max(2, round(previous_interval * 1.5))
+        )
         entry.fator_facilidade = max(1.3, ease_factor - 0.15)
         entry.status = "revisando"
         entry.dominado_em = None
@@ -104,7 +106,9 @@ def register_clinical_result(
         return existing
 
     rubric = case.get("rubrica", {})
-    correct_answer = rubric.get("diagnostico_referencia") or "Consulte o feedback revisado."
+    correct_answer = (
+        rubric.get("diagnostico_referencia") or "Consulte o feedback revisado."
+    )
     details = {
         "pontuacao_total": total_score,
         "pontuacao": evaluation_data["pontuacao"],
@@ -218,9 +222,7 @@ def register_visual_challenge_attempt(
     db: Session = Depends(get_db),
 ):
     now = datetime.now(UTC)
-    existing = _find_error(
-        db, current_user.id, "desafio_visual", attempt.desafio_id
-    )
+    existing = _find_error(db, current_user.id, "desafio_visual", attempt.desafio_id)
     correct = attempt.resposta_usuario == attempt.resposta_correta
 
     if correct:

@@ -18,8 +18,12 @@ def upgrade() -> None:
 
     existing = {column["name"] for column in inspector.get_columns("study_errors")}
     additions = [
-        sa.Column("revisoes_realizadas", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("sequencia_acertos", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column(
+            "revisoes_realizadas", sa.Integer(), nullable=False, server_default="0"
+        ),
+        sa.Column(
+            "sequencia_acertos", sa.Integer(), nullable=False, server_default="0"
+        ),
         sa.Column("intervalo_dias", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("fator_facilidade", sa.Float(), nullable=False, server_default="2.5"),
         sa.Column("ultima_revisao_em", sa.DateTime(timezone=True), nullable=True),
@@ -35,7 +39,9 @@ def upgrade() -> None:
             if column.name not in existing:
                 batch_op.add_column(column)
 
-    indexes = {index["name"] for index in inspect(op.get_bind()).get_indexes("study_errors")}
+    indexes = {
+        index["name"] for index in inspect(op.get_bind()).get_indexes("study_errors")
+    }
     if "ix_study_errors_proxima_revisao_em" not in indexes:
         op.create_index(
             "ix_study_errors_proxima_revisao_em",
@@ -53,7 +59,9 @@ def downgrade() -> None:
     if "ix_study_errors_proxima_revisao_em" in indexes:
         op.drop_index("ix_study_errors_proxima_revisao_em", table_name="study_errors")
 
-    existing = {column["name"] for column in inspect(op.get_bind()).get_columns("study_errors")}
+    existing = {
+        column["name"] for column in inspect(op.get_bind()).get_columns("study_errors")
+    }
     with op.batch_alter_table("study_errors") as batch_op:
         for column_name in (
             "proxima_revisao_em",
