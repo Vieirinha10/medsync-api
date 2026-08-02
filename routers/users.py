@@ -12,8 +12,21 @@ from security import (
     hash_password,
     verify_password,
 )
+from settings import is_admin_email
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
+
+
+def user_response(user: User) -> dict[str, object]:
+    return {
+        "id": user.id,
+        "nome": user.nome,
+        "email": user.email,
+        "periodo_curso": user.periodo_curso,
+        "faculdade": user.faculdade,
+        "is_admin": is_admin_email(user.email),
+        "created_at": user.created_at,
+    }
 
 
 @router.post(
@@ -37,7 +50,7 @@ def registrar_usuario(user: UserCreate, db: Session = Depends(get_db)):
             detail="Email já cadastrado.",
         ) from None
     db.refresh(new_user)
-    return new_user
+    return user_response(new_user)
 
 
 @router.post("/login", response_model=Token)
@@ -53,4 +66,4 @@ def login_usuario(form_data: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 def obter_usuario_atual(current_user: User = Depends(get_current_user)):
-    return current_user
+    return user_response(current_user)

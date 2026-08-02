@@ -26,3 +26,15 @@ def cors_origins() -> list[str]:
 def rate_limit_enabled() -> bool:
     default = "true" if environment() == "production" else "false"
     return os.getenv("RATE_LIMIT_ENABLED", default).lower() == "true"
+
+
+def admin_emails() -> set[str]:
+    return {
+        email.strip().lower()
+        for email in os.getenv("ADMIN_EMAILS", "").split(",")
+        if email.strip()
+    }
+
+
+def is_admin_email(email: str) -> bool:
+    return email.strip().lower() in admin_emails()

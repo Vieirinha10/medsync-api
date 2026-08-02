@@ -33,6 +33,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     periodo_curso: int | None
     faculdade: str | None
+    is_admin: bool = False
     created_at: datetime
 
 
@@ -49,6 +50,27 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class AcademicPeriodMetric(BaseModel):
+    periodo: int
+    total: int
+    percentual: float
+
+
+class AcademicInstitutionMetric(BaseModel):
+    faculdade: str
+    total: int
+    percentual: float
+
+
+class AcademicAnalyticsResponse(BaseModel):
+    total_usuarios: int
+    perfis_academicos_preenchidos: int
+    cobertura_percentual: float
+    novos_ultimos_30_dias: int
+    periodos: list[AcademicPeriodMetric]
+    faculdades: list[AcademicInstitutionMetric]
 
 
 class CasoClinico(BaseModel):

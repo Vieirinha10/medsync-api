@@ -140,6 +140,39 @@ def test_registration_requires_valid_academic_profile():
     assert client.post("/usuarios/registrar", json=payload).status_code == 422
 
 
+def test_academic_analytics_are_restricted_and_aggregated():
+    regular_token = _register_and_login("usuario-comum@example.com")
+    assert client.get(
+        "/admin/analytics/academico",
+        headers={"Authorization": f"Bearer {regular_token}"},
+    ).status_code == 403
+
+    os.environ["ADMIN_EMAILS"] = "administrador@example.com"
+    admin_token = _register_and_login("administrador@example.com")
+    current_user = client.get(
+        "/usuarios/me",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert current_user.json()["is_admin"] is True
+
+    response = client.get(
+        "/admin/analytics/academico",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    os.environ.pop("ADMIN_EMAILS")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_usuarios"] >= 2
+    assert data["perfis_academicos_preenchidos"] >= 2
+    assert any(item["periodo"] == 6 for item in data["periodos"])
+    assert any(
+        item["faculdade"] == "Universidade Federal do Maranhão"
+        for item in data["faculdades"]
+    )
+    assert "email" not in response.text
+
+
 def test_protected_routes_require_a_valid_token():
     assert client.get("/casos-clinicos/").status_code == 401
     assert (
