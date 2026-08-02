@@ -43,3 +43,8 @@ personalizada ao finalizar o caso.
 O caso de tromboembolismo pulmonar (caso 8) é o primeiro piloto. Novos casos
 somente devem ser habilitados após revisão do respectivo gabarito por uma pessoa
 com competência clínica.
+
+O avaliador por regras é orientado integralmente pela rubrica: diagnóstico de
+referência, termos aceitos, exames, critérios de conduta, alertas de segurança e
+recomendações de estudo. Assim, nenhum texto clínico específico de um caso fica
+embutido no mecanismo geral, e novos casos podem ser habilitados sem depender de IA.

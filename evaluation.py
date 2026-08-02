@@ -5,7 +5,7 @@ import re
 import unicodedata
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,51 @@ class SimulationEvaluation(BaseModel):
         "Feedback destinado exclusivamente ao treinamento acadêmico. "
         "Não substitui protocolos locais, supervisão docente ou decisão médica real."
     )
+
+
+class ConductCriterion(BaseModel):
+    nome: str = Field(min_length=3, max_length=160)
+    pontos: int = Field(gt=0, le=30)
+    termos: list[str] = Field(min_length=1)
+
+
+class ClinicalRubricDefinition(BaseModel):
+    diagnostico_referencia: str = Field(min_length=3)
+    diagnostico_termos: list[str] = Field(min_length=1)
+    diagnostico_parcial: list[str] = Field(default_factory=list)
+    exames_essenciais: list[str] = Field(default_factory=list)
+    exames_opcionais: list[str] = Field(default_factory=list)
+    exames_desnecessarios: list[str] = Field(default_factory=list)
+    justificativa_exames: dict[str, str] = Field(default_factory=dict)
+    conduta_criterios: list[ConductCriterion] = Field(min_length=1)
+    conduta_referencia: str = Field(min_length=3)
+    feedback_hipotese_parcial: str = Field(min_length=3)
+    feedback_hipotese_incorreta: str = Field(min_length=3)
+    feedback_seguranca: str = Field(min_length=3)
+    temas_estudo: list[str] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_scoring_and_exam_groups(self):
+        if sum(item.pontos for item in self.conduta_criterios) > 30:
+            raise ValueError("A soma dos critérios de conduta não pode ultrapassar 30.")
+
+        groups = [
+            set(self.exames_essenciais),
+            set(self.exames_opcionais),
+            set(self.exames_desnecessarios),
+        ]
+        if any(
+            groups[index] & groups[other]
+            for index in range(3)
+            for other in range(index + 1, 3)
+        ):
+            raise ValueError(
+                "Um exame não pode pertencer a grupos diferentes na rubrica."
+            )
+        return self
+
+
+PILOT_RUBRIC_VERSION = 2
 
 
 PILOT_RUBRICS: dict[int, dict[str, Any]] = {
@@ -140,6 +185,19 @@ PILOT_RUBRICS: dict[int, dict[str, Any]] = {
             "hemodinâmico para avaliar necessidade de reperfusão; manter acompanhamento "
             "hospitalar e abordar a trombose associada ao câncer."
         ),
+        "feedback_hipotese_parcial": (
+            "Você reconheceu o fenômeno trombótico, mas precisa explicitar o "
+            "tromboembolismo pulmonar como hipótese principal."
+        ),
+        "feedback_hipotese_incorreta": (
+            "A hipótese não identificou o tromboembolismo pulmonar, diagnóstico "
+            "mais provável diante da apresentação."
+        ),
+        "feedback_seguranca": (
+            "A hipoxemia importante exige estabilização e monitorização. A decisão "
+            "sobre anticoagulação e reperfusão depende de contraindicações e da "
+            "estabilidade hemodinâmica."
+        ),
         "temas_estudo": [
             "Escore de probabilidade pré-teste para TEP",
             "Indicações e limitações do D-dímero",
@@ -196,13 +254,16 @@ def evaluate_objective(
         rubric["diagnostico_termos"],
     ):
         hypothesis_score = 30
+        hypothesis_classification = "correta"
     elif _contains_any(
         submission.hipotese_diagnostica,
         rubric["diagnostico_parcial"],
     ):
         hypothesis_score = 15
+        hypothesis_classification = "parcial"
     else:
         hypothesis_score = 0
+        hypothesis_classification = "incorreta"
 
     matched_conduct = []
     missing_conduct = []
@@ -231,6 +292,7 @@ def evaluate_objective(
     )
     context = {
         "rubrica": rubric,
+        "classificacao_hipotese": hypothesis_classification,
         "condutas_identificadas": matched_conduct,
         "condutas_ausentes": missing_conduct,
     }
@@ -252,17 +314,28 @@ def build_rule_based_narrative(
             "Você selecionou exames que contribuem diretamente para confirmar "
             "o diagnóstico e avaliar a gravidade."
         )
-    if score.hipotese == 30:
+    if context["classificacao_hipotese"] == "correta":
         strengths.append("A hipótese principal está alinhada ao diagnóstico do caso.")
-    elif score.hipotese == 15:
+    elif context["classificacao_hipotese"] == "parcial":
         improvements.append(
-            "Você reconheceu o fenômeno trombótico, mas precisa explicitar o "
-            "tromboembolismo pulmonar como hipótese principal."
+            rubric.get(
+                "feedback_hipotese_parcial",
+                "A hipótese reconheceu parte do quadro, mas precisa ser mais específica.",
+            )
         )
     else:
         improvements.append(
-            "A hipótese não identificou o tromboembolismo pulmonar, diagnóstico "
-            "mais provável diante da apresentação."
+            rubric.get(
+                "feedback_hipotese_incorreta",
+                "A hipótese informada não corresponde ao diagnóstico de referência.",
+            )
+        )
+
+    if context["condutas_identificadas"]:
+        strengths.append(
+            "A conduta contemplou: "
+            + ", ".join(context["condutas_identificadas"])
+            + "."
         )
 
     if exams.essenciais_ausentes:
@@ -289,7 +362,7 @@ def build_rule_based_narrative(
 
     return ClinicalNarrative(
         resumo=(
-            "Seu desempenho foi analisado pelo Agente Avaliador MedSync com base "
+            "Seu desempenho foi analisado pelo Avaliador Clínico MedSync com base "
             "no gabarito estruturado deste caso."
         ),
         acertos=strengths,
@@ -302,10 +375,9 @@ def build_rule_based_narrative(
             f"Conduta de referência: {rubric['conduta_referencia']} "
             f"Sua resposta foi: {submission.conduta_proposta.strip()}"
         ),
-        feedback_seguranca=(
-            "A hipoxemia importante exige estabilização e monitorização. A decisão "
-            "sobre anticoagulação e reperfusão depende de contraindicações e da "
-            "estabilidade hemodinâmica."
+        feedback_seguranca=rubric.get(
+            "feedback_seguranca",
+            "Revise os sinais de gravidade e as medidas iniciais de segurança deste caso.",
         ),
         recomendacoes_estudo=rubric["temas_estudo"],
     )
