@@ -5,6 +5,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -90,6 +91,18 @@ class StudyError(Base):
     )
     dominado_em: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+    revisoes_realizadas: Mapped[int] = mapped_column(Integer, default=0)
+    sequencia_acertos: Mapped[int] = mapped_column(Integer, default=0)
+    intervalo_dias: Mapped[int] = mapped_column(Integer, default=0)
+    fator_facilidade: Mapped[float] = mapped_column(Float, default=2.5)
+    ultima_revisao_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    proxima_revisao_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        index=True,
     )
 
     usuario: Mapped[User] = relationship(back_populates="erros_estudo")

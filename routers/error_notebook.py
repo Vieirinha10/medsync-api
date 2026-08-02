@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import StudyError, User
 from schemas import (
+    SpacedReviewCreate,
     StudyErrorResponse,
     StudyErrorStatusUpdate,
     VisualChallengeAttempt,
@@ -14,6 +15,57 @@ from schemas import (
 from security import get_current_user
 
 router = APIRouter(prefix="/caderno-erros", tags=["Caderno de Erros"])
+
+MAX_REVIEW_INTERVAL_DAYS = 180
+
+
+def schedule_review(
+    entry: StudyError,
+    rating: str,
+    now: datetime | None = None,
+) -> StudyError:
+    """Aplica um agendamento simples e previsível inspirado no SM-2."""
+    reviewed_at = now or datetime.now(UTC)
+    previous_interval = entry.intervalo_dias
+    ease_factor = entry.fator_facilidade
+
+    if rating == "errei":
+        interval = 1
+        entry.sequencia_acertos = 0
+        entry.fator_facilidade = max(1.3, ease_factor - 0.2)
+        entry.status = "pendente"
+        entry.dominado_em = None
+    elif rating == "dificil":
+        entry.sequencia_acertos += 1
+        interval = 1 if not previous_interval else max(2, round(previous_interval * 1.5))
+        entry.fator_facilidade = max(1.3, ease_factor - 0.15)
+        entry.status = "revisando"
+        entry.dominado_em = None
+    elif rating == "bom":
+        entry.sequencia_acertos += 1
+        sequence_intervals = {1: 1, 2: 7, 3: 15}
+        interval = sequence_intervals.get(
+            entry.sequencia_acertos,
+            max(1, round(previous_interval * ease_factor)),
+        )
+        entry.status = "dominado" if entry.sequencia_acertos >= 3 else "revisando"
+        entry.dominado_em = reviewed_at if entry.status == "dominado" else None
+    else:  # facil
+        entry.sequencia_acertos += 1
+        sequence_intervals = {1: 3, 2: 10, 3: 30}
+        interval = sequence_intervals.get(
+            entry.sequencia_acertos,
+            max(1, round(previous_interval * (ease_factor + 0.3))),
+        )
+        entry.fator_facilidade = min(3.0, ease_factor + 0.15)
+        entry.status = "dominado" if entry.sequencia_acertos >= 3 else "revisando"
+        entry.dominado_em = reviewed_at if entry.status == "dominado" else None
+
+    entry.intervalo_dias = min(interval, MAX_REVIEW_INTERVAL_DAYS)
+    entry.revisoes_realizadas += 1
+    entry.ultima_revisao_em = reviewed_at
+    entry.proxima_revisao_em = reviewed_at + timedelta(days=entry.intervalo_dias)
+    return entry
 
 
 def _find_error(
@@ -48,6 +100,7 @@ def register_clinical_result(
             existing.status = "dominado"
             existing.dominado_em = now
             existing.visto_ultimo_em = now
+            existing.proxima_revisao_em = now + timedelta(days=30)
         return existing
 
     rubric = case.get("rubrica", {})
@@ -93,6 +146,8 @@ def register_clinical_result(
         existing.quantidade_erros += 1
         existing.visto_ultimo_em = now
         existing.dominado_em = None
+        existing.sequencia_acertos = 0
+        existing.proxima_revisao_em = now
 
     return existing
 
@@ -107,6 +162,49 @@ def list_my_errors(
         .where(StudyError.id_usuario == current_user.id)
         .order_by(StudyError.visto_ultimo_em.desc(), StudyError.id.desc())
     ).all()
+
+
+@router.get("/revisoes-hoje", response_model=list[StudyErrorResponse])
+def list_due_reviews(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(UTC)
+    return db.scalars(
+        select(StudyError)
+        .where(
+            StudyError.id_usuario == current_user.id,
+            StudyError.proxima_revisao_em <= now,
+        )
+        .order_by(
+            StudyError.proxima_revisao_em.asc(),
+            StudyError.quantidade_erros.desc(),
+            StudyError.id.asc(),
+        )
+        .limit(30)
+    ).all()
+
+
+@router.post("/{error_id}/revisar", response_model=StudyErrorResponse)
+def review_error(
+    error_id: int,
+    review: SpacedReviewCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    entry = db.scalar(
+        select(StudyError).where(
+            StudyError.id == error_id,
+            StudyError.id_usuario == current_user.id,
+        )
+    )
+    if entry is None:
+        raise HTTPException(status_code=404, detail="Erro de estudo não encontrado.")
+
+    schedule_review(entry, review.avaliacao)
+    db.commit()
+    db.refresh(entry)
+    return entry
 
 
 @router.post(
@@ -131,6 +229,7 @@ def register_visual_challenge_attempt(
         existing.status = "dominado"
         existing.dominado_em = now
         existing.visto_ultimo_em = now
+        existing.proxima_revisao_em = now + timedelta(days=30)
         db.commit()
         db.refresh(existing)
         return existing
@@ -168,6 +267,8 @@ def register_visual_challenge_attempt(
         existing.quantidade_erros += 1
         existing.visto_ultimo_em = now
         existing.dominado_em = None
+        existing.sequencia_acertos = 0
+        existing.proxima_revisao_em = now
 
     db.commit()
     db.refresh(existing)
@@ -191,7 +292,11 @@ def update_error_status(
         raise HTTPException(status_code=404, detail="Erro de estudo não encontrado.")
 
     entry.status = update.status
-    entry.dominado_em = datetime.now(UTC) if update.status == "dominado" else None
+    now = datetime.now(UTC)
+    entry.dominado_em = now if update.status == "dominado" else None
+    entry.proxima_revisao_em = (
+        now + timedelta(days=30) if update.status == "dominado" else now
+    )
     db.commit()
     db.refresh(entry)
     return entry
