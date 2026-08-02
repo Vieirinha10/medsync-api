@@ -70,9 +70,23 @@ def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
         assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 1
+        assert rubric.versao == 2
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
+
+
+def test_existing_pilot_rubric_is_safely_upgraded():
+    with SessionLocal() as db:
+        rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
+        rubric.versao = 1
+        rubric.definicao = {"formato": "legado"}
+        db.commit()
+
+        assert seed_clinical_content(db) is False
+        db.refresh(rubric)
+
+        assert rubric.versao == 2
+        assert rubric.definicao["feedback_seguranca"]
 
 
 def test_duplicate_registration_is_rejected():
@@ -193,6 +207,51 @@ def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():
     assert result["pontuacao"]["conduta"] == 12
     assert result["exames"]["desnecessarios"] == ["D-dímero"]
     assert len(result["exames"]["essenciais_ausentes"]) == 2
+
+
+def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
+    from evaluation import (
+        SimulationSubmission,
+        build_rule_based_narrative,
+        evaluate_objective,
+    )
+
+    case = {
+        "id": 99,
+        "titulo": "Caso genérico",
+        "exames_disponiveis": [
+            {"id": "teste_a", "nome": "Teste A", "resultado": "Positivo"},
+        ],
+    }
+    rubric = {
+        "diagnostico_referencia": "Diagnóstico alfa",
+        "diagnostico_termos": ["diagnostico alfa"],
+        "diagnostico_parcial": ["sindrome alfa"],
+        "exames_essenciais": ["teste_a"],
+        "exames_opcionais": [],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {},
+        "conduta_criterios": [
+            {"nome": "Conduta alfa", "pontos": 30, "termos": ["tratamento alfa"]},
+        ],
+        "conduta_referencia": "Realizar tratamento alfa.",
+        "feedback_hipotese_parcial": "A hipótese alfa ficou incompleta.",
+        "feedback_hipotese_incorreta": "A hipótese não identificou o diagnóstico alfa.",
+        "feedback_seguranca": "Verifique o sinal de alarme alfa.",
+        "temas_estudo": ["Tema alfa"],
+    }
+    submission = SimulationSubmission(
+        exames_solicitados=["teste_a"],
+        hipotese_diagnostica="Síndrome beta",
+        conduta_proposta="Observação clínica",
+    )
+
+    score, exams, context = evaluate_objective(case, submission, rubric)
+    narrative = build_rule_based_narrative(submission, score, exams, context)
+
+    assert rubric["feedback_hipotese_incorreta"] in narrative.pontos_melhoria
+    assert narrative.feedback_seguranca == rubric["feedback_seguranca"]
+    assert "tromboembolismo" not in narrative.model_dump_json().lower()
 
 
 def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
