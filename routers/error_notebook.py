@@ -13,6 +13,7 @@ from schemas import (
     VisualChallengeAttempt,
 )
 from security import get_current_user
+from services.activity import track_activity
 
 router = APIRouter(prefix="/caderno-erros", tags=["Caderno de Erros"])
 
@@ -222,11 +223,19 @@ def register_visual_challenge_attempt(
     db: Session = Depends(get_db),
 ):
     now = datetime.now(UTC)
+    track_activity(
+        db,
+        current_user.id,
+        "resposta",
+        "desafio_visual",
+        attempt.desafio_id,
+    )
     existing = _find_error(db, current_user.id, "desafio_visual", attempt.desafio_id)
     correct = attempt.resposta_usuario == attempt.resposta_correta
 
     if correct:
         if existing is None:
+            db.commit()
             return None
         existing.status = "dominado"
         existing.dominado_em = now

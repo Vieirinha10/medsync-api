@@ -5,6 +5,7 @@ from middleware import RateLimitMiddleware, SecurityAndObservabilityMiddleware
 from routers import (
     admin,
     cases,
+    content,
     error_notebook,
     learning_paths,
     progress,
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     application.include_router(system.router)
     application.include_router(users.router)
     application.include_router(cases.router)
+    application.include_router(content.router)
     application.include_router(simulations.router)
     application.include_router(progress.router)
     application.include_router(error_notebook.router)

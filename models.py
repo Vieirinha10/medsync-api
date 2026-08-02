@@ -29,6 +29,9 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
@@ -149,6 +152,7 @@ class ClinicalCase(Base):
     exame_fisico: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(30), default="publicado", index=True)
     versao_conteudo: Mapped[int] = mapped_column(Integer, default=1)
+    is_premium: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
@@ -210,3 +214,77 @@ class ClinicalRubric(Base):
     )
 
     caso: Mapped[ClinicalCase] = relationship(back_populates="rubrica")
+
+
+class VisualChallenge(Base):
+    __tablename__ = "visual_challenges"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    titulo: Mapped[str] = mapped_column(String(240))
+    especialidade: Mapped[str] = mapped_column(String(120), index=True)
+    dificuldade: Mapped[str] = mapped_column(String(40), index=True)
+    modalidade: Mapped[str] = mapped_column(String(80))
+    pergunta: Mapped[str] = mapped_column(Text)
+    imagem_url: Mapped[str] = mapped_column(String(1000))
+    imagem_alt: Mapped[str] = mapped_column(String(500))
+    alternativas: Mapped[list[dict[str, str]]] = mapped_column(JSON)
+    alternativa_correta_id: Mapped[str] = mapped_column(String(20))
+    diagnostico_correto: Mapped[str] = mapped_column(String(500))
+    explicacao: Mapped[str] = mapped_column(Text)
+    achados_chave: Mapped[list[str]] = mapped_column(JSON, default=list)
+    fonte_credito: Mapped[str] = mapped_column(String(240), default="MedSync")
+    fonte_licenca: Mapped[str] = mapped_column(String(120), default="Uso educacional")
+    fonte_url: Mapped[str] = mapped_column(String(1000), default="#")
+    status: Mapped[str] = mapped_column(String(30), default="publicado", index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    titulo: Mapped[str] = mapped_column(String(180))
+    mensagem: Mapped[str] = mapped_column(Text)
+    tom: Mapped[str] = mapped_column(String(30), default="informativo")
+    link_texto: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    link_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    inicia_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    termina_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    criado_por: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+
+class UserActivity(Base):
+    __tablename__ = "user_activities"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    evento: Mapped[str] = mapped_column(String(50), index=True)
+    tipo_conteudo: Mapped[str | None] = mapped_column(
+        String(40), nullable=True, index=True
+    )
+    id_conteudo: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )

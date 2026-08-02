@@ -12,6 +12,7 @@ from evaluation import (
 from models import Progresso, User
 from routers.error_notebook import register_clinical_result
 from security import get_current_user
+from services.activity import track_activity
 from services.clinical_content import get_published_case, serialize_case
 
 router = APIRouter(prefix="/simulacoes", tags=["Simulação Clínica 2.0"])
@@ -75,6 +76,7 @@ def finalizar_simulacao(
         pontuacao=total_score,
     )
     db.add(entry)
+    track_activity(db, current_user.id, "conclusao", "caso_clinico", caso_id)
     register_clinical_result(
         db,
         current_user.id,

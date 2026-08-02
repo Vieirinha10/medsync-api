@@ -79,6 +79,7 @@ class CasoClinico(BaseModel):
     especialidade: str
     nivel_dificuldade: str
     avaliacao_2_disponivel: bool = False
+    premium: bool = False
 
 
 class CasoClinicoDetalhes(CasoClinico):
@@ -168,3 +169,101 @@ class LearningPathProgressResponse(BaseModel):
     melhor_pontuacao: int
     concluido_em: datetime
     ultima_tentativa_em: datetime
+
+
+class AdminClinicalExam(BaseModel):
+    codigo: str = Field(min_length=1, max_length=80)
+    nome: str = Field(min_length=2, max_length=240)
+    resultado: str = Field(min_length=2, max_length=5000)
+    referencia_adequada: bool = True
+
+
+class AdminClinicalCaseUpsert(BaseModel):
+    titulo: str = Field(min_length=3, max_length=200)
+    especialidade: str = Field(min_length=2, max_length=120)
+    nivel_dificuldade: Literal["Fácil", "Médio", "Difícil"]
+    historia_clinica: str = Field(min_length=10, max_length=10000)
+    exame_fisico: str = Field(min_length=5, max_length=10000)
+    status: Literal["rascunho", "publicado", "arquivado"] = "rascunho"
+    premium: bool = False
+    exames: list[AdminClinicalExam] = Field(default_factory=list)
+    rubrica: dict[str, Any] | None = None
+
+
+class AdminClinicalCaseResponse(AdminClinicalCaseUpsert):
+    id: int
+    versao_conteudo: int
+    avaliacao_2_disponivel: bool
+    updated_at: datetime
+
+
+class AdminVisualChallengeUpsert(BaseModel):
+    id: str = Field(pattern=r"^[a-z0-9-]+$", min_length=3, max_length=120)
+    titulo: str = Field(min_length=3, max_length=240)
+    especialidade: str = Field(min_length=2, max_length=120)
+    dificuldade: Literal["Fácil", "Médio", "Difícil"]
+    modalidade: str = Field(min_length=2, max_length=80)
+    pergunta: str = Field(min_length=5, max_length=2000)
+    imagem_url: str = Field(min_length=3, max_length=1000)
+    imagem_alt: str = Field(min_length=3, max_length=500)
+    alternativas: list[str] = Field(min_length=4, max_length=4)
+    alternativa_correta: int = Field(ge=0, le=3)
+    diagnostico_correto: str = Field(min_length=2, max_length=500)
+    explicacao: str = Field(min_length=10, max_length=5000)
+    achados_chave: list[str] = Field(default_factory=list, max_length=10)
+    fonte_credito: str = Field(default="MedSync", max_length=240)
+    fonte_licenca: str = Field(default="Uso educacional", max_length=120)
+    fonte_url: str = Field(default="#", max_length=1000)
+    status: Literal["rascunho", "publicado", "arquivado"] = "rascunho"
+
+
+class AdminVisualChallengeResponse(AdminVisualChallengeUpsert):
+    created_at: datetime
+    updated_at: datetime
+
+
+class AnnouncementUpsert(BaseModel):
+    titulo: str = Field(min_length=3, max_length=180)
+    mensagem: str = Field(min_length=5, max_length=3000)
+    tom: Literal["informativo", "sucesso", "atencao", "urgente"] = "informativo"
+    link_texto: str | None = Field(default=None, max_length=100)
+    link_url: str | None = Field(default=None, max_length=500)
+    ativo: bool = True
+    inicia_em: datetime | None = None
+    termina_em: datetime | None = None
+
+
+class AnnouncementResponse(AnnouncementUpsert):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdminContentMetric(BaseModel):
+    tipo: Literal["caso_clinico", "desafio_visual"]
+    id: str
+    titulo: str
+    acessos: int
+    conclusoes: int
+
+
+class AdminDailyMetric(BaseModel):
+    data: str
+    usuarios: int
+    eventos: int
+
+
+class AdminOverviewResponse(BaseModel):
+    total_usuarios: int
+    ativos_7_dias: int
+    ativos_30_dias: int
+    novos_30_dias: int
+    taxa_conclusao: float
+    retencao_7_dias: float
+    casos_publicados: int
+    desafios_publicados: int
+    avisos_ativos: int
+    conteudos_populares: list[AdminContentMetric]
+    atividade_diaria: list[AdminDailyMetric]
