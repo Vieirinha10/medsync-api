@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,11 +15,22 @@ from routers import (
     system,
     users,
 )
+from services.database_bootstrap import prepare_database
 from settings import cors_origins, rate_limit_enabled
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    prepare_database()
+    yield
+
+
 def create_app() -> FastAPI:
-    application = FastAPI(title="API MEDSYNC", version="0.4.0")
+    application = FastAPI(
+        title="API MEDSYNC",
+        version="0.4.1",
+        lifespan=lifespan,
+    )
     origins = cors_origins()
     application.add_middleware(
         CORSMiddleware,
