@@ -26,6 +26,8 @@ A API inicia em `http://127.0.0.1:8000` e a documentação interativa fica em
 - `CORS_ORIGINS`: origens permitidas, separadas por vírgula.
 - `RATE_LIMIT_ENABLED`: ativa limites para cadastro, login e avaliações; o padrão
   é `true` em produção e `false` no desenvolvimento.
+- `ADMIN_EMAILS`: lista separada por vírgulas dos e-mails autorizados a acessar
+  os indicadores acadêmicos agregados.
 
 Em produção, configure um PostgreSQL persistente. O SQLite padrão é destinado
 somente ao desenvolvimento local.

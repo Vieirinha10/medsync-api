@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from middleware import RateLimitMiddleware, SecurityAndObservabilityMiddleware
-from routers import cases, progress, simulations, system, users
+from routers import admin, cases, progress, simulations, system, users
 from settings import cors_origins, rate_limit_enabled
 
 
 def create_app() -> FastAPI:
-    application = FastAPI(title="API MEDSYNC", version="0.3.0")
+    application = FastAPI(title="API MEDSYNC", version="0.4.0")
     origins = cors_origins()
     application.add_middleware(
         CORSMiddleware,
@@ -27,6 +27,7 @@ def create_app() -> FastAPI:
     application.include_router(cases.router)
     application.include_router(simulations.router)
     application.include_router(progress.router)
+    application.include_router(admin.router)
     return application
 
 
