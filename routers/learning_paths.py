@@ -18,11 +18,11 @@ from security import get_current_user
 router = APIRouter(prefix="/trilhas", tags=["Trilhas de Aprendizagem"])
 
 
-def _progress_map(db: Session, user_id: int) -> dict[tuple[str, str], LearningPathProgress]:
+def _progress_map(
+    db: Session, user_id: int
+) -> dict[tuple[str, str], LearningPathProgress]:
     entries = db.scalars(
-        select(LearningPathProgress).where(
-            LearningPathProgress.id_usuario == user_id
-        )
+        select(LearningPathProgress).where(LearningPathProgress.id_usuario == user_id)
     ).all()
     return {(entry.trilha_id, entry.atividade_id): entry for entry in entries}
 
@@ -85,7 +85,9 @@ def complete_learning_activity(
         raise HTTPException(status_code=404, detail="Trilha não encontrada.")
     activity = get_learning_activity(path, activity_id)
     if activity is None:
-        raise HTTPException(status_code=404, detail="Atividade não encontrada na trilha.")
+        raise HTTPException(
+            status_code=404, detail="Atividade não encontrada na trilha."
+        )
 
     entry = db.scalar(
         select(LearningPathProgress).where(
@@ -109,9 +111,7 @@ def complete_learning_activity(
         db.add(entry)
     else:
         entry.tentativas += 1
-        entry.melhor_pontuacao = max(
-            entry.melhor_pontuacao, completion.pontuacao
-        )
+        entry.melhor_pontuacao = max(entry.melhor_pontuacao, completion.pontuacao)
         entry.ultima_tentativa_em = now
 
     db.commit()

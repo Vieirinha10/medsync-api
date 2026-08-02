@@ -142,10 +142,13 @@ def test_registration_requires_valid_academic_profile():
 
 def test_academic_analytics_are_restricted_and_aggregated():
     regular_token = _register_and_login("usuario-comum@example.com")
-    assert client.get(
-        "/admin/analytics/academico",
-        headers={"Authorization": f"Bearer {regular_token}"},
-    ).status_code == 403
+    assert (
+        client.get(
+            "/admin/analytics/academico",
+            headers={"Authorization": f"Bearer {regular_token}"},
+        ).status_code
+        == 403
+    )
 
     os.environ["ADMIN_EMAILS"] = "administrador@example.com"
     admin_token = _register_and_login("administrador@example.com")
@@ -330,7 +333,9 @@ def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():
     assert len(notebook.json()) == 1
     assert notebook.json()[0]["tipo_origem"] == "caso_clinico"
     assert notebook.json()[0]["id_origem"] == "8"
-    assert notebook.json()[0]["detalhes"]["pontuacao_total"] == result["pontuacao_total"]
+    assert (
+        notebook.json()[0]["detalhes"]["pontuacao_total"] == result["pontuacao_total"]
+    )
 
 
 def test_error_notebook_tracks_recurrence_status_mastery_and_user_isolation():

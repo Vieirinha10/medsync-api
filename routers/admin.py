@@ -32,17 +32,23 @@ def academic_analytics(
     db: Session = Depends(get_db),
 ):
     total_users = db.scalar(select(func.count(User.id))) or 0
-    completed_profiles = db.scalar(
-        select(func.count(User.id)).where(
-            User.periodo_curso.is_not(None),
-            User.faculdade.is_not(None),
+    completed_profiles = (
+        db.scalar(
+            select(func.count(User.id)).where(
+                User.periodo_curso.is_not(None),
+                User.faculdade.is_not(None),
+            )
         )
-    ) or 0
-    new_users = db.scalar(
-        select(func.count(User.id)).where(
-            User.created_at >= datetime.now(UTC) - timedelta(days=30)
+        or 0
+    )
+    new_users = (
+        db.scalar(
+            select(func.count(User.id)).where(
+                User.created_at >= datetime.now(UTC) - timedelta(days=30)
+            )
         )
-    ) or 0
+        or 0
+    )
 
     period_rows = db.execute(
         select(User.periodo_curso, func.count(User.id))
