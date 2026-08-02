@@ -128,6 +128,7 @@ def serialize_case(case: ClinicalCase, *, include_details: bool = True) -> dict:
         "avaliacao_2_disponivel": bool(
             case.rubrica and case.rubrica.status == "revisada"
         ),
+        "premium": case.is_premium,
     }
     if include_details:
         data.update(

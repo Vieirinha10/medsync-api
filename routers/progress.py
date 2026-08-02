@@ -6,6 +6,7 @@ from database import get_db
 from models import Progresso, User
 from schemas import ProgressoCreate, ProgressoResetResponse, ProgressoResponse
 from security import get_current_user
+from services.activity import track_activity
 from services.clinical_content import get_published_case
 
 router = APIRouter(prefix="/progresso", tags=["Progresso do Usuário"])
@@ -23,6 +24,7 @@ def registrar_progresso(
         raise HTTPException(status_code=404, detail="Caso não encontrado.")
     entry = Progresso(id_usuario=current_user.id, **progresso.model_dump())
     db.add(entry)
+    track_activity(db, current_user.id, "conclusao", "caso_clinico", progresso.id_caso)
     db.commit()
     db.refresh(entry)
     return entry

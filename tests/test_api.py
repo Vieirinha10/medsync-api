@@ -176,6 +176,124 @@ def test_academic_analytics_are_restricted_and_aggregated():
     assert "email" not in response.text
 
 
+def test_admin_operations_manage_content_metrics_announcements_and_export():
+    regular_token = _register_and_login("operacao-comum@example.com")
+    assert (
+        client.get(
+            "/admin/overview",
+            headers={"Authorization": f"Bearer {regular_token}"},
+        ).status_code
+        == 403
+    )
+
+    os.environ["ADMIN_EMAILS"] = "operacoes-admin@example.com"
+    admin_token = _register_and_login("operacoes-admin@example.com")
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    overview = client.get("/admin/overview", headers=headers)
+    assert overview.status_code == 200
+    assert overview.json()["total_usuarios"] >= 2
+    assert "retencao_7_dias" in overview.json()
+
+    new_case = client.post(
+        "/admin/casos",
+        headers=headers,
+        json={
+            "titulo": "Dor torácica em adulto jovem",
+            "especialidade": "Cardiologia",
+            "nivel_dificuldade": "Médio",
+            "historia_clinica": "Paciente adulto jovem com dor torácica ventilatório-dependente.",
+            "exame_fisico": "Paciente estável, sem sinais de choque.",
+            "status": "rascunho",
+            "premium": True,
+            "exames": [
+                {
+                    "codigo": "ecg_admin",
+                    "nome": "Eletrocardiograma",
+                    "resultado": "Ritmo sinusal sem alterações isquêmicas.",
+                    "referencia_adequada": True,
+                }
+            ],
+            "rubrica": None,
+        },
+    )
+    assert new_case.status_code == 201
+    assert new_case.json()["premium"] is True
+    assert new_case.json()["status"] == "rascunho"
+    case_payload = new_case.json()
+    update_payload = {
+        key: case_payload[key]
+        for key in (
+            "titulo",
+            "especialidade",
+            "nivel_dificuldade",
+            "historia_clinica",
+            "exame_fisico",
+            "premium",
+            "exames",
+            "rubrica",
+        )
+    }
+    update_payload["status"] = "publicado"
+    updated_case = client.put(
+        f"/admin/casos/{new_case.json()['id']}",
+        headers=headers,
+        json=update_payload,
+    )
+    assert updated_case.status_code == 200
+    assert updated_case.json()["versao_conteudo"] == 2
+    assert updated_case.json()["status"] == "publicado"
+
+    challenge_payload = {
+        "id": "admin-radiografia-teste",
+        "titulo": "Radiografia cadastrada pelo painel",
+        "especialidade": "Radiologia",
+        "dificuldade": "Fácil",
+        "modalidade": "Radiografia",
+        "pergunta": "Qual é o diagnóstico mais provável nesta imagem?",
+        "imagem_url": "https://example.com/radiografia.webp",
+        "imagem_alt": "Radiografia de tórax para desafio educacional",
+        "alternativas": ["Pneumonia", "Pneumotórax", "Derrame", "Normal"],
+        "alternativa_correta": 0,
+        "diagnostico_correto": "Pneumonia",
+        "explicacao": "A consolidação focal com broncograma aéreo favorece pneumonia.",
+        "achados_chave": ["Consolidação", "Broncograma aéreo"],
+        "fonte_credito": "MedSync",
+        "fonte_licenca": "Uso educacional",
+        "fonte_url": "#",
+        "status": "publicado",
+    }
+    challenge = client.post("/admin/desafios", headers=headers, json=challenge_payload)
+    assert challenge.status_code == 201
+    public_challenges = client.get("/desafios-visuais", headers=headers)
+    assert public_challenges.status_code == 200
+    assert (
+        public_challenges.json()[0]["alternativas"] == challenge_payload["alternativas"]
+    )
+
+    announcement = client.post(
+        "/admin/avisos",
+        headers=headers,
+        json={
+            "titulo": "Nova trilha disponível",
+            "mensagem": "Conheça a nova sequência de casos cardiológicos.",
+            "tom": "informativo",
+            "ativo": True,
+        },
+    )
+    assert announcement.status_code == 201
+    assert (
+        client.get("/avisos", headers=headers).json()[0]["titulo"]
+        == "Nova trilha disponível"
+    )
+
+    report = client.get("/admin/relatorios/anonimizado.csv", headers=headers)
+    os.environ.pop("ADMIN_EMAILS")
+    assert report.status_code == 200
+    assert "usuario_anonimo" in report.text
+    assert "operacoes-admin@example.com" not in report.text
+
+
 def test_protected_routes_require_a_valid_token():
     assert client.get("/casos-clinicos/").status_code == 401
     assert (

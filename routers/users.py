@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -12,6 +14,7 @@ from security import (
     hash_password,
     verify_password,
 )
+from services.activity import track_activity
 from settings import is_admin_email
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
@@ -61,6 +64,9 @@ def login_usuario(form_data: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou senha incorretos.",
         )
+    user.last_login_at = datetime.now(UTC)
+    track_activity(db, user.id, "login")
+    db.commit()
     return {"access_token": create_access_token(user.id), "token_type": "bearer"}
 
 
