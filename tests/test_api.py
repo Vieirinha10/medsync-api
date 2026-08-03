@@ -195,6 +195,14 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
     assert overview.json()["total_usuarios"] >= 2
     assert "retencao_7_dias" in overview.json()
 
+    case_catalog = client.get("/admin/casos", headers=headers)
+    assert case_catalog.status_code == 200
+    assert len(case_catalog.json()) == 40
+    assert {item["nivel_dificuldade"] for item in case_catalog.json()} >= {
+        "Intermediário",
+        "Crítico",
+    }
+
     new_case = client.post(
         "/admin/casos",
         headers=headers,
