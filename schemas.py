@@ -181,7 +181,7 @@ class AdminClinicalExam(BaseModel):
 class AdminClinicalCaseUpsert(BaseModel):
     titulo: str = Field(min_length=3, max_length=200)
     especialidade: str = Field(min_length=2, max_length=120)
-    nivel_dificuldade: Literal["Fácil", "Médio", "Difícil"]
+    nivel_dificuldade: Literal["Fácil", "Médio", "Intermediário", "Difícil", "Crítico"]
     historia_clinica: str = Field(min_length=10, max_length=10000)
     exame_fisico: str = Field(min_length=5, max_length=10000)
     status: Literal["rascunho", "publicado", "arquivado"] = "rascunho"
