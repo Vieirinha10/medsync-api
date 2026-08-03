@@ -33,17 +33,21 @@ def create_app() -> FastAPI:
     )
     origins = cors_origins()
     application.add_middleware(
+        SecurityAndObservabilityMiddleware,
+    )
+    application.add_middleware(
+        RateLimitMiddleware,
+        enabled=rate_limit_enabled(),
+    )
+    # O CORS deve ser a camada externa para incluir os cabeçalhos também
+    # quando uma rota falhar antes de produzir uma resposta normal.
+    application.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials="*" not in origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.add_middleware(
-        RateLimitMiddleware,
-        enabled=rate_limit_enabled(),
-    )
-    application.add_middleware(SecurityAndObservabilityMiddleware)
 
     application.include_router(system.router)
     application.include_router(users.router)
