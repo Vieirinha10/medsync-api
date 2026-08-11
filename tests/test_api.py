@@ -182,6 +182,29 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     webhook_headers = {
         "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
     }
+    checkout_paid = {
+        "id": "evt_checkout_recurring_paid_123",
+        "event": "CHECKOUT_PAID",
+        "checkout": {"id": "checkout_sandbox_123", "status": "PAID"},
+    }
+    assert client.post(
+        "/pagamentos/webhooks/asaas",
+        json=checkout_paid,
+        headers=webhook_headers,
+    ).status_code == 200
+    checkout_expiry = client.get(
+        f"/pagamentos/pedidos/{order_id}", headers=headers
+    ).json()["premium_valido_ate"]
+    replay = client.post(
+        "/pagamentos/webhooks/asaas",
+        json=checkout_paid,
+        headers=webhook_headers,
+    )
+    assert replay.json()["duplicate"] is True
+    assert client.get(
+        f"/pagamentos/pedidos/{order_id}", headers=headers
+    ).json()["premium_valido_ate"] == checkout_expiry
+
     first = client.post(
         "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
     )
@@ -195,6 +218,7 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     assert status_response.json()["status"] == "pago"
     assert status_response.json()["premium_ativo"] is True
     expiry = status_response.json()["premium_valido_ate"]
+    assert expiry == checkout_expiry
 
     duplicate = client.post(
         "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
