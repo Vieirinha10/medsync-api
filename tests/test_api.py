@@ -140,6 +140,87 @@ def test_registration_requires_valid_academic_profile():
     assert client.post("/usuarios/registrar", json=payload).status_code == 422
 
 
+def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
+    token = _register_and_login("pagamentos@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    captured = {}
+
+    def fake_checkout(payload):
+        captured.update(payload)
+        return {
+            "id": "checkout_sandbox_123",
+            "link": "https://sandbox.asaas.com/checkoutSession/show?id=checkout_sandbox_123",
+            "status": "ACTIVE",
+        }
+
+    monkeypatch.setattr("routers.payments.create_checkout", fake_checkout)
+    checkout = client.post(
+        "/pagamentos/checkout",
+        headers=headers,
+        json={"plano_id": "recorrente"},
+    )
+    assert checkout.status_code == 201
+    order_id = checkout.json()["pedido_id"]
+    assert captured["externalReference"] == order_id
+    assert captured["billingTypes"] == ["CREDIT_CARD"]
+    assert captured["chargeTypes"] == ["RECURRENT"]
+    assert captured["items"][0]["value"] == 23.9
+    assert captured["subscription"]["cycle"] == "MONTHLY"
+
+    os.environ["ASAAS_WEBHOOK_TOKEN"] = "token-webhook-seguro-com-mais-de-32-caracteres"
+    event = {
+        "id": "evt_payment_confirmed_123",
+        "event": "PAYMENT_CONFIRMED",
+        "payment": {
+            "id": "pay_123",
+            "externalReference": order_id,
+            "subscription": "sub_123",
+        },
+    }
+    assert client.post("/pagamentos/webhooks/asaas", json=event).status_code == 401
+    webhook_headers = {
+        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
+    }
+    first = client.post(
+        "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
+    )
+    assert first.status_code == 200
+    assert first.json()["duplicate"] is False
+
+    status_response = client.get(
+        f"/pagamentos/pedidos/{order_id}", headers=headers
+    )
+    assert status_response.status_code == 200
+    assert status_response.json()["status"] == "pago"
+    assert status_response.json()["premium_ativo"] is True
+    expiry = status_response.json()["premium_valido_ate"]
+
+    duplicate = client.post(
+        "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
+    )
+    assert duplicate.json()["duplicate"] is True
+    assert (
+        client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()[
+            "premium_valido_ate"
+        ]
+        == expiry
+    )
+    me = client.get("/usuarios/me", headers=headers).json()
+    assert me["premium_ativo"] is True
+    assert me["premium_plano"] == "recorrente"
+    os.environ.pop("ASAAS_WEBHOOK_TOKEN")
+
+
+def test_checkout_rejects_unknown_plan():
+    token = _register_and_login("plano-invalido@example.com")
+    response = client.post(
+        "/pagamentos/checkout",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"plano_id": "vitalicio"},
+    )
+    assert response.status_code == 422
+
+
 def test_academic_analytics_are_restricted_and_aggregated():
     regular_token = _register_and_login("usuario-comum@example.com")
     assert (

@@ -21,6 +21,15 @@ router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 
 
 def user_response(user: User) -> dict[str, object]:
+    entitlement = user.entitlement
+    premium_expiry = entitlement.valido_ate if entitlement else None
+    if premium_expiry and premium_expiry.tzinfo is None:
+        premium_expiry = premium_expiry.replace(tzinfo=UTC)
+    premium_active = bool(
+        entitlement
+        and entitlement.status == "ativo"
+        and premium_expiry > datetime.now(UTC)
+    )
     return {
         "id": user.id,
         "nome": user.nome,
@@ -28,6 +37,9 @@ def user_response(user: User) -> dict[str, object]:
         "periodo_curso": user.periodo_curso,
         "faculdade": user.faculdade,
         "is_admin": is_admin_email(user.email),
+        "premium_ativo": premium_active,
+        "premium_plano": entitlement.plano_id if premium_active else None,
+        "premium_valido_ate": premium_expiry if premium_active else None,
         "created_at": user.created_at,
     }
 
