@@ -23,7 +23,8 @@ def create_checkout(payload: dict[str, Any]) -> dict[str, Any]:
     api_key = asaas_api_key()
     if not api_key:
         raise AsaasConfigurationError(
-            "O checkout ainda não foi ativado. Configure a chave Sandbox da Asaas."
+            f"O checkout {asaas_environment()} ainda não foi ativado. "
+            "Configure a chave correspondente da Asaas."
         )
 
     try:

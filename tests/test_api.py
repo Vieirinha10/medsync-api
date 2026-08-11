@@ -325,6 +325,24 @@ def test_quarterly_checkout_supports_up_to_three_installments(monkeypatch):
     assert captured["items"][0]["value"] == 65.9
 
 
+def test_production_never_falls_back_to_sandbox_credentials(monkeypatch):
+    from settings import asaas_api_key, asaas_webhook_token
+
+    monkeypatch.setenv("ASAAS_ENVIRONMENT", "production")
+    monkeypatch.setenv("ASAAS_API_KEY", "legacy-sandbox-key")
+    monkeypatch.setenv("ASAAS_WEBHOOK_TOKEN", "legacy-sandbox-token")
+    monkeypatch.delenv("ASAAS_PRODUCTION_API_KEY", raising=False)
+    monkeypatch.delenv("ASAAS_PRODUCTION_WEBHOOK_TOKEN", raising=False)
+
+    assert asaas_api_key() is None
+    assert asaas_webhook_token() is None
+
+    monkeypatch.setenv("ASAAS_PRODUCTION_API_KEY", "$aact_prod_example")
+    monkeypatch.setenv("ASAAS_PRODUCTION_WEBHOOK_TOKEN", "production-token")
+    assert asaas_api_key() == "$aact_prod_example"
+    assert asaas_webhook_token() == "production-token"
+
+
 def test_academic_analytics_are_restricted_and_aggregated():
     regular_token = _register_and_login("usuario-comum@example.com")
     assert (
