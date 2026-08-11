@@ -72,9 +72,12 @@ def _callback(order_id: str, result: str) -> str:
 
 def _checkout_payload(order: PaymentOrder) -> dict[str, Any]:
     plan = PLANS[order.plano_id]
+    charge_types = [plan["charge_type"]]
+    if order.plano_id == "trimestral":
+        charge_types.insert(0, "DETACHED")
     payload: dict[str, Any] = {
         "billingTypes": [plan["billing_type"]],
-        "chargeTypes": [plan["charge_type"]],
+        "chargeTypes": charge_types,
         "minutesToExpire": 60,
         "externalReference": order.id,
         "callback": {
