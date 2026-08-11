@@ -174,8 +174,18 @@ def _grant_access(db: Session, order: PaymentOrder, payment: dict[str, Any]) -> 
     payment_id = str(payment.get("id") or "")
     if not payment_id or db.get(PaymentGrant, payment_id):
         return
-    if order.plano_id != "recorrente" and order.status == "pago":
-        return
+
+    is_checkout_grant = payment_id.startswith("checkout:")
+    if order.status == "pago":
+        if is_checkout_grant or order.plano_id != "recorrente":
+            return
+        if str(order.ultimo_pagamento_asaas_id or "").startswith("checkout:"):
+            entitlement = db.get(UserEntitlement, order.id_usuario)
+            if entitlement and payment.get("subscription"):
+                entitlement.asaas_subscription_id = payment["subscription"]
+            order.ultimo_pagamento_asaas_id = payment_id
+            db.add(PaymentGrant(asaas_payment_id=payment_id, pedido_id=order.id))
+            return
 
     now = datetime.now(UTC)
     entitlement = db.get(UserEntitlement, order.id_usuario)
@@ -223,11 +233,12 @@ async def receive_asaas_webhook(
     event_type = str(payload.get("event") or "")
     if not event_id or not event_type:
         raise HTTPException(status_code=422, detail="Evento da Asaas inválido.")
-    if db.get(AsaasWebhookEvent, event_id):
+    duplicate_event = db.get(AsaasWebhookEvent, event_id)
+    if duplicate_event and event_type != "CHECKOUT_PAID":
         return {"received": True, "duplicate": True}
-
-    event = AsaasWebhookEvent(id=event_id, tipo=event_type, payload=payload)
-    db.add(event)
+    if duplicate_event is None:
+        event = AsaasWebhookEvent(id=event_id, tipo=event_type, payload=payload)
+        db.add(event)
 
     checkout = payload.get("checkout") or {}
     payment = payload.get("payment") or {}
@@ -250,14 +261,11 @@ async def receive_asaas_webhook(
         if event_type in checkout_statuses:
             order.status = checkout_statuses[event_type]
         elif event_type == "CHECKOUT_PAID":
-            if order.plano_id == "recorrente":
-                order.status = "checkout_pago"
-            else:
-                _grant_access(
-                    db,
-                    order,
-                    {"id": f"checkout:{checkout_id}"},
-                )
+            _grant_access(
+                db,
+                order,
+                {"id": f"checkout:{checkout_id}"},
+            )
         elif event_type in PAID_EVENTS:
             _grant_access(db, order, payment)
         elif event_type in SUSPENSION_EVENTS:
@@ -270,4 +278,4 @@ async def receive_asaas_webhook(
                 entitlement.status = "suspenso"
 
     db.commit()
-    return {"received": True, "duplicate": False}
+    return {"received": True, "duplicate": duplicate_event is not None}
