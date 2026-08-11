@@ -33,7 +33,9 @@ def upgrade() -> None:
             sa.Column("paid_at", sa.DateTime(timezone=True)),
             sa.ForeignKeyConstraint(["id_usuario"], ["users.id"], ondelete="CASCADE"),
         )
-        op.create_index("ix_payment_orders_id_usuario", "payment_orders", ["id_usuario"])
+        op.create_index(
+            "ix_payment_orders_id_usuario", "payment_orders", ["id_usuario"]
+        )
         op.create_index("ix_payment_orders_plano_id", "payment_orders", ["plano_id"])
         op.create_index("ix_payment_orders_status", "payment_orders", ["status"])
         op.create_index(
@@ -56,7 +58,9 @@ def upgrade() -> None:
             sa.ForeignKeyConstraint(["id_usuario"], ["users.id"], ondelete="CASCADE"),
         )
         op.create_index("ix_user_entitlements_status", "user_entitlements", ["status"])
-        op.create_index("ix_user_entitlements_valido_ate", "user_entitlements", ["valido_ate"])
+        op.create_index(
+            "ix_user_entitlements_valido_ate", "user_entitlements", ["valido_ate"]
+        )
         op.create_index(
             "ix_user_entitlements_asaas_subscription_id",
             "user_entitlements",
@@ -83,7 +87,9 @@ def upgrade() -> None:
             sa.Column("payload", sa.JSON(), nullable=False),
             sa.Column("processed_at", sa.DateTime(timezone=True), nullable=False),
         )
-        op.create_index("ix_asaas_webhook_events_tipo", "asaas_webhook_events", ["tipo"])
+        op.create_index(
+            "ix_asaas_webhook_events_tipo", "asaas_webhook_events", ["tipo"]
+        )
 
 
 def downgrade() -> None:

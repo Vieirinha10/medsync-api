@@ -179,19 +179,20 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
         },
     }
     assert client.post("/pagamentos/webhooks/asaas", json=event).status_code == 401
-    webhook_headers = {
-        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
-    }
+    webhook_headers = {"asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]}
     checkout_paid = {
         "id": "evt_checkout_recurring_paid_123",
         "event": "CHECKOUT_PAID",
         "checkout": {"id": "checkout_sandbox_123", "status": "PAID"},
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas",
-        json=checkout_paid,
-        headers=webhook_headers,
-    ).status_code == 200
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas",
+            json=checkout_paid,
+            headers=webhook_headers,
+        ).status_code
+        == 200
+    )
     checkout_expiry = client.get(
         f"/pagamentos/pedidos/{order_id}", headers=headers
     ).json()["premium_valido_ate"]
@@ -201,9 +202,12 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
         headers=webhook_headers,
     )
     assert replay.json()["duplicate"] is True
-    assert client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    ).json()["premium_valido_ate"] == checkout_expiry
+    assert (
+        client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()[
+            "premium_valido_ate"
+        ]
+        == checkout_expiry
+    )
 
     first = client.post(
         "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
@@ -211,9 +215,7 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     assert first.status_code == 200
     assert first.json()["duplicate"] is False
 
-    status_response = client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    )
+    status_response = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers)
     assert status_response.status_code == 200
     assert status_response.json()["status"] == "pago"
     assert status_response.json()["premium_ativo"] is True
@@ -254,20 +256,19 @@ def test_checkout_paid_activates_detached_plan_without_double_grant(monkeypatch)
     order_id = checkout.json()["pedido_id"]
 
     os.environ["ASAAS_WEBHOOK_TOKEN"] = "token-webhook-seguro-com-mais-de-32-caracteres"
-    webhook_headers = {
-        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
-    }
+    webhook_headers = {"asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]}
     paid = {
         "id": "evt_checkout_paid_123",
         "event": "CHECKOUT_PAID",
         "checkout": {"id": "checkout_detached_123", "status": "PAID"},
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas", json=paid, headers=webhook_headers
-    ).status_code == 200
-    first_status = client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    ).json()
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas", json=paid, headers=webhook_headers
+        ).status_code
+        == 200
+    )
+    first_status = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()
     assert first_status["status"] == "pago"
     assert first_status["premium_ativo"] is True
 
@@ -279,9 +280,12 @@ def test_checkout_paid_activates_detached_plan_without_double_grant(monkeypatch)
             "externalReference": order_id,
         },
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas", json=payment, headers=webhook_headers
-    ).status_code == 200
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas", json=payment, headers=webhook_headers
+        ).status_code
+        == 200
+    )
     second_status = client.get(
         f"/pagamentos/pedidos/{order_id}", headers=headers
     ).json()
@@ -295,6 +299,125 @@ def test_checkout_rejects_unknown_plan():
         "/pagamentos/checkout",
         headers={"Authorization": f"Bearer {token}"},
         json={"plano_id": "vitalicio"},
+    )
+    assert response.status_code == 422
+
+
+def test_transparent_pix_returns_qr_code_without_redirect(monkeypatch):
+    token = _register_and_login("pix-transparente@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    captured = {}
+
+    monkeypatch.setattr(
+        "routers.payments.create_customer",
+        lambda payload: {"id": "cus_pix_123"},
+    )
+
+    def fake_payment(payload):
+        captured.update(payload)
+        return {"id": "pay_pix_123", "status": "PENDING"}
+
+    monkeypatch.setattr("routers.payments.create_payment", fake_payment)
+    monkeypatch.setattr(
+        "routers.payments.get_pix_qr_code",
+        lambda payment_id: {
+            "encodedImage": "base64-do-qr-code",
+            "payload": "000201-pix-copia-cola",
+            "expirationDate": "2026-08-12T23:59:00Z",
+        },
+    )
+    response = client.post(
+        "/pagamentos/transparente",
+        headers=headers,
+        json={
+            "plano_id": "avulso",
+            "pagador": {
+                "cpf_cnpj": "123.456.789-01",
+                "telefone": "(86) 99999-9999",
+                "cep": "64000-000",
+                "numero_endereco": "42",
+            },
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["forma_pagamento"] == "PIX"
+    assert response.json()["pix_qr_code"] == "base64-do-qr-code"
+    assert response.json()["pix_copia_cola"] == "000201-pix-copia-cola"
+    assert captured["billingType"] == "PIX"
+    assert captured["value"] == 25.9
+    assert captured["externalReference"] == response.json()["pedido_id"]
+
+
+def test_transparent_recurring_card_forwards_secrets_without_persisting_them(
+    monkeypatch,
+):
+    token = _register_and_login("cartao-transparente@example.com")
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "x-forwarded-for": "203.0.113.55",
+    }
+    captured = {}
+    monkeypatch.setattr(
+        "routers.payments.create_customer",
+        lambda payload: {"id": "cus_card_123"},
+    )
+
+    def fake_subscription(payload):
+        captured.update(payload)
+        return {"id": "sub_card_123", "status": "ACTIVE"}
+
+    monkeypatch.setattr("routers.payments.create_subscription", fake_subscription)
+    response = client.post(
+        "/pagamentos/transparente",
+        headers=headers,
+        json={
+            "plano_id": "recorrente",
+            "pagador": {
+                "cpf_cnpj": "12345678901",
+                "telefone": "86999999999",
+                "cep": "64000000",
+                "numero_endereco": "42",
+                "complemento": "Apto 2",
+            },
+            "cartao": {
+                "titular": "Aluno MedSync",
+                "numero": "4444 4444 4444 4444",
+                "mes_validade": "12",
+                "ano_validade": "2030",
+                "ccv": "123",
+            },
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "aguardando_confirmacao"
+    assert captured["billingType"] == "CREDIT_CARD"
+    assert captured["creditCard"]["number"] == "4444444444444444"
+    assert captured["remoteIp"] == "203.0.113.55"
+    assert captured["cycle"] == "MONTHLY"
+    assert "dueDate" not in captured
+
+    order_id = response.json()["pedido_id"]
+    order = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()
+    serialized = str(order)
+    assert "4444444444444444" not in serialized
+
+
+def test_transparent_checkout_validates_plan_payment_method():
+    token = _register_and_login("checkout-validacao@example.com")
+    response = client.post(
+        "/pagamentos/transparente",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "plano_id": "recorrente",
+            "pagador": {
+                "cpf_cnpj": "12345678901",
+                "telefone": "86999999999",
+                "cep": "64000000",
+                "numero_endereco": "42",
+            },
+        },
     )
     assert response.status_code == 422
 
@@ -678,9 +801,7 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
         "conduta": 30,
     }
     assert result["fonte_feedback"] == "agente_regras"
-    assert result["diagnostico_referencia"].startswith(
-        "Tromboembolismo pulmonar agudo"
-    )
+    assert result["diagnostico_referencia"].startswith("Tromboembolismo pulmonar agudo")
     assert result["exames"]["essenciais_ausentes"] == []
     assert result["exames"]["desnecessarios"] == []
     assert result["feedback"]["feedback_seguranca"]

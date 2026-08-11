@@ -7,6 +7,7 @@ from pydantic import (
     ConfigDict,
     EmailStr,
     Field,
+    SecretStr,
     field_validator,
     model_validator,
 )
@@ -15,7 +16,9 @@ from pydantic import (
 def _normalized_spoiler_text(value: str) -> str:
     decomposed = unicodedata.normalize("NFD", value.casefold())
     return " ".join(
-        "".join(char for char in decomposed if unicodedata.category(char) != "Mn").split()
+        "".join(
+            char for char in decomposed if unicodedata.category(char) != "Mn"
+        ).split()
     )
 
 
@@ -344,6 +347,106 @@ class CheckoutResponse(BaseModel):
     pedido_id: str
     checkout_url: str
     status: str
+
+
+class TransparentPayer(BaseModel):
+    cpf_cnpj: str
+    telefone: str
+    cep: str
+    numero_endereco: str = Field(min_length=1, max_length=20)
+    complemento: str | None = Field(default=None, max_length=80)
+
+    @field_validator("cpf_cnpj")
+    @classmethod
+    def validate_document(cls, value: str) -> str:
+        digits = "".join(char for char in value if char.isdigit())
+        if len(digits) not in {11, 14}:
+            raise ValueError("Informe um CPF ou CNPJ válido.")
+        return digits
+
+    @field_validator("telefone")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        digits = "".join(char for char in value if char.isdigit())
+        if len(digits) not in {10, 11}:
+            raise ValueError("Informe um telefone com DDD.")
+        return digits
+
+    @field_validator("cep")
+    @classmethod
+    def validate_postal_code(cls, value: str) -> str:
+        digits = "".join(char for char in value if char.isdigit())
+        if len(digits) != 8:
+            raise ValueError("Informe um CEP válido.")
+        return digits
+
+
+class TransparentCard(BaseModel):
+    titular: str = Field(min_length=3, max_length=120)
+    numero: SecretStr
+    mes_validade: str
+    ano_validade: str
+    ccv: SecretStr
+
+    @field_validator("numero")
+    @classmethod
+    def validate_card_number(cls, value: SecretStr) -> SecretStr:
+        digits = "".join(char for char in value.get_secret_value() if char.isdigit())
+        if len(digits) < 13 or len(digits) > 19:
+            raise ValueError("Número de cartão inválido.")
+        return SecretStr(digits)
+
+    @field_validator("mes_validade")
+    @classmethod
+    def validate_expiry_month(cls, value: str) -> str:
+        digits = "".join(char for char in value if char.isdigit()).zfill(2)
+        if len(digits) != 2 or not 1 <= int(digits) <= 12:
+            raise ValueError("Mês de validade inválido.")
+        return digits
+
+    @field_validator("ano_validade")
+    @classmethod
+    def validate_expiry_year(cls, value: str) -> str:
+        digits = "".join(char for char in value if char.isdigit())
+        if len(digits) == 2:
+            digits = f"20{digits}"
+        if len(digits) != 4:
+            raise ValueError("Ano de validade inválido.")
+        return digits
+
+    @field_validator("ccv")
+    @classmethod
+    def validate_ccv(cls, value: SecretStr) -> SecretStr:
+        digits = "".join(char for char in value.get_secret_value() if char.isdigit())
+        if len(digits) not in {3, 4}:
+            raise ValueError("Código de segurança inválido.")
+        return SecretStr(digits)
+
+
+class TransparentPaymentCreate(BaseModel):
+    plano_id: Literal["avulso", "recorrente", "trimestral"]
+    pagador: TransparentPayer
+    cartao: TransparentCard | None = None
+    parcelas: int = Field(default=1, ge=1, le=3)
+
+    @model_validator(mode="after")
+    def validate_payment_method(self):
+        if self.plano_id == "avulso" and self.cartao is not None:
+            raise ValueError("O plano avulso deve ser pago por Pix.")
+        if self.plano_id in {"recorrente", "trimestral"} and self.cartao is None:
+            raise ValueError("Informe os dados do cartão.")
+        if self.plano_id != "trimestral" and self.parcelas != 1:
+            raise ValueError("Este plano não permite parcelamento.")
+        return self
+
+
+class TransparentPaymentResponse(BaseModel):
+    pedido_id: str
+    forma_pagamento: Literal["PIX", "CREDIT_CARD"]
+    status: str
+    pix_qr_code: str | None = None
+    pix_copia_cola: str | None = None
+    pix_expira_em: datetime | None = None
 
 
 class PaymentStatusResponse(BaseModel):
