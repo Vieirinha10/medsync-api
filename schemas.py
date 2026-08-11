@@ -16,7 +16,9 @@ from pydantic import (
 def _normalized_spoiler_text(value: str) -> str:
     decomposed = unicodedata.normalize("NFD", value.casefold())
     return " ".join(
-        "".join(char for char in decomposed if unicodedata.category(char) != "Mn").split()
+        "".join(
+            char for char in decomposed if unicodedata.category(char) != "Mn"
+        ).split()
     )
 
 

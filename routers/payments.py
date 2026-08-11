@@ -152,7 +152,9 @@ def _payer_ip(request: Request) -> str:
     return request.client.host if request.client else "127.0.0.1"
 
 
-def _customer_payload(current_user: User, body: TransparentPaymentCreate) -> dict[str, Any]:
+def _customer_payload(
+    current_user: User, body: TransparentPaymentCreate
+) -> dict[str, Any]:
     payer = body.pagador
     return {
         "name": current_user.nome,
@@ -179,7 +181,9 @@ def _card_payload(body: TransparentPaymentCreate) -> dict[str, str]:
     }
 
 
-def _holder_payload(current_user: User, body: TransparentPaymentCreate) -> dict[str, str]:
+def _holder_payload(
+    current_user: User, body: TransparentPaymentCreate
+) -> dict[str, str]:
     payer = body.pagador
     return {
         "name": body.cartao.titular if body.cartao else current_user.nome,
@@ -319,7 +323,9 @@ def create_transparent_payment(
             )
             transaction_id = str(transaction.get("id") or "")
             if not transaction_id:
-                raise AsaasApiError("A Asaas não retornou o identificador da assinatura.")
+                raise AsaasApiError(
+                    "A Asaas não retornou o identificador da assinatura."
+                )
             order.ultimo_pagamento_asaas_id = transaction_id
         else:
             payment_payload = {**common_payload, **card_fields}
@@ -426,8 +432,10 @@ async def receive_asaas_webhook(
     db: Session = Depends(get_db),
 ):
     configured_token = asaas_webhook_token()
-    if not configured_token or not asaas_token or not hmac.compare_digest(
-        configured_token, asaas_token
+    if (
+        not configured_token
+        or not asaas_token
+        or not hmac.compare_digest(configured_token, asaas_token)
     ):
         raise HTTPException(status_code=401, detail="Webhook não autorizado.")
 
@@ -453,7 +461,9 @@ async def receive_asaas_webhook(
     if external_reference:
         order = db.get(PaymentOrder, str(external_reference))
     if order is None and checkout_id:
-        order = db.query(PaymentOrder).filter_by(asaas_checkout_id=str(checkout_id)).first()
+        order = (
+            db.query(PaymentOrder).filter_by(asaas_checkout_id=str(checkout_id)).first()
+        )
 
     if order:
         checkout_statuses = {
@@ -472,12 +482,11 @@ async def receive_asaas_webhook(
         elif event_type in PAID_EVENTS:
             _grant_access(db, order, payment)
         elif event_type in SUSPENSION_EVENTS:
-            order.status = "estornado" if event_type == "PAYMENT_REFUNDED" else "suspenso"
+            order.status = (
+                "estornado" if event_type == "PAYMENT_REFUNDED" else "suspenso"
+            )
             entitlement = db.get(UserEntitlement, order.id_usuario)
-            if (
-                entitlement
-                and order.ultimo_pagamento_asaas_id == payment.get("id")
-            ):
+            if entitlement and order.ultimo_pagamento_asaas_id == payment.get("id"):
                 entitlement.status = "suspenso"
 
     db.commit()

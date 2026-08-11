@@ -57,7 +57,8 @@ PUBLIC_CASE_TITLES = {
 
 def upgrade() -> None:
     columns = {
-        column["name"] for column in inspect(op.get_bind()).get_columns("clinical_cases")
+        column["name"]
+        for column in inspect(op.get_bind()).get_columns("clinical_cases")
     }
     if "titulo_publico" not in columns:
         with op.batch_alter_table("clinical_cases") as batch_op:
@@ -83,7 +84,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     columns = {
-        column["name"] for column in inspect(op.get_bind()).get_columns("clinical_cases")
+        column["name"]
+        for column in inspect(op.get_bind()).get_columns("clinical_cases")
     }
     if "titulo_publico" in columns:
         with op.batch_alter_table("clinical_cases") as batch_op:

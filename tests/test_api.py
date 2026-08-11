@@ -179,19 +179,20 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
         },
     }
     assert client.post("/pagamentos/webhooks/asaas", json=event).status_code == 401
-    webhook_headers = {
-        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
-    }
+    webhook_headers = {"asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]}
     checkout_paid = {
         "id": "evt_checkout_recurring_paid_123",
         "event": "CHECKOUT_PAID",
         "checkout": {"id": "checkout_sandbox_123", "status": "PAID"},
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas",
-        json=checkout_paid,
-        headers=webhook_headers,
-    ).status_code == 200
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas",
+            json=checkout_paid,
+            headers=webhook_headers,
+        ).status_code
+        == 200
+    )
     checkout_expiry = client.get(
         f"/pagamentos/pedidos/{order_id}", headers=headers
     ).json()["premium_valido_ate"]
@@ -201,9 +202,12 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
         headers=webhook_headers,
     )
     assert replay.json()["duplicate"] is True
-    assert client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    ).json()["premium_valido_ate"] == checkout_expiry
+    assert (
+        client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()[
+            "premium_valido_ate"
+        ]
+        == checkout_expiry
+    )
 
     first = client.post(
         "/pagamentos/webhooks/asaas", json=event, headers=webhook_headers
@@ -211,9 +215,7 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     assert first.status_code == 200
     assert first.json()["duplicate"] is False
 
-    status_response = client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    )
+    status_response = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers)
     assert status_response.status_code == 200
     assert status_response.json()["status"] == "pago"
     assert status_response.json()["premium_ativo"] is True
@@ -254,20 +256,19 @@ def test_checkout_paid_activates_detached_plan_without_double_grant(monkeypatch)
     order_id = checkout.json()["pedido_id"]
 
     os.environ["ASAAS_WEBHOOK_TOKEN"] = "token-webhook-seguro-com-mais-de-32-caracteres"
-    webhook_headers = {
-        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
-    }
+    webhook_headers = {"asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]}
     paid = {
         "id": "evt_checkout_paid_123",
         "event": "CHECKOUT_PAID",
         "checkout": {"id": "checkout_detached_123", "status": "PAID"},
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas", json=paid, headers=webhook_headers
-    ).status_code == 200
-    first_status = client.get(
-        f"/pagamentos/pedidos/{order_id}", headers=headers
-    ).json()
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas", json=paid, headers=webhook_headers
+        ).status_code
+        == 200
+    )
+    first_status = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()
     assert first_status["status"] == "pago"
     assert first_status["premium_ativo"] is True
 
@@ -279,9 +280,12 @@ def test_checkout_paid_activates_detached_plan_without_double_grant(monkeypatch)
             "externalReference": order_id,
         },
     }
-    assert client.post(
-        "/pagamentos/webhooks/asaas", json=payment, headers=webhook_headers
-    ).status_code == 200
+    assert (
+        client.post(
+            "/pagamentos/webhooks/asaas", json=payment, headers=webhook_headers
+        ).status_code
+        == 200
+    )
     second_status = client.get(
         f"/pagamentos/pedidos/{order_id}", headers=headers
     ).json()
@@ -345,7 +349,9 @@ def test_transparent_pix_returns_qr_code_without_redirect(monkeypatch):
     assert captured["externalReference"] == response.json()["pedido_id"]
 
 
-def test_transparent_recurring_card_forwards_secrets_without_persisting_them(monkeypatch):
+def test_transparent_recurring_card_forwards_secrets_without_persisting_them(
+    monkeypatch,
+):
     token = _register_and_login("cartao-transparente@example.com")
     headers = {
         "Authorization": f"Bearer {token}",
@@ -795,9 +801,7 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
         "conduta": 30,
     }
     assert result["fonte_feedback"] == "agente_regras"
-    assert result["diagnostico_referencia"].startswith(
-        "Tromboembolismo pulmonar agudo"
-    )
+    assert result["diagnostico_referencia"].startswith("Tromboembolismo pulmonar agudo")
     assert result["exames"]["essenciais_ausentes"] == []
     assert result["exames"]["desnecessarios"] == []
     assert result["feedback"]["feedback_seguranca"]

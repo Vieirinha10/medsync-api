@@ -46,7 +46,9 @@ def _request(
             timeout=timeout,
         )
     except httpx.RequestError as exc:
-        raise AsaasApiError("Não foi possível conectar ao processamento da Asaas.") from exc
+        raise AsaasApiError(
+            "Não foi possível conectar ao processamento da Asaas."
+        ) from exc
 
     if response.status_code >= 400:
         try:
@@ -70,7 +72,9 @@ def create_checkout(payload: dict[str, Any]) -> dict[str, Any]:
         raise AsaasApiError("A Asaas não retornou o identificador do checkout.")
 
     if not data.get("link"):
-        host = "asaas.com" if asaas_environment() == "production" else "sandbox.asaas.com"
+        host = (
+            "asaas.com" if asaas_environment() == "production" else "sandbox.asaas.com"
+        )
         data["link"] = f"https://{host}/checkoutSession/show?id={checkout_id}"
     return data
 
