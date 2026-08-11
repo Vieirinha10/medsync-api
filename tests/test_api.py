@@ -343,6 +343,34 @@ def test_production_never_falls_back_to_sandbox_credentials(monkeypatch):
     assert asaas_webhook_token() == "production-token"
 
 
+def test_production_checkout_is_restricted_to_pilot(monkeypatch):
+    email = "piloto-producao@example.com"
+    token = _register_and_login(email)
+    headers = {"Authorization": f"Bearer {token}"}
+    monkeypatch.setenv("ASAAS_ENVIRONMENT", "production")
+    monkeypatch.setenv("PAYMENTS_ENABLED", "false")
+    monkeypatch.delenv("PAYMENTS_PILOT_EMAILS", raising=False)
+
+    blocked = client.post(
+        "/pagamentos/checkout", headers=headers, json={"plano_id": "avulso"}
+    )
+    assert blocked.status_code == 503
+
+    monkeypatch.setenv("PAYMENTS_PILOT_EMAILS", email)
+    monkeypatch.setattr(
+        "routers.payments.create_checkout",
+        lambda payload: {
+            "id": "checkout_production_pilot",
+            "link": "https://asaas.com/checkoutSession/show/pilot",
+            "status": "ACTIVE",
+        },
+    )
+    allowed = client.post(
+        "/pagamentos/checkout", headers=headers, json={"plano_id": "avulso"}
+    )
+    assert allowed.status_code == 201
+
+
 def test_academic_analytics_are_restricted_and_aggregated():
     regular_token = _register_and_login("usuario-comum@example.com")
     assert (
