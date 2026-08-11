@@ -59,6 +59,9 @@ def finalizar_simulacao(
     evaluation_data = {
         "caso_id": caso_id,
         "caso_titulo": case["titulo"],
+        "diagnostico_referencia": case_record.rubrica.definicao[
+            "diagnostico_referencia"
+        ],
         "pontuacao_total": total_score,
         "pontuacao": score.model_dump(),
         "exames": exam_feedback.model_dump(),

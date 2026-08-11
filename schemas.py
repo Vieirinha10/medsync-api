@@ -1,7 +1,22 @@
+import unicodedata
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
+
+
+def _normalized_spoiler_text(value: str) -> str:
+    decomposed = unicodedata.normalize("NFD", value.casefold())
+    return " ".join(
+        "".join(char for char in decomposed if unicodedata.category(char) != "Mn").split()
+    )
 
 
 class UserCreate(BaseModel):
@@ -119,6 +134,21 @@ class VisualChallengeAttempt(BaseModel):
     imagem: str | None = Field(default=None, max_length=500)
 
 
+class VisualChallengeAnswerRequest(BaseModel):
+    alternativa_id: str = Field(min_length=1, max_length=40)
+
+
+class VisualChallengeAnswerResponse(BaseModel):
+    correta: bool
+    alternativa_correta_id: str
+    diagnostico_correto: str
+    explicacao: str
+    achados_chave: list[str]
+    fonte_credito: str = "MedSync"
+    fonte_licenca: str = "Uso educacional"
+    fonte_url: str = "#"
+
+
 class StudyErrorStatusUpdate(BaseModel):
     status: Literal["pendente", "revisando", "dominado"]
 
@@ -180,6 +210,7 @@ class AdminClinicalExam(BaseModel):
 
 class AdminClinicalCaseUpsert(BaseModel):
     titulo: str = Field(min_length=3, max_length=200)
+    titulo_publico: str = Field(min_length=3, max_length=240)
     especialidade: str = Field(min_length=2, max_length=120)
     nivel_dificuldade: Literal["Fácil", "Médio", "Intermediário", "Difícil", "Crítico"]
     historia_clinica: str = Field(min_length=10, max_length=10000)
@@ -188,6 +219,25 @@ class AdminClinicalCaseUpsert(BaseModel):
     premium: bool = False
     exames: list[AdminClinicalExam] = Field(default_factory=list)
     rubrica: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def prevent_public_title_spoiler(self):
+        if not self.rubrica:
+            return self
+        public_title = _normalized_spoiler_text(self.titulo_publico)
+        diagnosis = _normalized_spoiler_text(
+            str(self.rubrica.get("diagnostico_referencia", ""))
+        )
+        accepted_terms = [
+            _normalized_spoiler_text(str(term))
+            for term in self.rubrica.get("diagnostico_termos", [])
+        ]
+        spoilers = [diagnosis, *(term for term in accepted_terms if len(term) >= 8)]
+        if any(term and term in public_title for term in spoilers):
+            raise ValueError(
+                "O título público não pode conter o diagnóstico ou termos do gabarito."
+            )
+        return self
 
 
 class AdminClinicalCaseResponse(AdminClinicalCaseUpsert):
@@ -215,6 +265,20 @@ class AdminVisualChallengeUpsert(BaseModel):
     fonte_licenca: str = Field(default="Uso educacional", max_length=120)
     fonte_url: str = Field(default="#", max_length=1000)
     status: Literal["rascunho", "publicado", "arquivado"] = "rascunho"
+
+    @model_validator(mode="after")
+    def prevent_public_metadata_spoiler(self):
+        diagnosis = _normalized_spoiler_text(self.diagnostico_correto)
+        if len(diagnosis) < 5:
+            return self
+        public_metadata = _normalized_spoiler_text(
+            " ".join((self.id, self.imagem_url, self.imagem_alt, self.pergunta))
+        )
+        if diagnosis in public_metadata:
+            raise ValueError(
+                "ID, imagem, texto alternativo e pergunta não podem revelar o gabarito."
+            )
+        return self
 
 
 class AdminVisualChallengeResponse(AdminVisualChallengeUpsert):
