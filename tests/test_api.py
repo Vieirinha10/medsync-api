@@ -212,6 +212,59 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     os.environ.pop("ASAAS_WEBHOOK_TOKEN")
 
 
+def test_checkout_paid_activates_detached_plan_without_double_grant(monkeypatch):
+    token = _register_and_login("checkout-pago@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    monkeypatch.setattr(
+        "routers.payments.create_checkout",
+        lambda payload: {
+            "id": "checkout_detached_123",
+            "link": "https://sandbox.asaas.com/checkoutSession/show/id",
+            "status": "ACTIVE",
+        },
+    )
+    checkout = client.post(
+        "/pagamentos/checkout", headers=headers, json={"plano_id": "avulso"}
+    )
+    order_id = checkout.json()["pedido_id"]
+
+    os.environ["ASAAS_WEBHOOK_TOKEN"] = "token-webhook-seguro-com-mais-de-32-caracteres"
+    webhook_headers = {
+        "asaas-access-token": os.environ["ASAAS_WEBHOOK_TOKEN"]
+    }
+    paid = {
+        "id": "evt_checkout_paid_123",
+        "event": "CHECKOUT_PAID",
+        "checkout": {"id": "checkout_detached_123", "status": "PAID"},
+    }
+    assert client.post(
+        "/pagamentos/webhooks/asaas", json=paid, headers=webhook_headers
+    ).status_code == 200
+    first_status = client.get(
+        f"/pagamentos/pedidos/{order_id}", headers=headers
+    ).json()
+    assert first_status["status"] == "pago"
+    assert first_status["premium_ativo"] is True
+
+    payment = {
+        "id": "evt_payment_received_same_checkout",
+        "event": "PAYMENT_RECEIVED",
+        "payment": {
+            "id": "pay_same_checkout",
+            "externalReference": order_id,
+        },
+    }
+    assert client.post(
+        "/pagamentos/webhooks/asaas", json=payment, headers=webhook_headers
+    ).status_code == 200
+    second_status = client.get(
+        f"/pagamentos/pedidos/{order_id}", headers=headers
+    ).json()
+    assert second_status["premium_valido_ate"] == first_status["premium_valido_ate"]
+    os.environ.pop("ASAAS_WEBHOOK_TOKEN")
+
+
 def test_checkout_rejects_unknown_plan():
     token = _register_and_login("plano-invalido@example.com")
     response = client.post(

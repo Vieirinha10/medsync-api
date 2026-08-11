@@ -174,6 +174,8 @@ def _grant_access(db: Session, order: PaymentOrder, payment: dict[str, Any]) -> 
     payment_id = str(payment.get("id") or "")
     if not payment_id or db.get(PaymentGrant, payment_id):
         return
+    if order.plano_id != "recorrente" and order.status == "pago":
+        return
 
     now = datetime.now(UTC)
     entitlement = db.get(UserEntitlement, order.id_usuario)
@@ -242,12 +244,20 @@ async def receive_asaas_webhook(
     if order:
         checkout_statuses = {
             "CHECKOUT_CREATED": "aguardando_pagamento",
-            "CHECKOUT_PAID": "checkout_pago",
             "CHECKOUT_CANCELED": "cancelado",
             "CHECKOUT_EXPIRED": "expirado",
         }
         if event_type in checkout_statuses:
             order.status = checkout_statuses[event_type]
+        elif event_type == "CHECKOUT_PAID":
+            if order.plano_id == "recorrente":
+                order.status = "checkout_pago"
+            else:
+                _grant_access(
+                    db,
+                    order,
+                    {"id": f"checkout:{checkout_id}"},
+                )
         elif event_type in PAID_EVENTS:
             _grant_access(db, order, payment)
         elif event_type in SUSPENSION_EVENTS:
