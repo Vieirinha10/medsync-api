@@ -299,6 +299,32 @@ def test_checkout_rejects_unknown_plan():
     assert response.status_code == 422
 
 
+def test_quarterly_checkout_supports_up_to_three_installments(monkeypatch):
+    token = _register_and_login("trimestral@example.com")
+    captured = {}
+
+    def fake_checkout(payload):
+        captured.update(payload)
+        return {
+            "id": "checkout_quarterly_123",
+            "link": "https://sandbox.asaas.com/checkoutSession/show/quarterly",
+            "status": "ACTIVE",
+        }
+
+    monkeypatch.setattr("routers.payments.create_checkout", fake_checkout)
+    response = client.post(
+        "/pagamentos/checkout",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"plano_id": "trimestral"},
+    )
+
+    assert response.status_code == 201
+    assert captured["billingTypes"] == ["CREDIT_CARD"]
+    assert captured["chargeTypes"] == ["DETACHED", "INSTALLMENT"]
+    assert captured["installment"] == {"maxInstallmentCount": 3}
+    assert captured["items"][0]["value"] == 65.9
+
+
 def test_academic_analytics_are_restricted_and_aggregated():
     regular_token = _register_and_login("usuario-comum@example.com")
     assert (
