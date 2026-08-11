@@ -146,6 +146,7 @@ class ClinicalCase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     titulo: Mapped[str] = mapped_column(String(200))
+    titulo_publico: Mapped[str] = mapped_column(String(240))
     especialidade: Mapped[str] = mapped_column(String(120), index=True)
     nivel_dificuldade: Mapped[str] = mapped_column(String(40), index=True)
     historia_clinica: Mapped[str] = mapped_column(Text)

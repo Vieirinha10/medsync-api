@@ -22,7 +22,7 @@ from models import (
     UserActivity,
     VisualChallenge,
 )
-from routers.content import serialize_challenge
+from routers.content import serialize_admin_challenge
 from schemas import (
     AcademicAnalyticsResponse,
     AdminClinicalCaseResponse,
@@ -56,6 +56,7 @@ def serialize_admin_case(case: ClinicalCase) -> dict:
     return {
         "id": case.id,
         "titulo": case.titulo,
+        "titulo_publico": case.titulo_publico,
         "especialidade": case.especialidade,
         "nivel_dificuldade": case.nivel_dificuldade,
         "historia_clinica": case.historia_clinica,
@@ -82,6 +83,7 @@ def serialize_admin_case(case: ClinicalCase) -> dict:
 
 def apply_case_payload(case: ClinicalCase, payload: AdminClinicalCaseUpsert) -> None:
     case.titulo = payload.titulo
+    case.titulo_publico = payload.titulo_publico
     case.especialidade = payload.especialidade
     case.nivel_dificuldade = payload.nivel_dificuldade
     case.historia_clinica = payload.historia_clinica
@@ -398,7 +400,7 @@ def admin_list_challenges(
     db: Session = Depends(get_db),
 ):
     return [
-        serialize_challenge(challenge)
+        serialize_admin_challenge(challenge)
         for challenge in db.scalars(
             select(VisualChallenge).order_by(VisualChallenge.updated_at.desc())
         ).all()
@@ -426,7 +428,7 @@ def admin_create_challenge(
             status_code=409, detail="Já existe um desafio com esse ID."
         ) from None
     db.refresh(challenge)
-    return serialize_challenge(challenge)
+    return serialize_admin_challenge(challenge)
 
 
 @router.put("/desafios/{challenge_id}", response_model=AdminVisualChallengeResponse)
@@ -446,7 +448,7 @@ def admin_update_challenge(
     apply_challenge_payload(challenge, payload)
     db.commit()
     db.refresh(challenge)
-    return serialize_challenge(challenge)
+    return serialize_admin_challenge(challenge)
 
 
 @router.get("/avisos", response_model=list[AnnouncementResponse])

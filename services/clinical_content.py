@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from case_catalog import CLINICAL_CASES
+from clinical_titles import PUBLIC_CASE_TITLES, formatted_public_title
 from evaluation import (
     PILOT_RUBRIC_VERSION,
     PILOT_RUBRICS,
@@ -23,6 +24,7 @@ def seed_clinical_content(db: Session) -> bool:
         case = ClinicalCase(
             id=source["id"],
             titulo=source["titulo"],
+            titulo_publico=PUBLIC_CASE_TITLES[source["id"]],
             especialidade=source["especialidade"],
             nivel_dificuldade=source["nivel_dificuldade"],
             historia_clinica=source["historia_clinica"],
@@ -122,7 +124,7 @@ def get_published_case(db: Session, case_id: int) -> ClinicalCase | None:
 def serialize_case(case: ClinicalCase, *, include_details: bool = True) -> dict:
     data = {
         "id": case.id,
-        "titulo": case.titulo,
+        "titulo": formatted_public_title(case.id, case.titulo_publico),
         "especialidade": case.especialidade,
         "nivel_dificuldade": case.nivel_dificuldade,
         "avaliacao_2_disponivel": bool(

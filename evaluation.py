@@ -43,6 +43,7 @@ class SimulationEvaluation(BaseModel):
     progresso_id: int
     caso_id: int
     caso_titulo: str
+    diagnostico_referencia: str | None = None
     pontuacao_total: int = Field(ge=0, le=100)
     pontuacao: ScoreBreakdown
     exames: ExamFeedback

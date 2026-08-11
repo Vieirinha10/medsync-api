@@ -208,6 +208,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
         headers=headers,
         json={
             "titulo": "Dor torácica em adulto jovem",
+            "titulo_publico": "Dor torácica ventilatório-dependente em adulto jovem",
             "especialidade": "Cardiologia",
             "nivel_dificuldade": "Médio",
             "historia_clinica": "Paciente adulto jovem com dor torácica ventilatório-dependente.",
@@ -233,6 +234,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
         key: case_payload[key]
         for key in (
             "titulo",
+            "titulo_publico",
             "especialidade",
             "nivel_dificuldade",
             "historia_clinica",
@@ -275,9 +277,31 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
     assert challenge.status_code == 201
     public_challenges = client.get("/desafios-visuais", headers=headers)
     assert public_challenges.status_code == 200
-    assert (
-        public_challenges.json()[0]["alternativas"] == challenge_payload["alternativas"]
+    assert [
+        option["texto"] for option in public_challenges.json()[0]["alternativas"]
+    ] == challenge_payload["alternativas"]
+    assert "alternativa_correta" not in public_challenges.json()[0]
+    assert "diagnostico_correto" not in public_challenges.json()[0]
+    assert "explicacao" not in public_challenges.json()[0]
+    assert "titulo" not in public_challenges.json()[0]
+
+    correction = client.post(
+        "/desafios-visuais/admin-radiografia-teste/responder",
+        headers=headers,
+        json={"alternativa_id": "option-1"},
     )
+    assert correction.status_code == 200
+    assert correction.json()["correta"] is True
+    assert correction.json()["diagnostico_correto"] == "Pneumonia"
+
+    built_in_correction = client.post(
+        "/desafios-visuais/desafio-visual-001/responder",
+        headers=headers,
+        json={"alternativa_id": "pneumonia"},
+    )
+    assert built_in_correction.status_code == 200
+    assert built_in_correction.json()["correta"] is False
+    assert built_in_correction.json()["alternativa_correta_id"] == "pneumotorax"
 
     announcement = client.post(
         "/admin/avisos",
@@ -393,6 +417,9 @@ def test_v2_case_is_identified_in_case_catalog():
     cases = response.json()
     pilot = next(case for case in cases if case["id"] == 8)
     legacy = next(case for case in cases if case["id"] == 1)
+    assert pilot["titulo"].startswith("Caso #008 – ")
+    assert "tromboembolismo" not in pilot["titulo"].lower()
+    assert "pericardite" not in legacy["titulo"].lower()
     assert pilot["avaliacao_2_disponivel"] is True
     assert legacy["avaliacao_2_disponivel"] is False
 
@@ -420,6 +447,9 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
         "conduta": 30,
     }
     assert result["fonte_feedback"] == "agente_regras"
+    assert result["diagnostico_referencia"].startswith(
+        "Tromboembolismo pulmonar agudo"
+    )
     assert result["exames"]["essenciais_ausentes"] == []
     assert result["exames"]["desnecessarios"] == []
     assert result["feedback"]["feedback_seguranca"]
