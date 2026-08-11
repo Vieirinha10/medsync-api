@@ -17,7 +17,7 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")
 from database import SessionLocal
-from models import ClinicalCase, ClinicalExam, ClinicalRubric
+from models import ClinicalCase, ClinicalExam, ClinicalRubric, User
 from services.clinical_content import seed_clinical_content
 
 with SessionLocal() as db:
@@ -35,6 +35,7 @@ def _register_and_login(email: str = "aluno@example.com") -> str:
             "periodo_curso": 6,
             "faculdade": "Universidade Federal do Maranhão",
             "password": "senha-segura",
+            "aceite_termos": True,
         },
     )
     assert response.status_code == 201
@@ -105,6 +106,7 @@ def test_duplicate_registration_is_rejected():
             "periodo_curso": 7,
             "faculdade": "UFMA",
             "password": "outra-senha",
+            "aceite_termos": True,
         },
     )
     assert response.status_code == 409
@@ -119,6 +121,7 @@ def test_registration_saves_academic_profile():
             "periodo_curso": 4,
             "faculdade": "  Universidade   Federal do Piauí ",
             "password": "senha-segura",
+            "aceite_termos": True,
         },
     )
 
@@ -138,6 +141,28 @@ def test_registration_requires_valid_academic_profile():
 
     payload.update({"periodo_curso": 13, "faculdade": "UFMA"})
     assert client.post("/usuarios/registrar", json=payload).status_code == 422
+
+
+def test_registration_requires_and_records_legal_acceptance():
+    payload = {
+        "nome": "Aluno Legal",
+        "email": "legal@example.com",
+        "periodo_curso": 5,
+        "faculdade": "UFMA",
+        "password": "senha-segura",
+    }
+    assert client.post("/usuarios/registrar", json=payload).status_code == 422
+
+    payload["aceite_termos"] = False
+    assert client.post("/usuarios/registrar", json=payload).status_code == 422
+
+    payload["aceite_termos"] = True
+    assert client.post("/usuarios/registrar", json=payload).status_code == 201
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == "legal@example.com"))
+        assert user.terms_accepted_at is not None
+        assert user.terms_version == "2026-08-11"
+        assert user.privacy_version == "2026-08-11"
 
 
 def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):

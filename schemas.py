@@ -28,6 +28,7 @@ class UserCreate(BaseModel):
     periodo_curso: int = Field(ge=1, le=12)
     faculdade: str = Field(min_length=2, max_length=180)
     password: str = Field(min_length=8, max_length=72)
+    aceite_termos: Literal[True]
 
     @field_validator("nome", "faculdade")
     @classmethod

@@ -19,6 +19,9 @@ from settings import is_admin_email
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 
+CURRENT_TERMS_VERSION = "2026-08-11"
+CURRENT_PRIVACY_VERSION = "2026-08-11"
+
 
 def user_response(user: User) -> dict[str, object]:
     entitlement = user.entitlement
@@ -54,6 +57,9 @@ def registrar_usuario(user: UserCreate, db: Session = Depends(get_db)):
         periodo_curso=user.periodo_curso,
         faculdade=user.faculdade,
         password_hash=hash_password(user.password),
+        terms_accepted_at=datetime.now(UTC),
+        terms_version=CURRENT_TERMS_VERSION,
+        privacy_version=CURRENT_PRIVACY_VERSION,
     )
     db.add(new_user)
     try:
