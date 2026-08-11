@@ -69,3 +69,16 @@ def asaas_webhook_token() -> str | None:
     if current_environment == "sandbox":
         return os.getenv("ASAAS_WEBHOOK_TOKEN") or None
     return None
+
+
+def payments_enabled() -> bool:
+    default = "false" if asaas_environment() == "production" else "true"
+    return os.getenv("PAYMENTS_ENABLED", default).strip().lower() == "true"
+
+
+def payment_pilot_emails() -> set[str]:
+    return {
+        email.strip().lower()
+        for email in os.getenv("PAYMENTS_PILOT_EMAILS", "").split(",")
+        if email.strip()
+    }

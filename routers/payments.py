@@ -18,7 +18,13 @@ from models import (
 from schemas import CheckoutCreate, CheckoutResponse, PaymentStatusResponse
 from security import get_current_user
 from services.asaas import AsaasApiError, AsaasConfigurationError, create_checkout
-from settings import asaas_webhook_token, frontend_url
+from settings import (
+    asaas_environment,
+    asaas_webhook_token,
+    frontend_url,
+    payment_pilot_emails,
+    payments_enabled,
+)
 
 router = APIRouter(prefix="/pagamentos", tags=["Pagamentos"])
 
@@ -122,6 +128,16 @@ def create_payment_checkout(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    if (
+        asaas_environment() == "production"
+        and not payments_enabled()
+        and current_user.email.lower() not in payment_pilot_emails()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Os pagamentos estão em liberação controlada. Tente novamente em breve.",
+        )
+
     plan = PLANS[body.plano_id]
     order = PaymentOrder(
         id=str(uuid.uuid4()),
