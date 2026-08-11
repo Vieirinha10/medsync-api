@@ -24,21 +24,21 @@ router = APIRouter(prefix="/pagamentos", tags=["Pagamentos"])
 
 PLANS = {
     "avulso": {
-        "name": "MedSync Premium — Mensal avulso",
+        "name": "MedSync Premium Mensal",
         "description": "30 dias de acesso Premium, sem renovação automática.",
         "amount_cents": 2590,
         "billing_type": "PIX",
         "charge_type": "DETACHED",
     },
     "recorrente": {
-        "name": "MedSync Premium — Mensal recorrente",
+        "name": "MedSync Premium Recorrente",
         "description": "Acesso Premium com renovação automática mensal.",
         "amount_cents": 2390,
         "billing_type": "CREDIT_CARD",
         "charge_type": "RECURRENT",
     },
     "trimestral": {
-        "name": "MedSync Premium — Trimestral",
+        "name": "MedSync Premium Trimestral",
         "description": "Três meses de acesso Premium, parcelável em até 3 vezes.",
         "amount_cents": 6590,
         "billing_type": "CREDIT_CARD",
