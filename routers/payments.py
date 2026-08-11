@@ -70,7 +70,7 @@ def _callback(order_id: str, result: str) -> str:
     return f"{frontend_url()}/pagamento/retorno?pedido={order_id}&resultado={result}"
 
 
-def _checkout_payload(order: PaymentOrder, user: User) -> dict[str, Any]:
+def _checkout_payload(order: PaymentOrder) -> dict[str, Any]:
     plan = PLANS[order.plano_id]
     payload: dict[str, Any] = {
         "billingTypes": [plan["billing_type"]],
@@ -90,7 +90,6 @@ def _checkout_payload(order: PaymentOrder, user: User) -> dict[str, Any]:
                 "value": plan["amount_cents"] / 100,
             }
         ],
-        "customerData": {"name": user.nome, "email": user.email},
     }
     if order.plano_id == "recorrente":
         payload["subscription"] = {
@@ -133,7 +132,7 @@ def create_payment_checkout(
     db.flush()
 
     try:
-        checkout = create_checkout(_checkout_payload(order, current_user))
+        checkout = create_checkout(_checkout_payload(order))
     except AsaasConfigurationError as exc:
         db.rollback()
         raise HTTPException(status_code=503, detail=str(exc)) from exc

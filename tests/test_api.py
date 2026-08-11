@@ -166,6 +166,7 @@ def test_asaas_checkout_and_webhook_activate_premium_once(monkeypatch):
     assert captured["chargeTypes"] == ["RECURRENT"]
     assert captured["items"][0]["value"] == 23.9
     assert captured["subscription"]["cycle"] == "MONTHLY"
+    assert "customerData" not in captured
 
     os.environ["ASAAS_WEBHOOK_TOKEN"] = "token-webhook-seguro-com-mais-de-32-caracteres"
     event = {
