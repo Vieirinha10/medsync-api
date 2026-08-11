@@ -10,6 +10,7 @@ from routers import (
     content,
     error_notebook,
     learning_paths,
+    payments,
     progress,
     simulations,
     system,
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
     application.include_router(progress.router)
     application.include_router(error_notebook.router)
     application.include_router(learning_paths.router)
+    application.include_router(payments.router)
     application.include_router(admin.router)
     return application
 

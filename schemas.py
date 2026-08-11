@@ -49,6 +49,9 @@ class UserResponse(BaseModel):
     periodo_curso: int | None
     faculdade: str | None
     is_admin: bool = False
+    premium_ativo: bool = False
+    premium_plano: str | None = None
+    premium_valido_ate: datetime | None = None
     created_at: datetime
 
 
@@ -331,3 +334,21 @@ class AdminOverviewResponse(BaseModel):
     avisos_ativos: int
     conteudos_populares: list[AdminContentMetric]
     atividade_diaria: list[AdminDailyMetric]
+
+
+class CheckoutCreate(BaseModel):
+    plano_id: Literal["avulso", "recorrente", "trimestral"]
+
+
+class CheckoutResponse(BaseModel):
+    pedido_id: str
+    checkout_url: str
+    status: str
+
+
+class PaymentStatusResponse(BaseModel):
+    pedido_id: str
+    plano_id: str
+    status: str
+    premium_ativo: bool
+    premium_valido_ate: datetime | None = None

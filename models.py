@@ -42,6 +42,9 @@ class User(Base):
     progressos_trilhas: Mapped[list["LearningPathProgress"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
     )
+    entitlement: Mapped["UserEntitlement | None"] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan", uselist=False
+    )
 
 
 class Progresso(Base):
@@ -288,4 +291,82 @@ class UserActivity(Base):
     id_conteudo: Mapped[str | None] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )
+
+
+class PaymentOrder(Base):
+    __tablename__ = "payment_orders"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    plano_id: Mapped[str] = mapped_column(String(40), index=True)
+    valor_centavos: Mapped[int] = mapped_column(Integer)
+    moeda: Mapped[str] = mapped_column(String(3), default="BRL")
+    tipo_cobranca: Mapped[str] = mapped_column(String(30))
+    forma_pagamento: Mapped[str] = mapped_column(String(30))
+    status: Mapped[str] = mapped_column(String(30), default="criado", index=True)
+    asaas_checkout_id: Mapped[str | None] = mapped_column(
+        String(120), unique=True, nullable=True, index=True
+    )
+    checkout_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    ultimo_pagamento_asaas_id: Mapped[str | None] = mapped_column(
+        String(120), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+    paid_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
+class UserEntitlement(Base):
+    __tablename__ = "user_entitlements"
+
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    plano_id: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(30), default="ativo", index=True)
+    valido_ate: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    renovacao_automatica: Mapped[bool] = mapped_column(Boolean, default=False)
+    asaas_subscription_id: Mapped[str | None] = mapped_column(
+        String(120), nullable=True, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="entitlement")
+
+
+class PaymentGrant(Base):
+    __tablename__ = "payment_grants"
+
+    asaas_payment_id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    pedido_id: Mapped[str] = mapped_column(
+        ForeignKey("payment_orders.id", ondelete="CASCADE"), index=True
+    )
+    granted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+
+class AsaasWebhookEvent(Base):
+    __tablename__ = "asaas_webhook_events"
+
+    id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    tipo: Mapped[str] = mapped_column(String(80), index=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    processed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

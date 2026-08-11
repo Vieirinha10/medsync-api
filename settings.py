@@ -38,3 +38,22 @@ def admin_emails() -> set[str]:
 
 def is_admin_email(email: str) -> bool:
     return email.strip().lower() in admin_emails()
+
+
+def frontend_url() -> str:
+    return os.getenv("FRONTEND_URL", cors_origins()[0]).rstrip("/")
+
+
+def asaas_environment() -> str:
+    value = os.getenv("ASAAS_ENVIRONMENT", "sandbox").strip().lower()
+    if value not in {"sandbox", "production"}:
+        raise RuntimeError("ASAAS_ENVIRONMENT deve ser sandbox ou production.")
+    return value
+
+
+def asaas_api_key() -> str | None:
+    return os.getenv("ASAAS_API_KEY") or None
+
+
+def asaas_webhook_token() -> str | None:
+    return os.getenv("ASAAS_WEBHOOK_TOKEN") or None
