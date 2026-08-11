@@ -299,6 +299,123 @@ def test_checkout_rejects_unknown_plan():
     assert response.status_code == 422
 
 
+def test_transparent_pix_returns_qr_code_without_redirect(monkeypatch):
+    token = _register_and_login("pix-transparente@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    captured = {}
+
+    monkeypatch.setattr(
+        "routers.payments.create_customer",
+        lambda payload: {"id": "cus_pix_123"},
+    )
+
+    def fake_payment(payload):
+        captured.update(payload)
+        return {"id": "pay_pix_123", "status": "PENDING"}
+
+    monkeypatch.setattr("routers.payments.create_payment", fake_payment)
+    monkeypatch.setattr(
+        "routers.payments.get_pix_qr_code",
+        lambda payment_id: {
+            "encodedImage": "base64-do-qr-code",
+            "payload": "000201-pix-copia-cola",
+            "expirationDate": "2026-08-12T23:59:00Z",
+        },
+    )
+    response = client.post(
+        "/pagamentos/transparente",
+        headers=headers,
+        json={
+            "plano_id": "avulso",
+            "pagador": {
+                "cpf_cnpj": "123.456.789-01",
+                "telefone": "(86) 99999-9999",
+                "cep": "64000-000",
+                "numero_endereco": "42",
+            },
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["forma_pagamento"] == "PIX"
+    assert response.json()["pix_qr_code"] == "base64-do-qr-code"
+    assert response.json()["pix_copia_cola"] == "000201-pix-copia-cola"
+    assert captured["billingType"] == "PIX"
+    assert captured["value"] == 25.9
+    assert captured["externalReference"] == response.json()["pedido_id"]
+
+
+def test_transparent_recurring_card_forwards_secrets_without_persisting_them(monkeypatch):
+    token = _register_and_login("cartao-transparente@example.com")
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "x-forwarded-for": "203.0.113.55",
+    }
+    captured = {}
+    monkeypatch.setattr(
+        "routers.payments.create_customer",
+        lambda payload: {"id": "cus_card_123"},
+    )
+
+    def fake_subscription(payload):
+        captured.update(payload)
+        return {"id": "sub_card_123", "status": "ACTIVE"}
+
+    monkeypatch.setattr("routers.payments.create_subscription", fake_subscription)
+    response = client.post(
+        "/pagamentos/transparente",
+        headers=headers,
+        json={
+            "plano_id": "recorrente",
+            "pagador": {
+                "cpf_cnpj": "12345678901",
+                "telefone": "86999999999",
+                "cep": "64000000",
+                "numero_endereco": "42",
+                "complemento": "Apto 2",
+            },
+            "cartao": {
+                "titular": "Aluno MedSync",
+                "numero": "4444 4444 4444 4444",
+                "mes_validade": "12",
+                "ano_validade": "2030",
+                "ccv": "123",
+            },
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "aguardando_confirmacao"
+    assert captured["billingType"] == "CREDIT_CARD"
+    assert captured["creditCard"]["number"] == "4444444444444444"
+    assert captured["remoteIp"] == "203.0.113.55"
+    assert captured["cycle"] == "MONTHLY"
+    assert "dueDate" not in captured
+
+    order_id = response.json()["pedido_id"]
+    order = client.get(f"/pagamentos/pedidos/{order_id}", headers=headers).json()
+    serialized = str(order)
+    assert "4444444444444444" not in serialized
+
+
+def test_transparent_checkout_validates_plan_payment_method():
+    token = _register_and_login("checkout-validacao@example.com")
+    response = client.post(
+        "/pagamentos/transparente",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "plano_id": "recorrente",
+            "pagador": {
+                "cpf_cnpj": "12345678901",
+                "telefone": "86999999999",
+                "cep": "64000000",
+                "numero_endereco": "42",
+            },
+        },
+    )
+    assert response.status_code == 422
+
+
 def test_quarterly_checkout_supports_up_to_three_installments(monkeypatch):
     token = _register_and_login("trimestral@example.com")
     captured = {}

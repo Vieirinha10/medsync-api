@@ -15,9 +15,23 @@ from models import (
     User,
     UserEntitlement,
 )
-from schemas import CheckoutCreate, CheckoutResponse, PaymentStatusResponse
+from schemas import (
+    CheckoutCreate,
+    CheckoutResponse,
+    PaymentStatusResponse,
+    TransparentPaymentCreate,
+    TransparentPaymentResponse,
+)
 from security import get_current_user
-from services.asaas import AsaasApiError, AsaasConfigurationError, create_checkout
+from services.asaas import (
+    AsaasApiError,
+    AsaasConfigurationError,
+    create_checkout,
+    create_customer,
+    create_payment,
+    create_subscription,
+    get_pix_qr_code,
+)
 from settings import (
     asaas_environment,
     asaas_webhook_token,
@@ -57,6 +71,7 @@ SUSPENSION_EVENTS = {
     "PAYMENT_REFUNDED",
     "PAYMENT_CHARGEBACK_REQUESTED",
     "PAYMENT_CREDIT_CARD_CAPTURE_REFUSED",
+    "PAYMENT_REPROVED_BY_RISK_ANALYSIS",
 }
 
 
@@ -118,6 +133,65 @@ def _is_premium_active(entitlement: UserEntitlement | None) -> bool:
     )
 
 
+def _check_payment_availability(current_user: User) -> None:
+    if (
+        asaas_environment() == "production"
+        and not payments_enabled()
+        and current_user.email.lower() not in payment_pilot_emails()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Os pagamentos estão em liberação controlada. Tente novamente em breve.",
+        )
+
+
+def _payer_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    if forwarded:
+        return forwarded
+    return request.client.host if request.client else "127.0.0.1"
+
+
+def _customer_payload(current_user: User, body: TransparentPaymentCreate) -> dict[str, Any]:
+    payer = body.pagador
+    return {
+        "name": current_user.nome,
+        "email": current_user.email,
+        "cpfCnpj": payer.cpf_cnpj,
+        "mobilePhone": payer.telefone,
+        "postalCode": payer.cep,
+        "addressNumber": payer.numero_endereco,
+        "complement": payer.complemento,
+        "externalReference": f"medsync-user:{current_user.id}",
+        "notificationDisabled": True,
+    }
+
+
+def _card_payload(body: TransparentPaymentCreate) -> dict[str, str]:
+    assert body.cartao is not None
+    card = body.cartao
+    return {
+        "holderName": card.titular,
+        "number": card.numero.get_secret_value(),
+        "expiryMonth": card.mes_validade,
+        "expiryYear": card.ano_validade,
+        "ccv": card.ccv.get_secret_value(),
+    }
+
+
+def _holder_payload(current_user: User, body: TransparentPaymentCreate) -> dict[str, str]:
+    payer = body.pagador
+    return {
+        "name": body.cartao.titular if body.cartao else current_user.nome,
+        "email": current_user.email,
+        "cpfCnpj": payer.cpf_cnpj,
+        "postalCode": payer.cep,
+        "addressNumber": payer.numero_endereco,
+        "addressComplement": payer.complemento or "",
+        "mobilePhone": payer.telefone,
+    }
+
+
 @router.post(
     "/checkout",
     response_model=CheckoutResponse,
@@ -128,15 +202,7 @@ def create_payment_checkout(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if (
-        asaas_environment() == "production"
-        and not payments_enabled()
-        and current_user.email.lower() not in payment_pilot_emails()
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Os pagamentos estão em liberação controlada. Tente novamente em breve.",
-        )
+    _check_payment_availability(current_user)
 
     plan = PLANS[body.plano_id]
     order = PaymentOrder(
@@ -168,6 +234,124 @@ def create_payment_checkout(
         "checkout_url": order.checkout_url,
         "status": order.status,
     }
+
+
+@router.post(
+    "/transparente",
+    response_model=TransparentPaymentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_transparent_payment(
+    body: TransparentPaymentCreate,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Processa Pix ou cartão sem persistir os dados sensíveis do cartão."""
+    _check_payment_availability(current_user)
+    plan = PLANS[body.plano_id]
+    order = PaymentOrder(
+        id=str(uuid.uuid4()),
+        id_usuario=current_user.id,
+        plano_id=body.plano_id,
+        valor_centavos=plan["amount_cents"],
+        tipo_cobranca=plan["charge_type"],
+        forma_pagamento=plan["billing_type"],
+        status="processando",
+    )
+    db.add(order)
+    db.commit()
+
+    try:
+        if not current_user.asaas_customer_id:
+            customer = create_customer(_customer_payload(current_user, body))
+            customer_id = str(customer.get("id") or "")
+            if not customer_id:
+                raise AsaasApiError("A Asaas não retornou o identificador do cliente.")
+            current_user.asaas_customer_id = customer_id
+            db.commit()
+
+        common_payload: dict[str, Any] = {
+            "customer": current_user.asaas_customer_id,
+            "billingType": plan["billing_type"],
+            "dueDate": datetime.now(UTC).date().isoformat(),
+            "description": plan["description"],
+            "externalReference": order.id,
+        }
+
+        if body.plano_id == "avulso":
+            payment = create_payment(
+                {**common_payload, "value": plan["amount_cents"] / 100}
+            )
+            payment_id = str(payment.get("id") or "")
+            if not payment_id:
+                raise AsaasApiError("A Asaas não retornou o identificador da cobrança.")
+            qr_code = get_pix_qr_code(payment_id)
+            order.ultimo_pagamento_asaas_id = payment_id
+            order.status = "aguardando_pagamento"
+            db.commit()
+            return {
+                "pedido_id": order.id,
+                "forma_pagamento": "PIX",
+                "status": order.status,
+                "pix_qr_code": qr_code.get("encodedImage"),
+                "pix_copia_cola": qr_code.get("payload"),
+                "pix_expira_em": qr_code.get("expirationDate"),
+            }
+
+        card_fields = {
+            "creditCard": _card_payload(body),
+            "creditCardHolderInfo": _holder_payload(current_user, body),
+            "remoteIp": _payer_ip(request),
+        }
+        if body.plano_id == "recorrente":
+            transaction = create_subscription(
+                {
+                    "customer": current_user.asaas_customer_id,
+                    "billingType": "CREDIT_CARD",
+                    "description": plan["description"],
+                    "externalReference": order.id,
+                    **card_fields,
+                    "value": plan["amount_cents"] / 100,
+                    "cycle": "MONTHLY",
+                    "nextDueDate": datetime.now(UTC).date().isoformat(),
+                }
+            )
+            transaction_id = str(transaction.get("id") or "")
+            if not transaction_id:
+                raise AsaasApiError("A Asaas não retornou o identificador da assinatura.")
+            order.ultimo_pagamento_asaas_id = transaction_id
+        else:
+            payment_payload = {**common_payload, **card_fields}
+            if body.parcelas == 1:
+                payment_payload["value"] = plan["amount_cents"] / 100
+            else:
+                payment_payload["installmentCount"] = body.parcelas
+                payment_payload["totalValue"] = plan["amount_cents"] / 100
+            transaction = create_payment(payment_payload)
+            transaction_id = str(transaction.get("id") or "")
+            if not transaction_id:
+                raise AsaasApiError("A Asaas não retornou o identificador da cobrança.")
+            order.ultimo_pagamento_asaas_id = transaction_id
+
+        order.status = "aguardando_confirmacao"
+        db.commit()
+        return {
+            "pedido_id": order.id,
+            "forma_pagamento": "CREDIT_CARD",
+            "status": order.status,
+        }
+    except AsaasConfigurationError as exc:
+        order.status = "falhou"
+        db.commit()
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except AsaasApiError as exc:
+        order.status = "recusado"
+        db.commit()
+        message = str(exc)
+        if body.plano_id != "avulso":
+            message = "Pagamento não autorizado. Revise os dados ou tente outro cartão."
+        raise HTTPException(status_code=422, detail=message) from exc
 
 
 @router.get("/pedidos/{order_id}", response_model=PaymentStatusResponse)

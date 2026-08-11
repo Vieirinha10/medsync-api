@@ -33,6 +33,13 @@ RATE_LIMIT_RULES = (
         20,
         60,
     ),
+    RateLimitRule(
+        "transparent-payment",
+        "POST",
+        re.compile(r"^/pagamentos/transparente$"),
+        5,
+        300,
+    ),
 )
 
 

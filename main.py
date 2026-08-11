@@ -29,7 +29,7 @@ async def lifespan(_: FastAPI):
 def create_app() -> FastAPI:
     application = FastAPI(
         title="API MEDSYNC",
-        version="0.4.1",
+        version="0.5.0",
         lifespan=lifespan,
     )
     origins = cors_origins()

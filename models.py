@@ -32,6 +32,9 @@ class User(Base):
     last_login_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
+    asaas_customer_id: Mapped[str | None] = mapped_column(
+        String(120), unique=True, nullable=True, index=True
+    )
 
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"

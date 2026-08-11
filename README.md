@@ -32,6 +32,17 @@ A API inicia em `http://127.0.0.1:8000` e a documentação interativa fica em
 Em produção, configure um PostgreSQL persistente. O SQLite padrão é destinado
 somente ao desenvolvimento local.
 
+## Checkout transparente
+
+`POST /pagamentos/transparente` mantém a jornada de Pix e cartão dentro do
+MedSync. O endpoint cria o cliente na Asaas uma única vez, gera o QR Code Pix
+ou processa cartão/assinatura diretamente e depende do webhook para liberar o
+Premium. Número do cartão e CVV são apenas encaminhados à Asaas durante a
+requisição e nunca são persistidos pelo MedSync.
+
+O checkout hospedado em `POST /pagamentos/checkout` continua disponível como
+contingência operacional.
+
 ## Banco de dados
 
 O esquema é versionado pelo Alembic. Para aplicar todas as migrações:
