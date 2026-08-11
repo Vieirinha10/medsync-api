@@ -52,8 +52,20 @@ def asaas_environment() -> str:
 
 
 def asaas_api_key() -> str | None:
-    return os.getenv("ASAAS_API_KEY") or None
+    current_environment = asaas_environment()
+    scoped_key = os.getenv(f"ASAAS_{current_environment.upper()}_API_KEY")
+    if scoped_key:
+        return scoped_key
+    if current_environment == "sandbox":
+        return os.getenv("ASAAS_API_KEY") or None
+    return None
 
 
 def asaas_webhook_token() -> str | None:
-    return os.getenv("ASAAS_WEBHOOK_TOKEN") or None
+    current_environment = asaas_environment()
+    scoped_token = os.getenv(f"ASAAS_{current_environment.upper()}_WEBHOOK_TOKEN")
+    if scoped_token:
+        return scoped_token
+    if current_environment == "sandbox":
+        return os.getenv("ASAAS_WEBHOOK_TOKEN") or None
+    return None
