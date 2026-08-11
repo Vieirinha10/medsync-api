@@ -35,6 +35,11 @@ class User(Base):
     asaas_customer_id: Mapped[str | None] = mapped_column(
         String(120), unique=True, nullable=True, index=True
     )
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    terms_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    privacy_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
