@@ -119,6 +119,16 @@ def register_clinical_result(
         "feedback_hipotese": evaluation_data["feedback"]["feedback_hipotese"],
         "feedback_conduta": evaluation_data["feedback"]["feedback_conduta"],
         "feedback_seguranca": evaluation_data["feedback"]["feedback_seguranca"],
+        "reacao_paciente": evaluation_data["feedback"].get("reacao_paciente"),
+        "desfecho_clinico": evaluation_data["feedback"].get("desfecho_clinico"),
+        "nivel_conduta": evaluation_data.get("nivel_conduta"),
+        "categorias_erro": {
+            "exames_omitidos": evaluation_data["exames"]["essenciais_ausentes"],
+            "exames_desnecessarios": evaluation_data["exames"]["desnecessarios"],
+            "hipotese_incompleta": evaluation_data["pontuacao"]["hipotese"] < 30,
+            "conduta_incompleta": evaluation_data["pontuacao"]["conduta"] < 30,
+            "risco_seguranca": evaluation_data.get("nivel_conduta") == "insegura",
+        },
     }
 
     if existing is None:

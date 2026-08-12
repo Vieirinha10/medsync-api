@@ -77,7 +77,7 @@ def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
         assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 3
+        assert rubric.versao == 4
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
 
@@ -92,7 +92,7 @@ def test_existing_pilot_rubric_is_safely_upgraded():
         assert seed_clinical_content(db) is False
         db.refresh(rubric)
 
-        assert rubric.versao == 3
+        assert rubric.versao == 4
         assert rubric.definicao["feedback_seguranca"]
 
 
@@ -813,6 +813,62 @@ def test_v2_case_is_identified_in_case_catalog():
     assert vitals["spo2"]["valor"] == "83"
     assert vitals["spo2"]["status"] == "alterado"
     assert vitals["pa"]["status"] == "nao_informado"
+
+
+def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
+    token = _register_and_login("lote-rubricas@example.com")
+    response = client.get(
+        "/casos-clinicos/",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    availability = {case["id"]: case["avaliacao_2_disponivel"] for case in response.json()}
+    assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
+    assert availability[1] is False
+
+    with SessionLocal() as db:
+        for case_id in {6, 7, 8, 11, 12}:
+            rubric = db.scalar(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
+            )
+            assert rubric is not None
+            assert rubric.versao == 4
+            assert rubric.definicao["objetivos_aprendizagem"]
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["fontes_clinicas"]
+
+
+def test_perforated_ulcer_case_prioritizes_imaging_over_endoscopy():
+    token = _register_and_login("ulcera-perfurada@example.com")
+    detail = client.get(
+        "/casos-clinicos/6",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert detail.status_code == 200
+    exams = {item["id"]: item for item in detail.json()["exames_disponiveis"]}
+    assert exams["tc_abdome"]["correto"] is True
+    assert exams["gaso_lactato"]["correto"] is True
+    assert exams["eda"]["correto"] is False
+
+
+def test_safety_omission_drives_unsafe_outcome():
+    token = _register_and_login("conduta-insegura@example.com")
+    response = client.post(
+        "/simulacoes/12/finalizar",
+        json={
+            "exames_solicitados": ["cortisol_acth"],
+            "hipotese_diagnostica": "Síndrome de Cushing iatrogênica",
+            "conduta_proposta": "Suspender betametasona imediatamente e acompanhar pressão arterial.",
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 201
+    result = response.json()
+    assert result["nivel_conduta"] == "insegura"
+    assert "suspensão abrupta" in result["feedback"]["feedback_seguranca"].lower()
+    assert "hipotensão" in result["feedback"]["reacao_paciente"].lower()
+    assert result["objetivos_aprendizagem"]
+    assert result["fontes_clinicas"][0]["organizacao"]
 
 
 def test_clinical_simulation_v2_scores_and_persists_structured_feedback():

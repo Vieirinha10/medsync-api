@@ -66,6 +66,11 @@ def finalizar_simulacao(
         "pontuacao": score.model_dump(),
         "exames": exam_feedback.model_dump(),
         "feedback": narrative.model_dump(),
+        "objetivos_aprendizagem": case_record.rubrica.definicao.get(
+            "objetivos_aprendizagem", []
+        ),
+        "fontes_clinicas": case_record.rubrica.definicao.get("fontes_clinicas", []),
+        "nivel_conduta": context.get("nivel_conduta", "parcial"),
         "fonte_feedback": feedback_source,
         "modelo_ia": model,
         "aviso_educacional": SimulationEvaluation.model_fields[
