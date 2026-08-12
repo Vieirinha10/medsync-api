@@ -1,4 +1,4 @@
-# Simulação Clínica 2.0
+# Simulação Clínica 2.2
 
 ## Propósito
 
@@ -26,17 +26,31 @@ personalizada ao finalizar o caso.
 - Hipótese diagnóstica: 30 pontos
 - Conduta: 30 pontos
 
-## Estrutura do feedback
+## Estrutura padronizada do feedback
 
-- resumo do desempenho;
+- síntese do raciocínio do estudante;
 - acertos;
-- pontos de melhoria;
-- análise dos exames;
+- omissões;
+- exames de baixo valor;
+- análise das justificativas opcionais dos exames;
 - análise da hipótese;
 - análise da conduta;
 - segurança do paciente;
-- recomendações de estudo;
-- resposta clínica de referência.
+- reação clínica simulada;
+- desfecho delimitado pela rubrica;
+- plano pessoal de melhoria.
+
+## Consequências educacionais
+
+- exame de baixo valor adiciona tempo fictício à simulação;
+- exame essencial omitido adiciona atraso fictício ao diagnóstico;
+- conduta adequada, parcial ou insegura determina o estado simulado do paciente;
+- a reavaliação mostra apenas indicadores previamente definidos na rubrica;
+- o tempo não representa prazo real de atendimento ou liberação de exames.
+
+Após o resultado, o estudante pode fazer perguntas à Synapse. Cada pergunta é
+respondida com o contexto do caso, da resolução e da rubrica, sem reutilizar
+dados de pacientes reais e sem permitir que a IA invente evolução clínica.
 
 ## Estratégia de implantação
 
