@@ -77,7 +77,7 @@ def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
         assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 4
+        assert rubric.versao == 5
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
 
@@ -92,7 +92,7 @@ def test_existing_pilot_rubric_is_safely_upgraded():
         assert seed_clinical_content(db) is False
         db.refresh(rubric)
 
-        assert rubric.versao == 4
+        assert rubric.versao == 5
         assert rubric.definicao["feedback_seguranca"]
 
 
@@ -832,7 +832,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
                 select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
             )
             assert rubric is not None
-            assert rubric.versao == 4
+            assert rubric.versao == 5
             assert rubric.definicao["objetivos_aprendizagem"]
             assert rubric.definicao["criterios_seguranca"]
             assert rubric.definicao["fontes_clinicas"]
@@ -877,6 +877,9 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
         "/simulacoes/8/finalizar",
         json={
             "exames_solicitados": ["angiotc", "doppler_mmss", "gaso"],
+            "justificativas_exames": {
+                "angiotc": "Confirmar falhas de enchimento compatíveis com embolia pulmonar.",
+            },
             "hipotese_diagnostica": "Tromboembolismo pulmonar agudo",
             "conduta_proposta": (
                 "Estabilização pelo ABC, oxigenoterapia, anticoagulação com "
@@ -900,6 +903,11 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
     assert result["feedback"]["feedback_seguranca"]
     assert "hipoxemia" in result["feedback"]["reacao_paciente"].lower()
     assert "monitor" in result["feedback"]["desfecho_clinico"].lower()
+    assert result["feedback"]["sintese_raciocinio"]
+    assert result["feedback"]["justificativas_exames"][0]["justificativa_estudante"]
+    assert result["feedback"]["plano_pessoal_melhoria"]
+    assert result["consequencias"]["estado_paciente"] == "estabilizado"
+    assert result["consequencias"]["reavaliacao"]
 
     saved = client.get(
         f"/simulacoes/resultados/{result['progresso_id']}",
@@ -927,6 +935,18 @@ def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():
     assert result["pontuacao"]["conduta"] == 12
     assert result["exames"]["desnecessarios"] == ["D-dímero"]
     assert len(result["exames"]["essenciais_ausentes"]) == 2
+    assert result["consequencias"]["tempo_desperdicado_minutos"] == 12
+    assert result["consequencias"]["atraso_diagnostico_minutos"] == 36
+    assert result["consequencias"]["tempo_total_impactado_minutos"] == 48
+
+    follow_up = client.post(
+        f"/simulacoes/resultados/{result['progresso_id']}/perguntar",
+        json={"pergunta": "Por que este exame era desnecessário?"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert follow_up.status_code == 200
+    assert follow_up.json()["fonte_feedback"] == "agente_regras"
+    assert "baixo valor" in follow_up.json()["resposta"].lower()
 
     notebook = client.get(
         "/caderno-erros/meu",
