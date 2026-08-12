@@ -14,8 +14,23 @@ logger = logging.getLogger(__name__)
 
 class SimulationSubmission(BaseModel):
     exames_solicitados: list[str] = Field(default_factory=list)
+    justificativas_exames: dict[str, str] = Field(default_factory=dict)
     hipotese_diagnostica: str = Field(min_length=3, max_length=4000)
     conduta_proposta: str = Field(min_length=3, max_length=4000)
+
+    @model_validator(mode="after")
+    def validate_exam_rationales(self):
+        selected = set(self.exames_solicitados)
+        if set(self.justificativas_exames) - selected:
+            raise ValueError("Só é possível justificar exames selecionados.")
+        if any(len(text.strip()) > 600 for text in self.justificativas_exames.values()):
+            raise ValueError("Cada justificativa deve ter no máximo 600 caracteres.")
+        self.justificativas_exames = {
+            exam_id: text.strip()
+            for exam_id, text in self.justificativas_exames.items()
+            if text.strip()
+        }
+        return self
 
 
 class ScoreBreakdown(BaseModel):
@@ -31,9 +46,47 @@ class ExamFeedback(BaseModel):
     comentario: str
 
 
+class ExamRationaleFeedback(BaseModel):
+    exame_id: str
+    exame: str
+    justificativa_estudante: str | None = None
+    compreensao: Literal["adequada", "parcial", "nao_justificada"]
+    feedback: str
+
+
+class ClinicalEvent(BaseModel):
+    tipo: Literal["tempo", "atraso", "resposta", "seguranca"]
+    titulo: str
+    descricao: str
+    minutos: int = Field(default=0, ge=0)
+
+
+class VitalReassessment(BaseModel):
+    indicador: str
+    antes: str
+    depois: str
+    tendencia: Literal["melhora", "estavel", "piora"]
+
+
+class ClinicalConsequences(BaseModel):
+    tempo_desperdicado_minutos: int = Field(default=0, ge=0)
+    atraso_diagnostico_minutos: int = Field(default=0, ge=0)
+    tempo_total_impactado_minutos: int = Field(default=0, ge=0)
+    estado_paciente: Literal["estabilizado", "resposta_parcial", "deterioracao"]
+    eventos: list[ClinicalEvent] = Field(default_factory=list)
+    reavaliacao: list[VitalReassessment] = Field(default_factory=list)
+    aviso_tempo: str = (
+        "Tempo educacional fictício usado para demonstrar o impacto das decisões; "
+        "não representa prazo real de atendimento ou de liberação de exames."
+    )
+
+
 class ClinicalNarrative(BaseModel):
     resumo: str
+    sintese_raciocinio: str = "Síntese não registrada nesta versão da avaliação."
     acertos: list[str]
+    omissoes: list[str] = Field(default_factory=list)
+    exames_baixo_valor: list[str] = Field(default_factory=list)
     pontos_melhoria: list[str]
     feedback_hipotese: str
     feedback_conduta: str
@@ -44,6 +97,8 @@ class ClinicalNarrative(BaseModel):
     desfecho_clinico: str = (
         "O desfecho clínico não foi registrado nesta versão da avaliação."
     )
+    justificativas_exames: list[ExamRationaleFeedback] = Field(default_factory=list)
+    plano_pessoal_melhoria: list[str] = Field(default_factory=list)
     recomendacoes_estudo: list[str]
 
 
@@ -59,6 +114,8 @@ class SimulationEvaluation(BaseModel):
     objetivos_aprendizagem: list[str] = Field(default_factory=list)
     fontes_clinicas: list[dict[str, Any]] = Field(default_factory=list)
     nivel_conduta: Literal["adequada", "parcial", "insegura"] = "parcial"
+    consequencias: ClinicalConsequences | None = None
+    versao_rubrica: int | None = None
     fonte_feedback: Literal["openai", "agente_regras"]
     modelo_ia: str | None = None
     aviso_educacional: str = (
@@ -82,6 +139,18 @@ class SafetyCriterion(BaseModel):
 class OutcomeLevel(BaseModel):
     reacao: str = Field(min_length=3)
     desfecho: str = Field(min_length=3)
+    reavaliacao: list[VitalReassessment] = Field(default_factory=list)
+
+
+class SimulationQuestionRequest(BaseModel):
+    pergunta: str = Field(min_length=5, max_length=500)
+
+
+class SimulationQuestionResponse(BaseModel):
+    resposta: str
+    fonte_feedback: Literal["openai", "agente_regras"]
+    modelo_ia: str | None = None
+    aviso_educacional: str = "Resposta restrita ao caso simulado e à rubrica revisada; não constitui orientação para pacientes reais."
 
 
 class OutcomeMatrix(BaseModel):
@@ -244,6 +313,8 @@ def evaluate_objective(
     )
     context = {
         "rubrica": rubric,
+        "nomes_exames": names,
+        "exames_selecionados": sorted(selected),
         "classificacao_hipotese": hypothesis_classification,
         "condutas_identificadas": matched_conduct,
         "condutas_ausentes": missing_conduct,
@@ -257,6 +328,92 @@ def evaluate_objective(
         ),
     }
     return score, exam_feedback, context
+
+
+def build_exam_rationale_feedback(
+    submission: SimulationSubmission,
+    context: dict[str, Any],
+) -> list[ExamRationaleFeedback]:
+    rubric = context["rubrica"]
+    names = context["nomes_exames"]
+    references = rubric.get("justificativa_exames", {})
+    feedback = []
+    for exam_id in context["exames_selecionados"]:
+        student_text = submission.justificativas_exames.get(exam_id)
+        reference = references.get(
+            exam_id,
+            "A utilidade deste exame não foi detalhada na rubrica revisada.",
+        )
+        feedback.append(
+            ExamRationaleFeedback(
+                exame_id=exam_id,
+                exame=names.get(exam_id, exam_id),
+                justificativa_estudante=student_text,
+                compreensao="parcial" if student_text else "nao_justificada",
+                feedback=(
+                    f"Sua justificativa foi registrada. Compare com a referência: {reference}"
+                    if student_text
+                    else f"Justificativa opcional não informada. Utilidade de referência: {reference}"
+                ),
+            )
+        )
+    return feedback
+
+
+def build_clinical_consequences(
+    exams: ExamFeedback,
+    context: dict[str, Any],
+) -> ClinicalConsequences:
+    """Converte decisões em consequências educacionais determinísticas da rubrica."""
+    wasted = 12 * len(exams.desnecessarios)
+    delay = 18 * len(exams.essenciais_ausentes)
+    level = context.get("nivel_conduta", "parcial")
+    state_by_level = {
+        "adequada": "estabilizado",
+        "parcial": "resposta_parcial",
+        "insegura": "deterioracao",
+    }
+    events: list[ClinicalEvent] = []
+    if exams.desnecessarios:
+        events.append(
+            ClinicalEvent(
+                tipo="tempo",
+                titulo="Exames de baixo valor consumiram tempo",
+                descricao="Na simulação: " + ", ".join(exams.desnecessarios) + ".",
+                minutos=wasted,
+            )
+        )
+    if exams.essenciais_ausentes:
+        events.append(
+            ClinicalEvent(
+                tipo="atraso",
+                titulo="Omissões atrasaram a definição diagnóstica",
+                descricao="Exames essenciais ausentes: "
+                + ", ".join(exams.essenciais_ausentes)
+                + ".",
+                minutos=delay,
+            )
+        )
+    outcome = (context["rubrica"].get("desfechos_conduta") or {}).get(level, {})
+    events.append(
+        ClinicalEvent(
+            tipo="resposta" if level != "insegura" else "seguranca",
+            titulo={
+                "adequada": "A conduta estabilizou o paciente",
+                "parcial": "A resposta clínica foi parcial",
+                "insegura": "A conduta aumentou o risco de deterioração",
+            }[level],
+            descricao=outcome.get("reacao", "Reação delimitada pela rubrica clínica."),
+        )
+    )
+    return ClinicalConsequences(
+        tempo_desperdicado_minutos=wasted,
+        atraso_diagnostico_minutos=delay,
+        tempo_total_impactado_minutos=wasted + delay,
+        estado_paciente=state_by_level[level],
+        eventos=events,
+        reavaliacao=outcome.get("reavaliacao", []),
+    )
 
 
 def build_rule_based_narrative(
@@ -365,9 +522,7 @@ def build_rule_based_narrative(
             "Com poucas medidas essenciais contempladas, o paciente mantém risco de "
             "não responder ou de apresentar deterioração. "
         )
-        outcome_context = (
-            "Sem revisão imediata da conduta, o desfecho de referência fica comprometido: "
-        )
+        outcome_context = "Sem revisão imediata da conduta, o desfecho de referência fica comprometido: "
         patient_reaction = reaction_context + rubric.get(
             "reacao_paciente_referencia",
             "A resposta do paciente depende das medidas propostas.",
@@ -386,12 +541,37 @@ def build_rule_based_narrative(
             item["feedback"] for item in context["seguranca_ausente"]
         )
 
+    rationales = build_exam_rationale_feedback(submission, context)
+    omissions = []
+    if exams.essenciais_ausentes:
+        omissions.append(
+            "Exames essenciais ausentes: " + ", ".join(exams.essenciais_ausentes) + "."
+        )
+    if context["condutas_ausentes"]:
+        omissions.append(
+            "Elementos ausentes na conduta: "
+            + ", ".join(context["condutas_ausentes"])
+            + "."
+        )
+    omissions.extend(item["feedback"] for item in context.get("seguranca_ausente", []))
+    improvement_plan = [
+        "Revisar a relação entre os achados do caso e o diagnóstico de referência.",
+        "Treinar a seleção de exames perguntando se cada resultado mudaria a conduta.",
+        "Reescrever a conduta em ordem de prioridade, incluindo segurança e reavaliação.",
+    ]
+
     return ClinicalNarrative(
         resumo=(
             "Seu desempenho foi analisado pela Synapse com base "
             "no gabarito estruturado deste caso."
         ),
+        sintese_raciocinio=(
+            f"Você formulou a hipótese “{submission.hipotese_diagnostica.strip()}” e propôs "
+            "uma conduta que foi comparada aos critérios clínicos e de segurança da rubrica."
+        ),
         acertos=strengths,
+        omissoes=omissions,
+        exames_baixo_valor=exams.desnecessarios,
         pontos_melhoria=improvements,
         feedback_hipotese=(
             f"Diagnóstico de referência: {rubric['diagnostico_referencia']} "
@@ -404,6 +584,8 @@ def build_rule_based_narrative(
         feedback_seguranca=safety_feedback,
         reacao_paciente=patient_reaction,
         desfecho_clinico=clinical_outcome,
+        justificativas_exames=rationales,
+        plano_pessoal_melhoria=improvement_plan,
         recomendacoes_estudo=rubric["temas_estudo"],
     )
 
@@ -456,7 +638,12 @@ def enhance_narrative_with_ai(
                         "desfecho_clinico comparando a conduta enviada exclusivamente "
                         "com as referências fornecidas; não invente evolução, tratamento "
                         "ou prognóstico. Se a resposta do estudante estiver "
-                        "fora do tema, explique isso diretamente."
+                        "fora do tema, explique isso diretamente. Avalie as "
+                        "justificativas dos exames somente contra justificativa_exames "
+                        "da rubrica; preserve como nao_justificada quando ausente. "
+                        "Organize obrigatoriamente síntese, acertos, omissões, exames "
+                        "de baixo valor, hipótese, conduta, segurança, reação, desfecho "
+                        "e plano pessoal de melhoria."
                     ),
                 },
                 {
@@ -475,3 +662,101 @@ def enhance_narrative_with_ai(
             model,
         )
         return fallback, "agente_regras", None
+
+
+def answer_simulation_question(
+    *,
+    question: str,
+    case: dict[str, Any],
+    submission: dict[str, Any],
+    evaluation: dict[str, Any],
+    rubric: dict[str, Any],
+) -> SimulationQuestionResponse:
+    normalized = _normalize(question)
+    exam_feedback = evaluation.get("exames", {})
+    narrative = evaluation.get("feedback", {})
+
+    if "desnecess" in normalized or "baixo valor" in normalized:
+        low_value = exam_feedback.get("desnecessarios", [])
+        if low_value:
+            references = rubric.get("justificativa_exames", {})
+            names = _exam_name_map(case)
+            details = []
+            for exam_id in submission.get("exames_solicitados", []):
+                if names.get(exam_id) in low_value:
+                    details.append(references.get(exam_id, names[exam_id]))
+            fallback_answer = " ".join(details) or exam_feedback.get("comentario", "")
+        else:
+            fallback_answer = "Você não solicitou exames classificados como de baixo valor nesta rubrica."
+    elif "instavel" in normalized or "instabilidade" in normalized:
+        fallback_answer = (
+            "Em uma deterioração simulada, priorize os critérios de segurança da rubrica: "
+            + rubric.get(
+                "feedback_seguranca", "reconhecer gravidade, estabilizar e reavaliar."
+            )
+            + " Conduta de referência: "
+            + rubric.get("conduta_referencia", "não informada")
+        )
+    elif "diferenc" in normalized or "diagnostico" in normalized:
+        fallback_answer = (
+            f"O diagnóstico de referência é {rubric['diagnostico_referencia']} "
+            "Diferencie-o relacionando história, exame físico e resultados que realmente mudam a probabilidade diagnóstica. "
+            + narrative.get("feedback_hipotese", "")
+        )
+    else:
+        fallback_answer = (
+            narrative.get("sintese_raciocinio")
+            or narrative.get("resumo")
+            or "Revise a hipótese, a conduta e os critérios de segurança mostrados no resultado."
+        )
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return SimulationQuestionResponse(
+            resposta=fallback_answer,
+            fonte_feedback="agente_regras",
+        )
+
+    model = os.getenv("OPENAI_MODEL", "gpt-5.6")
+    try:
+        from openai import OpenAI
+
+        payload = {
+            "pergunta": question,
+            "caso": {
+                "titulo": case["titulo"],
+                "historia_clinica": case["historia_clinica"],
+                "exame_fisico": case["exame_fisico"],
+            },
+            "respostas_estudante": submission,
+            "resultado": evaluation,
+            "rubrica_revisada": rubric,
+        }
+        response = OpenAI(api_key=api_key).responses.create(
+            model=model,
+            store=False,
+            instructions=(
+                "Você é a Synapse, tutora educacional da MedSync. Responda em português "
+                "brasileiro, de modo direto e didático, usando exclusivamente o caso, a "
+                "rubrica e o resultado fornecidos. Não invente sinais vitais, evolução, "
+                "diagnósticos, condutas ou prognósticos. Não dê orientação para pacientes "
+                "reais. Se algo não estiver informado, diga 'não informado'."
+            ),
+            input=json.dumps(payload, ensure_ascii=False),
+        )
+        answer = (response.output_text or "").strip()
+        if not answer:
+            raise ValueError("Resposta vazia da Synapse.")
+        return SimulationQuestionResponse(
+            resposta=answer,
+            fonte_feedback="openai",
+            modelo_ia=model,
+        )
+    except Exception:
+        logger.exception(
+            "Falha ao responder pergunta pós-simulação com o modelo %s", model
+        )
+        return SimulationQuestionResponse(
+            resposta=fallback_answer,
+            fonte_feedback="agente_regras",
+        )
