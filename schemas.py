@@ -107,6 +107,7 @@ class CasoClinico(BaseModel):
 class CasoClinicoDetalhes(CasoClinico):
     historia_clinica: str
     exame_fisico: str
+    sinais_vitais: list[dict[str, Any]]
     exames_disponiveis: list[dict[str, Any]]
 
 

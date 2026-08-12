@@ -77,7 +77,7 @@ def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
         assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 2
+        assert rubric.versao == 3
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
 
@@ -92,7 +92,7 @@ def test_existing_pilot_rubric_is_safely_upgraded():
         assert seed_clinical_content(db) is False
         db.refresh(rubric)
 
-        assert rubric.versao == 2
+        assert rubric.versao == 3
         assert rubric.definicao["feedback_seguranca"]
 
 
@@ -802,6 +802,18 @@ def test_v2_case_is_identified_in_case_catalog():
     assert pilot["avaliacao_2_disponivel"] is True
     assert legacy["avaliacao_2_disponivel"] is False
 
+    detail = client.get(
+        "/casos-clinicos/8",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert detail.status_code == 200
+    vitals = {item["id"]: item for item in detail.json()["sinais_vitais"]}
+    assert vitals["fr"]["valor"] == "27"
+    assert vitals["fr"]["status"] == "alterado"
+    assert vitals["spo2"]["valor"] == "83"
+    assert vitals["spo2"]["status"] == "alterado"
+    assert vitals["pa"]["status"] == "nao_informado"
+
 
 def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
     token = _register_and_login("simulacao-v2@example.com")
@@ -830,6 +842,8 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
     assert result["exames"]["essenciais_ausentes"] == []
     assert result["exames"]["desnecessarios"] == []
     assert result["feedback"]["feedback_seguranca"]
+    assert "hipoxemia" in result["feedback"]["reacao_paciente"].lower()
+    assert "monitor" in result["feedback"]["desfecho_clinico"].lower()
 
     saved = client.get(
         f"/simulacoes/resultados/{result['progresso_id']}",

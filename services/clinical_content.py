@@ -11,6 +11,7 @@ from evaluation import (
     ClinicalRubricDefinition,
 )
 from models import ClinicalCase, ClinicalExam, ClinicalRubric
+from services.vital_signs import extract_vital_signs
 
 
 def seed_clinical_content(db: Session) -> bool:
@@ -137,6 +138,10 @@ def serialize_case(case: ClinicalCase, *, include_details: bool = True) -> dict:
             {
                 "historia_clinica": case.historia_clinica,
                 "exame_fisico": case.exame_fisico,
+                "sinais_vitais": extract_vital_signs(
+                    case.historia_clinica,
+                    case.exame_fisico,
+                ),
                 "exames_disponiveis": [
                     {
                         "id": exam.codigo,

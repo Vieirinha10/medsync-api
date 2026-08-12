@@ -36,6 +36,12 @@ class ClinicalNarrative(BaseModel):
     feedback_hipotese: str
     feedback_conduta: str
     feedback_seguranca: str
+    reacao_paciente: str = (
+        "A reação do paciente não foi registrada nesta versão da avaliação."
+    )
+    desfecho_clinico: str = (
+        "O desfecho clínico não foi registrado nesta versão da avaliação."
+    )
     recomendacoes_estudo: list[str]
 
 
@@ -75,6 +81,14 @@ class ClinicalRubricDefinition(BaseModel):
     feedback_hipotese_parcial: str = Field(min_length=3)
     feedback_hipotese_incorreta: str = Field(min_length=3)
     feedback_seguranca: str = Field(min_length=3)
+    reacao_paciente_referencia: str = Field(
+        default="A resposta do paciente depende da adequação e da segurança das medidas propostas.",
+        min_length=3,
+    )
+    desfecho_referencia: str = Field(
+        default="O paciente deve ser reavaliado após a conduta inicial e acompanhado conforme a evolução clínica.",
+        min_length=3,
+    )
     temas_estudo: list[str] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -98,7 +112,7 @@ class ClinicalRubricDefinition(BaseModel):
         return self
 
 
-PILOT_RUBRIC_VERSION = 2
+PILOT_RUBRIC_VERSION = 3
 
 
 PILOT_RUBRICS: dict[int, dict[str, Any]] = {
@@ -198,6 +212,17 @@ PILOT_RUBRICS: dict[int, dict[str, Any]] = {
             "A hipoxemia importante exige estabilização e monitorização. A decisão "
             "sobre anticoagulação e reperfusão depende de contraindicações e da "
             "estabilidade hemodinâmica."
+        ),
+        "reacao_paciente_referencia": (
+            "Com estabilização, oxigênio, anticoagulação e monitorização adequadas, "
+            "a tendência é melhora progressiva da hipoxemia e prevenção da progressão "
+            "trombótica. Omissões nessas medidas mantêm risco de deterioração respiratória "
+            "e hemodinâmica."
+        ),
+        "desfecho_referencia": (
+            "A paciente permanece internada e monitorizada, com anticoagulação e "
+            "estratificação de risco. Na ausência de instabilidade, evolui com melhora "
+            "clínica; se houver deterioração, deve ser reavaliada para estratégia de reperfusão."
         ),
         "temas_estudo": [
             "Escore de probabilidade pré-teste para TEP",
@@ -361,9 +386,33 @@ def build_rule_based_narrative(
             "que pode ser aperfeiçoado com a revisão abaixo."
         )
 
+    if score.conduta >= 24:
+        reaction_context = (
+            "Sua conduta contemplou os principais pilares previstos na rubrica. "
+        )
+        outcome_context = (
+            "Com a execução adequada e reavaliação contínua, o desfecho esperado é: "
+        )
+    elif score.conduta >= 12:
+        reaction_context = (
+            "Sua conduta tende a produzir resposta apenas parcial, pois ainda há "
+            "medidas importantes ausentes. "
+        )
+        outcome_context = (
+            "O desfecho permanece condicionado à correção das omissões apontadas: "
+        )
+    else:
+        reaction_context = (
+            "Com poucas medidas essenciais contempladas, o paciente mantém risco de "
+            "não responder ou de apresentar deterioração. "
+        )
+        outcome_context = (
+            "Sem revisão imediata da conduta, o desfecho de referência fica comprometido: "
+        )
+
     return ClinicalNarrative(
         resumo=(
-            "Seu desempenho foi analisado pelo Avaliador Clínico MedSync com base "
+            "Seu desempenho foi analisado pela Synapse com base "
             "no gabarito estruturado deste caso."
         ),
         acertos=strengths,
@@ -379,6 +428,14 @@ def build_rule_based_narrative(
         feedback_seguranca=rubric.get(
             "feedback_seguranca",
             "Revise os sinais de gravidade e as medidas iniciais de segurança deste caso.",
+        ),
+        reacao_paciente=reaction_context + rubric.get(
+            "reacao_paciente_referencia",
+            "A resposta do paciente depende da adequação e da segurança das medidas propostas.",
+        ),
+        desfecho_clinico=outcome_context + rubric.get(
+            "desfecho_referencia",
+            "O paciente deve ser reavaliado após a conduta inicial e acompanhado conforme a evolução clínica.",
         ),
         recomendacoes_estudo=rubric["temas_estudo"],
     )
@@ -428,7 +485,10 @@ def enhance_narrative_with_ai(
                         "brasileiro. Use somente o caso, o gabarito e a pontuação "
                         "fornecidos. Não altere notas, não invente dados e não revele "
                         "raciocínio interno. Diferencie erro, omissão e alternativa "
-                        "clinicamente aceitável. Se a resposta do estudante estiver "
+                        "clinicamente aceitável. Personalize reacao_paciente e "
+                        "desfecho_clinico comparando a conduta enviada exclusivamente "
+                        "com as referências fornecidas; não invente evolução, tratamento "
+                        "ou prognóstico. Se a resposta do estudante estiver "
                         "fora do tema, explique isso diretamente."
                     ),
                 },
