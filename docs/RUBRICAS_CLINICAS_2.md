@@ -22,6 +22,8 @@ Cada rubrica contém:
 - critérios pontuados de conduta;
 - critérios críticos de segurança;
 - matriz de reação e desfecho para conduta adequada, parcial ou insegura;
+- reavaliação qualitativa de sinais ou indicadores explicitamente previstos;
+- justificativa de referência para explicar a utilidade de cada exame;
 - objetivos de aprendizagem, temas de revisão e referências clínicas.
 
 ## Regra de segurança
@@ -29,6 +31,11 @@ Cada rubrica contém:
 A pontuação e a segurança são avaliadas separadamente. Uma resposta pode somar
 pontos por medidas corretas e ainda ser classificada como insegura quando omite
 um critério crítico. Nessa situação, a matriz de desfecho inseguro prevalece.
+
+A justificativa do exame é opcional e não reduz a nota quando não preenchida.
+Quando informada, a Synapse compara o raciocínio do estudante apenas com a
+utilidade documentada na rubrica. Indicadores ausentes devem permanecer como
+“não informado”; valores numéricos novos nunca são inferidos pelo modelo.
 
 ## Processo editorial recomendado
 
