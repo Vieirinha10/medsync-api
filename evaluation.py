@@ -7,6 +7,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from clinical_rubric_catalog import CLINICAL_RUBRIC_VERSION, CLINICAL_RUBRICS
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,6 +56,9 @@ class SimulationEvaluation(BaseModel):
     pontuacao: ScoreBreakdown
     exames: ExamFeedback
     feedback: ClinicalNarrative
+    objetivos_aprendizagem: list[str] = Field(default_factory=list)
+    fontes_clinicas: list[dict[str, Any]] = Field(default_factory=list)
+    nivel_conduta: Literal["adequada", "parcial", "insegura"] = "parcial"
     fonte_feedback: Literal["openai", "agente_regras"]
     modelo_ia: str | None = None
     aviso_educacional: str = (
@@ -66,6 +71,30 @@ class ConductCriterion(BaseModel):
     nome: str = Field(min_length=3, max_length=160)
     pontos: int = Field(gt=0, le=30)
     termos: list[str] = Field(min_length=1)
+
+
+class SafetyCriterion(BaseModel):
+    nome: str = Field(min_length=3, max_length=160)
+    termos: list[str] = Field(min_length=1)
+    feedback_omissao: str = Field(min_length=3)
+
+
+class OutcomeLevel(BaseModel):
+    reacao: str = Field(min_length=3)
+    desfecho: str = Field(min_length=3)
+
+
+class OutcomeMatrix(BaseModel):
+    adequada: OutcomeLevel
+    parcial: OutcomeLevel
+    insegura: OutcomeLevel
+
+
+class ClinicalSource(BaseModel):
+    titulo: str = Field(min_length=3)
+    organizacao: str = Field(min_length=2)
+    ano: int = Field(ge=2000, le=2100)
+    url: str = Field(pattern=r"^https://")
 
 
 class ClinicalRubricDefinition(BaseModel):
@@ -81,6 +110,9 @@ class ClinicalRubricDefinition(BaseModel):
     feedback_hipotese_parcial: str = Field(min_length=3)
     feedback_hipotese_incorreta: str = Field(min_length=3)
     feedback_seguranca: str = Field(min_length=3)
+    objetivos_aprendizagem: list[str] = Field(default_factory=list)
+    criterios_seguranca: list[SafetyCriterion] = Field(default_factory=list)
+    desfechos_conduta: OutcomeMatrix | None = None
     reacao_paciente_referencia: str = Field(
         default="A resposta do paciente depende da adequação e da segurança das medidas propostas.",
         min_length=3,
@@ -90,6 +122,7 @@ class ClinicalRubricDefinition(BaseModel):
         min_length=3,
     )
     temas_estudo: list[str] = Field(min_length=1)
+    fontes_clinicas: list[ClinicalSource] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_scoring_and_exam_groups(self):
@@ -112,125 +145,8 @@ class ClinicalRubricDefinition(BaseModel):
         return self
 
 
-PILOT_RUBRIC_VERSION = 3
-
-
-PILOT_RUBRICS: dict[int, dict[str, Any]] = {
-    8: {
-        "diagnostico_referencia": (
-            "Tromboembolismo pulmonar agudo associado a trombose venosa do membro "
-            "superior esquerdo em paciente com câncer."
-        ),
-        "diagnostico_termos": [
-            "tromboembolismo pulmonar",
-            "embolia pulmonar",
-            "tep",
-        ],
-        "diagnostico_parcial": [
-            "trombose venosa",
-            "trombose",
-        ],
-        "exames_essenciais": ["angiotc", "doppler_mmss", "gaso"],
-        "exames_opcionais": [],
-        "exames_desnecessarios": ["dimerod"],
-        "justificativa_exames": {
-            "angiotc": (
-                "Confirma o tromboembolismo pulmonar e demonstra a falha de enchimento."
-            ),
-            "doppler_mmss": (
-                "Investiga a provável fonte trombótica diante do membro superior "
-                "edemaciado, hiperemiado e doloroso."
-            ),
-            "gaso": (
-                "Ajuda a avaliar a repercussão respiratória em uma paciente com "
-                "saturação de 83%."
-            ),
-            "dimerod": (
-                "Tem pouca utilidade para excluir TEP neste cenário de alta "
-                "probabilidade clínica, câncer ativo e hipoxemia importante."
-            ),
-        },
-        "conduta_criterios": [
-            {
-                "nome": "Estabilização e oxigenoterapia",
-                "pontos": 8,
-                "termos": [
-                    "oxigenio",
-                    "oxigenoterapia",
-                    "suporte ventilatorio",
-                    "abc",
-                    "estabilizacao",
-                ],
-            },
-            {
-                "nome": "Anticoagulação",
-                "pontos": 12,
-                "termos": [
-                    "anticoagulacao",
-                    "heparina",
-                    "enoxaparina",
-                    "anticoagulante",
-                ],
-            },
-            {
-                "nome": "Estratificação de risco",
-                "pontos": 6,
-                "termos": [
-                    "estratificacao de risco",
-                    "estabilidade hemodinamica",
-                    "instabilidade hemodinamica",
-                    "reperfusao",
-                    "trombolise",
-                ],
-            },
-            {
-                "nome": "Internação e monitorização",
-                "pontos": 4,
-                "termos": [
-                    "internacao",
-                    "monitorizacao",
-                    "monitoramento",
-                    "hospitalar",
-                ],
-            },
-        ],
-        "conduta_referencia": (
-            "Estabilizar pelo ABC, ofertar oxigênio e monitorizar; iniciar "
-            "anticoagulação se não houver contraindicação; estratificar o risco "
-            "hemodinâmico para avaliar necessidade de reperfusão; manter acompanhamento "
-            "hospitalar e abordar a trombose associada ao câncer."
-        ),
-        "feedback_hipotese_parcial": (
-            "Você reconheceu o fenômeno trombótico, mas precisa explicitar o "
-            "tromboembolismo pulmonar como hipótese principal."
-        ),
-        "feedback_hipotese_incorreta": (
-            "A hipótese não identificou o tromboembolismo pulmonar, diagnóstico "
-            "mais provável diante da apresentação."
-        ),
-        "feedback_seguranca": (
-            "A hipoxemia importante exige estabilização e monitorização. A decisão "
-            "sobre anticoagulação e reperfusão depende de contraindicações e da "
-            "estabilidade hemodinâmica."
-        ),
-        "reacao_paciente_referencia": (
-            "Com estabilização, oxigênio, anticoagulação e monitorização adequadas, "
-            "a tendência é melhora progressiva da hipoxemia e prevenção da progressão "
-            "trombótica. Omissões nessas medidas mantêm risco de deterioração respiratória "
-            "e hemodinâmica."
-        ),
-        "desfecho_referencia": (
-            "A paciente permanece internada e monitorizada, com anticoagulação e "
-            "estratificação de risco. Na ausência de instabilidade, evolui com melhora "
-            "clínica; se houver deterioração, deve ser reavaliada para estratégia de reperfusão."
-        ),
-        "temas_estudo": [
-            "Escore de probabilidade pré-teste para TEP",
-            "Indicações e limitações do D-dímero",
-            "Estratificação de risco e tratamento do TEP",
-        ],
-    }
-}
+PILOT_RUBRIC_VERSION = CLINICAL_RUBRIC_VERSION
+PILOT_RUBRICS = CLINICAL_RUBRICS
 
 
 def is_v2_case(case_id: int) -> bool:
@@ -293,6 +209,7 @@ def evaluate_objective(
 
     matched_conduct = []
     missing_conduct = []
+    missing_safety = []
     conduct_score = 0
     for criterion in rubric["conduta_criterios"]:
         if _contains_any(submission.conduta_proposta, criterion["termos"]):
@@ -300,6 +217,15 @@ def evaluate_objective(
             matched_conduct.append(criterion["nome"])
         else:
             missing_conduct.append(criterion["nome"])
+
+    for criterion in rubric.get("criterios_seguranca", []):
+        if not _contains_any(submission.conduta_proposta, criterion["termos"]):
+            missing_safety.append(
+                {
+                    "nome": criterion["nome"],
+                    "feedback": criterion["feedback_omissao"],
+                }
+            )
 
     score = ScoreBreakdown(
         exames=exam_score,
@@ -321,6 +247,14 @@ def evaluate_objective(
         "classificacao_hipotese": hypothesis_classification,
         "condutas_identificadas": matched_conduct,
         "condutas_ausentes": missing_conduct,
+        "seguranca_ausente": missing_safety,
+        "nivel_conduta": (
+            "insegura"
+            if missing_safety
+            else "adequada"
+            if conduct_score >= 24
+            else "parcial"
+        ),
     }
     return score, exam_feedback, context
 
@@ -379,6 +313,8 @@ def build_rule_based_narrative(
             + ", ".join(context["condutas_ausentes"])
             + "."
         )
+    for safety_item in context.get("seguranca_ausente", []):
+        improvements.append(safety_item["feedback"])
 
     if not strengths:
         strengths.append(
@@ -386,12 +322,27 @@ def build_rule_based_narrative(
             "que pode ser aperfeiçoado com a revisão abaixo."
         )
 
-    if score.conduta >= 24:
+    outcome_matrix = rubric.get("desfechos_conduta")
+    outcome_level = context.get("nivel_conduta", "parcial")
+
+    if outcome_matrix:
+        selected_outcome = outcome_matrix[outcome_level]
+        patient_reaction = selected_outcome["reacao"]
+        clinical_outcome = selected_outcome["desfecho"]
+    elif score.conduta >= 24:
         reaction_context = (
             "Sua conduta contemplou os principais pilares previstos na rubrica. "
         )
         outcome_context = (
             "Com a execução adequada e reavaliação contínua, o desfecho esperado é: "
+        )
+        patient_reaction = reaction_context + rubric.get(
+            "reacao_paciente_referencia",
+            "A resposta do paciente depende da adequação e da segurança das medidas propostas.",
+        )
+        clinical_outcome = outcome_context + rubric.get(
+            "desfecho_referencia",
+            "O paciente deve ser reavaliado após a conduta inicial.",
         )
     elif score.conduta >= 12:
         reaction_context = (
@@ -401,6 +352,14 @@ def build_rule_based_narrative(
         outcome_context = (
             "O desfecho permanece condicionado à correção das omissões apontadas: "
         )
+        patient_reaction = reaction_context + rubric.get(
+            "reacao_paciente_referencia",
+            "A resposta do paciente depende das medidas propostas.",
+        )
+        clinical_outcome = outcome_context + rubric.get(
+            "desfecho_referencia",
+            "O paciente deve ser reavaliado.",
+        )
     else:
         reaction_context = (
             "Com poucas medidas essenciais contempladas, o paciente mantém risco de "
@@ -408,6 +367,23 @@ def build_rule_based_narrative(
         )
         outcome_context = (
             "Sem revisão imediata da conduta, o desfecho de referência fica comprometido: "
+        )
+        patient_reaction = reaction_context + rubric.get(
+            "reacao_paciente_referencia",
+            "A resposta do paciente depende das medidas propostas.",
+        )
+        clinical_outcome = outcome_context + rubric.get(
+            "desfecho_referencia",
+            "O paciente deve ser reavaliado.",
+        )
+
+    safety_feedback = rubric.get(
+        "feedback_seguranca",
+        "Revise os sinais de gravidade e as medidas iniciais de segurança deste caso.",
+    )
+    if context.get("seguranca_ausente"):
+        safety_feedback += " Omissões identificadas: " + " ".join(
+            item["feedback"] for item in context["seguranca_ausente"]
         )
 
     return ClinicalNarrative(
@@ -425,18 +401,9 @@ def build_rule_based_narrative(
             f"Conduta de referência: {rubric['conduta_referencia']} "
             f"Sua resposta foi: {submission.conduta_proposta.strip()}"
         ),
-        feedback_seguranca=rubric.get(
-            "feedback_seguranca",
-            "Revise os sinais de gravidade e as medidas iniciais de segurança deste caso.",
-        ),
-        reacao_paciente=reaction_context + rubric.get(
-            "reacao_paciente_referencia",
-            "A resposta do paciente depende da adequação e da segurança das medidas propostas.",
-        ),
-        desfecho_clinico=outcome_context + rubric.get(
-            "desfecho_referencia",
-            "O paciente deve ser reavaliado após a conduta inicial e acompanhado conforme a evolução clínica.",
-        ),
+        feedback_seguranca=safety_feedback,
+        reacao_paciente=patient_reaction,
+        desfecho_clinico=clinical_outcome,
         recomendacoes_estudo=rubric["temas_estudo"],
     )
 

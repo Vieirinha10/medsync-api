@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from case_catalog import CLINICAL_CASES
+from clinical_rubric_catalog import CLINICAL_CASE_EXAM_UPDATES
 from clinical_titles import PUBLIC_CASE_TITLES, formatted_public_title
 from evaluation import (
     PILOT_RUBRIC_VERSION,
@@ -17,6 +18,7 @@ from services.vital_signs import extract_vital_signs
 def seed_clinical_content(db: Session) -> bool:
     """Carrega o catálogo legado somente quando o banco ainda está vazio."""
     if db.scalar(select(func.count()).select_from(ClinicalCase)):
+        _sync_case_exam_updates(db)
         _sync_pilot_rubrics(db)
         return False
 
@@ -48,13 +50,53 @@ def seed_clinical_content(db: Session) -> bool:
                 versao=PILOT_RUBRIC_VERSION,
                 status="revisada",
                 definicao=_validated_rubric(PILOT_RUBRICS[source["id"]]),
-                revisado_por="Equipe clínica MedSync",
+                revisado_por="Rubrica editorial MedSync",
                 revisado_em=now,
             )
         db.add(case)
 
     db.commit()
+    _sync_case_exam_updates(db)
     return True
+
+
+def _sync_case_exam_updates(db: Session) -> None:
+    """Corrige e completa exames necessários às rubricas clínicas revisadas."""
+    changed = False
+    for case_id, updates in CLINICAL_CASE_EXAM_UPDATES.items():
+        case = db.scalar(
+            select(ClinicalCase)
+            .where(ClinicalCase.id == case_id)
+            .options(selectinload(ClinicalCase.exames))
+        )
+        if case is None:
+            continue
+
+        exams_by_code = {exam.codigo: exam for exam in case.exames}
+        for order, source in enumerate(updates, start=len(case.exames)):
+            exam = exams_by_code.get(source["id"])
+            if exam is None:
+                case.exames.append(
+                    ClinicalExam(
+                        codigo=source["id"],
+                        nome=source["nome"],
+                        resultado=source["resultado"],
+                        referencia_adequada=source.get("correto", True),
+                        ordem=order,
+                    )
+                )
+                changed = True
+                continue
+            for attribute, value in (
+                ("nome", source["nome"]),
+                ("resultado", source["resultado"]),
+                ("referencia_adequada", source.get("correto", True)),
+            ):
+                if getattr(exam, attribute) != value:
+                    setattr(exam, attribute, value)
+                    changed = True
+    if changed:
+        db.commit()
 
 
 def _validated_rubric(definition: dict) -> dict:
@@ -76,7 +118,7 @@ def _sync_pilot_rubrics(db: Session) -> None:
                 versao=PILOT_RUBRIC_VERSION,
                 status="revisada",
                 definicao=definition,
-                revisado_por="Equipe clínica MedSync",
+                revisado_por="Rubrica editorial MedSync",
                 revisado_em=now,
             )
             changed = True
@@ -89,7 +131,7 @@ def _sync_pilot_rubrics(db: Session) -> None:
             case.rubrica.versao = PILOT_RUBRIC_VERSION
             case.rubrica.status = "revisada"
             case.rubrica.definicao = definition
-            case.rubrica.revisado_por = "Equipe clínica MedSync"
+            case.rubrica.revisado_por = "Rubrica editorial MedSync"
             case.rubrica.revisado_em = now
             changed = True
 
