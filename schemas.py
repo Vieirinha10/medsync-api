@@ -192,6 +192,18 @@ class StudyErrorResponse(BaseModel):
     proxima_revisao_em: datetime
 
 
+class SpacedReviewForecast(BaseModel):
+    intervalo_dias: int
+    proxima_revisao_em: datetime
+
+
+class SpacedReviewPlanItem(StudyErrorResponse):
+    previsoes: dict[
+        Literal["errei", "dificil", "bom", "facil"],
+        SpacedReviewForecast,
+    ]
+
+
 class LearningPathCompletion(BaseModel):
     pontuacao: int = Field(ge=0, le=100)
 

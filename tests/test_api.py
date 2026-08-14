@@ -1099,6 +1099,15 @@ def test_spaced_review_builds_daily_queue_and_updates_schedule():
     assert due.status_code == 200
     assert [entry["id"] for entry in due.json()] == [entry_id]
 
+    plan = client.get("/caderno-erros/revisoes-plano", headers=headers)
+    assert plan.status_code == 200
+    assert [entry["id"] for entry in plan.json()] == [entry_id]
+    assert {
+        rating: forecast["intervalo_dias"]
+        for rating, forecast in plan.json()[0]["previsoes"].items()
+    } == {"errei": 1, "dificil": 1, "bom": 1, "facil": 3}
+    assert plan.json()[0]["sequencia_acertos"] == 0
+
     first = client.post(
         f"/caderno-erros/{entry_id}/revisar",
         json={"avaliacao": "bom"},
@@ -1111,6 +1120,10 @@ def test_spaced_review_builds_daily_queue_and_updates_schedule():
     assert first.json()["status"] == "revisando"
 
     assert client.get("/caderno-erros/revisoes-hoje", headers=headers).json() == []
+    future_plan = client.get("/caderno-erros/revisoes-plano", headers=headers)
+    assert [entry["id"] for entry in future_plan.json()] == [entry_id]
+    assert future_plan.json()[0]["previsoes"]["bom"]["intervalo_dias"] == 7
+    assert future_plan.json()[0]["previsoes"]["facil"]["intervalo_dias"] == 10
 
     second = client.post(
         f"/caderno-erros/{entry_id}/revisar",

@@ -8,6 +8,7 @@ from database import get_db
 from models import StudyError, User
 from schemas import (
     SpacedReviewCreate,
+    SpacedReviewPlanItem,
     StudyErrorResponse,
     StudyErrorStatusUpdate,
     VisualChallengeAttempt,
@@ -18,6 +19,63 @@ from services.activity import track_activity
 router = APIRouter(prefix="/caderno-erros", tags=["Caderno de Erros"])
 
 MAX_REVIEW_INTERVAL_DAYS = 180
+REVIEW_RATINGS = ("errei", "dificil", "bom", "facil")
+
+
+def calculate_review_outcome(entry: StudyError, rating: str) -> dict:
+    previous_interval = entry.intervalo_dias
+    ease_factor = entry.fator_facilidade
+    sequence = entry.sequencia_acertos
+    next_ease_factor = ease_factor
+
+    if rating == "errei":
+        interval = 1
+        next_sequence = 0
+        next_ease_factor = max(1.3, ease_factor - 0.2)
+        next_status = "pendente"
+    elif rating == "dificil":
+        next_sequence = sequence + 1
+        interval = (
+            1 if not previous_interval else max(2, round(previous_interval * 1.5))
+        )
+        next_ease_factor = max(1.3, ease_factor - 0.15)
+        next_status = "revisando"
+    elif rating == "bom":
+        next_sequence = sequence + 1
+        sequence_intervals = {1: 1, 2: 7, 3: 15}
+        interval = sequence_intervals.get(
+            next_sequence,
+            max(1, round(previous_interval * ease_factor)),
+        )
+        next_status = "dominado" if next_sequence >= 3 else "revisando"
+    else:  # facil
+        next_sequence = sequence + 1
+        sequence_intervals = {1: 3, 2: 10, 3: 30}
+        interval = sequence_intervals.get(
+            next_sequence,
+            max(1, round(previous_interval * (ease_factor + 0.3))),
+        )
+        next_ease_factor = min(3.0, ease_factor + 0.15)
+        next_status = "dominado" if next_sequence >= 3 else "revisando"
+
+    return {
+        "intervalo_dias": min(interval, MAX_REVIEW_INTERVAL_DAYS),
+        "sequencia_acertos": next_sequence,
+        "fator_facilidade": next_ease_factor,
+        "status": next_status,
+    }
+
+
+def build_review_forecasts(entry: StudyError, now: datetime) -> dict:
+    forecasts = {}
+    for rating in REVIEW_RATINGS:
+        outcome = calculate_review_outcome(entry, rating)
+        interval = outcome["intervalo_dias"]
+        forecasts[rating] = {
+            "intervalo_dias": interval,
+            "proxima_revisao_em": now + timedelta(days=interval),
+        }
+    return forecasts
 
 
 def schedule_review(
@@ -27,44 +85,12 @@ def schedule_review(
 ) -> StudyError:
     """Aplica um agendamento simples e previsível inspirado no SM-2."""
     reviewed_at = now or datetime.now(UTC)
-    previous_interval = entry.intervalo_dias
-    ease_factor = entry.fator_facilidade
-
-    if rating == "errei":
-        interval = 1
-        entry.sequencia_acertos = 0
-        entry.fator_facilidade = max(1.3, ease_factor - 0.2)
-        entry.status = "pendente"
-        entry.dominado_em = None
-    elif rating == "dificil":
-        entry.sequencia_acertos += 1
-        interval = (
-            1 if not previous_interval else max(2, round(previous_interval * 1.5))
-        )
-        entry.fator_facilidade = max(1.3, ease_factor - 0.15)
-        entry.status = "revisando"
-        entry.dominado_em = None
-    elif rating == "bom":
-        entry.sequencia_acertos += 1
-        sequence_intervals = {1: 1, 2: 7, 3: 15}
-        interval = sequence_intervals.get(
-            entry.sequencia_acertos,
-            max(1, round(previous_interval * ease_factor)),
-        )
-        entry.status = "dominado" if entry.sequencia_acertos >= 3 else "revisando"
-        entry.dominado_em = reviewed_at if entry.status == "dominado" else None
-    else:  # facil
-        entry.sequencia_acertos += 1
-        sequence_intervals = {1: 3, 2: 10, 3: 30}
-        interval = sequence_intervals.get(
-            entry.sequencia_acertos,
-            max(1, round(previous_interval * (ease_factor + 0.3))),
-        )
-        entry.fator_facilidade = min(3.0, ease_factor + 0.15)
-        entry.status = "dominado" if entry.sequencia_acertos >= 3 else "revisando"
-        entry.dominado_em = reviewed_at if entry.status == "dominado" else None
-
-    entry.intervalo_dias = min(interval, MAX_REVIEW_INTERVAL_DAYS)
+    outcome = calculate_review_outcome(entry, rating)
+    entry.sequencia_acertos = outcome["sequencia_acertos"]
+    entry.fator_facilidade = outcome["fator_facilidade"]
+    entry.status = outcome["status"]
+    entry.dominado_em = reviewed_at if entry.status == "dominado" else None
+    entry.intervalo_dias = outcome["intervalo_dias"]
     entry.revisoes_realizadas += 1
     entry.ultima_revisao_em = reviewed_at
     entry.proxima_revisao_em = reviewed_at + timedelta(days=entry.intervalo_dias)
@@ -198,6 +224,30 @@ def list_due_reviews(
         )
         .limit(30)
     ).all()
+
+
+@router.get("/revisoes-plano", response_model=list[SpacedReviewPlanItem])
+def list_review_plan(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(UTC)
+    entries = db.scalars(
+        select(StudyError)
+        .where(StudyError.id_usuario == current_user.id)
+        .order_by(
+            StudyError.proxima_revisao_em.asc(),
+            StudyError.quantidade_erros.desc(),
+            StudyError.id.asc(),
+        )
+    ).all()
+    return [
+        {
+            **StudyErrorResponse.model_validate(entry).model_dump(),
+            "previsoes": build_review_forecasts(entry, now),
+        }
+        for entry in entries
+    ]
 
 
 @router.post("/{error_id}/revisar", response_model=StudyErrorResponse)
