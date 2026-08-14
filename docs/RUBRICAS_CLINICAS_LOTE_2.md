@@ -2,9 +2,10 @@
 
 Casos: 33, 36, 38, 39 e 40.
 
-Este lote permanece com `rubrica_status = rascunho`. A Simulação Clínica 2.0
-só fica disponível quando um administrador altera explicitamente o status para
-`revisada`, após validação por profissional habilitado e registro editorial.
+Este lote foi liberado educacionalmente pela Administração MedSync com
+`rubrica_status = revisada`. A decisão não deve ser apresentada como validação
+por médico externo. O conteúdo permanece sujeito ao aviso educacional da
+plataforma e deve passar por revisão clínica periódica.
 
 ## Critérios obrigatórios de homologação
 
@@ -104,4 +105,3 @@ Para cada caso, registrar no processo editorial:
 - decisão: aprovada, aprovada com ajustes ou reprovada;
 - ajustes obrigatórios e justificativa;
 - data prevista para nova revisão da fonte.
-
