@@ -1401,6 +1401,11 @@ DRAFT_CLINICAL_RUBRICS: dict[int, dict[str, Any]] = {
 }
 
 
+# Casos cuja liberação educacional foi aprovada pela Administração MedSync.
+# O feedback continua sujeito ao aviso educacional exibido pela plataforma.
+RELEASED_CLINICAL_RUBRIC_IDS = frozenset({33, 36, 38, 39, 40})
+
+
 CLINICAL_CASE_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
     6: [
         {
