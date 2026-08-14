@@ -21,7 +21,9 @@ def _item(
     }
 
 
-def extract_vital_signs(history: str, physical_exam: str) -> list[dict[str, str | None]]:
+def extract_vital_signs(
+    history: str, physical_exam: str
+) -> list[dict[str, str | None]]:
     text = f"{history} {physical_exam}"
     normalized = text.replace("×", "x")
 
@@ -66,13 +68,24 @@ def extract_vital_signs(history: str, physical_exam: str) -> list[dict[str, str 
     )
 
     return [
-        _item("pa", "Pressão arterial", pressure_value, "mmHg", pressure_status, "< 130/85 mmHg"),
+        _item(
+            "pa",
+            "Pressão arterial",
+            pressure_value,
+            "mmHg",
+            pressure_status,
+            "< 130/85 mmHg",
+        ),
         _item(
             "fc",
             "Frequência cardíaca",
             str(heart_value) if heart_value is not None else None,
             "bpm",
-            "normal" if heart_value is not None and 60 <= heart_value <= 100 else "alterado" if heart_value is not None else "nao_informado",
+            "normal"
+            if heart_value is not None and 60 <= heart_value <= 100
+            else "alterado"
+            if heart_value is not None
+            else "nao_informado",
             "60–100 bpm",
         ),
         _item(
@@ -80,7 +93,11 @@ def extract_vital_signs(history: str, physical_exam: str) -> list[dict[str, str 
             "Frequência respiratória",
             str(respiratory_value) if respiratory_value is not None else None,
             "irpm",
-            "normal" if respiratory_value is not None and 12 <= respiratory_value <= 20 else "alterado" if respiratory_value is not None else "nao_informado",
+            "normal"
+            if respiratory_value is not None and 12 <= respiratory_value <= 20
+            else "alterado"
+            if respiratory_value is not None
+            else "nao_informado",
             "12–20 irpm",
         ),
         _item(
@@ -88,7 +105,11 @@ def extract_vital_signs(history: str, physical_exam: str) -> list[dict[str, str 
             "Saturação de O₂",
             str(saturation_value) if saturation_value is not None else None,
             "%",
-            "normal" if saturation_value is not None and saturation_value >= 95 else "alterado" if saturation_value is not None else "nao_informado",
+            "normal"
+            if saturation_value is not None and saturation_value >= 95
+            else "alterado"
+            if saturation_value is not None
+            else "nao_informado",
             "≥ 95%",
         ),
         _item(
@@ -96,7 +117,11 @@ def extract_vital_signs(history: str, physical_exam: str) -> list[dict[str, str 
             "Temperatura",
             f"{temperature_value:.1f}" if temperature_value is not None else None,
             "°C",
-            "normal" if temperature_value is not None and 36 <= temperature_value < 37.8 else "alterado" if temperature_value is not None else "nao_informado",
+            "normal"
+            if temperature_value is not None and 36 <= temperature_value < 37.8
+            else "alterado"
+            if temperature_value is not None
+            else "nao_informado",
             "36,0–37,7 °C",
         ),
     ]
