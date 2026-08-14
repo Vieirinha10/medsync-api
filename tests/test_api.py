@@ -581,6 +581,16 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
         "Intermediário",
         "Crítico",
     }
+    second_batch = {
+        item["id"]: item
+        for item in case_catalog.json()
+        if item["id"] in {33, 36, 38, 39, 40}
+    }
+    assert set(second_batch) == {33, 36, 38, 39, 40}
+    assert all(item["rubrica_status"] == "rascunho" for item in second_batch.values())
+    assert all(
+        item["avaliacao_2_disponivel"] is False for item in second_batch.values()
+    )
 
     new_case = client.post(
         "/admin/casos",
@@ -608,6 +618,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
     assert new_case.status_code == 201
     assert new_case.json()["premium"] is True
     assert new_case.json()["status"] == "rascunho"
+    assert new_case.json()["rubrica_status"] == "rascunho"
     case_payload = new_case.json()
     update_payload = {
         key: case_payload[key]
@@ -838,6 +849,55 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
             assert rubric.definicao["objetivos_aprendizagem"]
             assert rubric.definicao["criterios_seguranca"]
             assert rubric.definicao["fontes_clinicas"]
+
+
+def test_second_batch_drafts_are_visible_for_review_but_not_released():
+    token = _register_and_login("lote-rubricas-rascunho@example.com")
+    response = client.get(
+        "/casos-clinicos/",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    draft_case_ids = {33, 36, 38, 39, 40}
+    assert all(availability[case_id] is False for case_id in draft_case_ids)
+
+    with SessionLocal() as db:
+        for case_id in draft_case_ids:
+            rubric = db.scalar(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
+            )
+            assert rubric is not None
+            assert rubric.status == "rascunho"
+            assert rubric.revisado_por is None
+            assert rubric.revisado_em is None
+            assert rubric.definicao["fontes_clinicas"]
+
+
+def test_second_batch_exam_content_is_structured_and_corrected():
+    token = _register_and_login("lote-exames-corrigidos@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    sepsis = client.get("/casos-clinicos/36", headers=headers)
+    assert sepsis.status_code == 200
+    sepsis_exams = {exam["id"]: exam for exam in sepsis.json()["exames_disponiveis"]}
+    assert "coletadas" in sepsis_exams["hemoculturas"]["resultado"].lower()
+    assert sepsis_exams["colonoscopia"]["correto"] is False
+
+    luts = client.get("/casos-clinicos/39", headers=headers)
+    assert luts.status_code == 200
+    luts_exams = {exam["id"]: exam for exam in luts.json()["exames_disponiveis"]}
+    assert "ng/ml" in luts_exams["psa"]["resultado"].lower()
+    assert "funcao_renal" in luts_exams
+
+    pyelonephritis = client.get("/casos-clinicos/40", headers=headers)
+    assert pyelonephritis.status_code == 200
+    pyelo_exams = {
+        exam["id"]: exam for exam in pyelonephritis.json()["exames_disponiveis"]
+    }
+    assert pyelo_exams["tc_abdome"]["correto"] is False
 
 
 def test_perforated_ulcer_case_prioritizes_imaging_over_endoscopy():

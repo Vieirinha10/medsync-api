@@ -68,6 +68,7 @@ def serialize_admin_case(case: ClinicalCase) -> dict:
             case.rubrica and case.rubrica.status == "revisada"
         ),
         "rubrica": case.rubrica.definicao if case.rubrica else None,
+        "rubrica_status": case.rubrica.status if case.rubrica else "rascunho",
         "exames": [
             {
                 "codigo": exam.codigo,
@@ -112,10 +113,16 @@ def apply_case_payload(case: ClinicalCase, payload: AdminClinicalCaseUpsert) -> 
             ) from error
         case.rubrica = ClinicalRubric(
             versao=(case.rubrica.versao + 1 if case.rubrica else 1),
-            status="revisada",
+            status=payload.rubrica_status,
             definicao=definition.model_dump(mode="json"),
-            revisado_por="Administração MedSync",
-            revisado_em=datetime.now(UTC),
+            revisado_por=(
+                "Administração MedSync"
+                if payload.rubrica_status == "revisada"
+                else None
+            ),
+            revisado_em=(
+                datetime.now(UTC) if payload.rubrica_status == "revisada" else None
+            ),
         )
 
 

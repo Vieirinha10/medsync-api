@@ -227,6 +227,7 @@ class AdminClinicalCaseUpsert(BaseModel):
     premium: bool = False
     exames: list[AdminClinicalExam] = Field(default_factory=list)
     rubrica: dict[str, Any] | None = None
+    rubrica_status: Literal["rascunho", "revisada"] = "rascunho"
 
     @model_validator(mode="after")
     def prevent_public_title_spoiler(self):
