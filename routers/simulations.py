@@ -173,9 +173,7 @@ def perguntar_sobre_resultado(
         if not key.startswith("_")
     }
     rubric_snapshot = progress.respostas_usuario.get("_rubrica_snapshot", {})
-    rubric_definition = rubric_snapshot.get(
-        "definicao", case_record.rubrica.definicao
-    )
+    rubric_definition = rubric_snapshot.get("definicao", case_record.rubrica.definicao)
     return answer_simulation_question(
         question=payload.pergunta,
         case=case,
