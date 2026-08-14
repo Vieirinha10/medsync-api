@@ -822,7 +822,9 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    availability = {case["id"]: case["avaliacao_2_disponivel"] for case in response.json()}
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
     assert availability[1] is False
 
