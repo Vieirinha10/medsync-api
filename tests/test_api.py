@@ -587,10 +587,8 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
         if item["id"] in {33, 36, 38, 39, 40}
     }
     assert set(second_batch) == {33, 36, 38, 39, 40}
-    assert all(item["rubrica_status"] == "rascunho" for item in second_batch.values())
-    assert all(
-        item["avaliacao_2_disponivel"] is False for item in second_batch.values()
-    )
+    assert all(item["rubrica_status"] == "revisada" for item in second_batch.values())
+    assert all(item["avaliacao_2_disponivel"] is True for item in second_batch.values())
 
     new_case = client.post(
         "/admin/casos",
@@ -851,7 +849,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
             assert rubric.definicao["fontes_clinicas"]
 
 
-def test_second_batch_drafts_are_visible_for_review_but_not_released():
+def test_second_batch_is_released_after_editorial_approval():
     token = _register_and_login("lote-rubricas-rascunho@example.com")
     response = client.get(
         "/casos-clinicos/",
@@ -862,7 +860,7 @@ def test_second_batch_drafts_are_visible_for_review_but_not_released():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     draft_case_ids = {33, 36, 38, 39, 40}
-    assert all(availability[case_id] is False for case_id in draft_case_ids)
+    assert all(availability[case_id] is True for case_id in draft_case_ids)
 
     with SessionLocal() as db:
         for case_id in draft_case_ids:
@@ -870,9 +868,9 @@ def test_second_batch_drafts_are_visible_for_review_but_not_released():
                 select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
             )
             assert rubric is not None
-            assert rubric.status == "rascunho"
-            assert rubric.revisado_por is None
-            assert rubric.revisado_em is None
+            assert rubric.status == "revisada"
+            assert rubric.revisado_por == "Administração MedSync — liberação editorial"
+            assert rubric.revisado_em is not None
             assert rubric.definicao["fontes_clinicas"]
 
 
