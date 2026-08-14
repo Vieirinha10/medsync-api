@@ -4,7 +4,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from case_catalog import CLINICAL_CASES
-from clinical_rubric_catalog import CLINICAL_CASE_EXAM_UPDATES
+from clinical_rubric_catalog import (
+    CLINICAL_CASE_EXAM_UPDATES,
+    DRAFT_CLINICAL_RUBRICS,
+)
 from clinical_titles import PUBLIC_CASE_TITLES, formatted_public_title
 from evaluation import (
     PILOT_RUBRIC_VERSION,
@@ -20,6 +23,7 @@ def seed_clinical_content(db: Session) -> bool:
     if db.scalar(select(func.count()).select_from(ClinicalCase)):
         _sync_case_exam_updates(db)
         _sync_pilot_rubrics(db)
+        _sync_draft_rubrics(db)
         return False
 
     now = datetime.now(UTC)
@@ -57,6 +61,7 @@ def seed_clinical_content(db: Session) -> bool:
 
     db.commit()
     _sync_case_exam_updates(db)
+    _sync_draft_rubrics(db)
     return True
 
 
@@ -133,6 +138,39 @@ def _sync_pilot_rubrics(db: Session) -> None:
             case.rubrica.definicao = definition
             case.rubrica.revisado_por = "Rubrica editorial MedSync"
             case.rubrica.revisado_em = now
+            changed = True
+
+    if changed:
+        db.commit()
+
+
+def _sync_draft_rubrics(db: Session) -> None:
+    """Mantém novas rubricas como rascunho até homologação clínica explícita."""
+    changed = False
+    for case_id, source_definition in DRAFT_CLINICAL_RUBRICS.items():
+        case = db.get(ClinicalCase, case_id)
+        if case is None:
+            continue
+
+        definition = _validated_rubric(source_definition)
+        if case.rubrica is None:
+            case.rubrica = ClinicalRubric(
+                versao=PILOT_RUBRIC_VERSION,
+                status="rascunho",
+                definicao=definition,
+                revisado_por=None,
+                revisado_em=None,
+            )
+            changed = True
+            continue
+
+        # Nunca rebaixa uma rubrica já homologada pela equipe clínica.
+        if case.rubrica.status != "revisada" and case.rubrica.definicao != definition:
+            case.rubrica.versao = PILOT_RUBRIC_VERSION
+            case.rubrica.status = "rascunho"
+            case.rubrica.definicao = definition
+            case.rubrica.revisado_por = None
+            case.rubrica.revisado_em = None
             changed = True
 
     if changed:
