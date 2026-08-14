@@ -754,6 +754,653 @@ CLINICAL_RUBRICS: dict[int, dict[str, Any]] = {
 }
 
 
+# Segunda leva em preparação editorial. A presença neste catálogo não libera a
+# Simulação 2.0: o serviço persiste estas definições com status ``rascunho``.
+DRAFT_CLINICAL_RUBRICS: dict[int, dict[str, Any]] = {
+    33: {
+        "diagnostico_referencia": "Parada cardiorrespiratória em fibrilação ventricular, ritmo chocável.",
+        "diagnostico_termos": [
+            "parada cardiorrespiratoria",
+            "pcr em fibrilacao ventricular",
+            "fibrilacao ventricular",
+        ],
+        "diagnostico_parcial": ["parada cardiaca", "ritmo chocavel"],
+        "exames_essenciais": ["dea"],
+        "exames_opcionais": [],
+        "exames_desnecessarios": ["glicemia_capilar", "ecg_12_derivacoes"],
+        "justificativa_exames": {
+            "dea": "A análise imediata do ritmo identifica fibrilação ventricular e direciona a desfibrilação.",
+            "glicemia_capilar": "Pode ter utilidade posterior, mas não deve interromper compressões ou atrasar o choque.",
+            "ecg_12_derivacoes": "É considerado após retorno da circulação; durante a parada atrasaria prioridades críticas.",
+        },
+        "conduta_criterios": [
+            {
+                "nome": "RCP de alta qualidade",
+                "pontos": 10,
+                "termos": ["rcp", "compressao", "100 a 120", "minimizar interrupcoes"],
+            },
+            {
+                "nome": "Desfibrilação precoce",
+                "pontos": 10,
+                "termos": ["desfibrilar", "desfibrilacao", "choque"],
+            },
+            {
+                "nome": "Suporte avançado e causas reversíveis",
+                "pontos": 10,
+                "termos": [
+                    "adrenalina",
+                    "epinefrina",
+                    "amiodarona",
+                    "acesso venoso",
+                    "causas reversiveis",
+                    "5h",
+                    "5t",
+                ],
+            },
+        ],
+        "conduta_referencia": "Iniciar RCP de alta qualidade, conectar monitor/desfibrilador e desfibrilar imediatamente a fibrilação ventricular; retomar RCP, obter acesso IV/IO, administrar fármacos conforme o algoritmo e tratar causas reversíveis.",
+        "feedback_hipotese_parcial": "Você reconheceu a parada, mas precisa classificar a fibrilação ventricular como ritmo chocável.",
+        "feedback_hipotese_incorreta": "Ausência de pulso e respiração confirma parada; a análise mostra fibrilação ventricular.",
+        "feedback_seguranca": "Nenhum exame deve atrasar compressões de alta qualidade e desfibrilação precoce.",
+        "objetivos_aprendizagem": [
+            "Reconhecer PCR",
+            "Identificar ritmo chocável",
+            "Executar prioridades do algoritmo de FV/TV sem pulso",
+        ],
+        "criterios_seguranca": [
+            {
+                "nome": "Desfibrilação imediata",
+                "termos": ["desfibrilar", "desfibrilacao", "choque"],
+                "feedback_omissao": "Atrasar a desfibrilação em fibrilação ventricular reduz a chance de reversão.",
+            },
+            {
+                "nome": "RCP contínua",
+                "termos": ["rcp", "compressao"],
+                "feedback_omissao": "Compressões de alta qualidade são indispensáveis entre as análises do ritmo.",
+            },
+        ],
+        "desfechos_conduta": {
+            "adequada": {
+                "reacao": "Após choque e RCP de alta qualidade, o ritmo se organiza e há retorno da circulação espontânea.",
+                "desfecho": "A paciente segue para cuidados pós-parada e investigação de síndrome coronariana.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Pulso central",
+                        "antes": "ausente",
+                        "depois": "presente após retorno da circulação",
+                        "tendencia": "melhora",
+                    }
+                ],
+            },
+            "parcial": {
+                "reacao": "A fibrilação ventricular persiste porque etapas críticas foram incompletas ou tardias.",
+                "desfecho": "A equipe mantém ciclos de RCP e corrige a omissão antes de nova análise.",
+            },
+            "insegura": {
+                "reacao": "Sem RCP e choque imediatos, a paciente permanece sem circulação efetiva.",
+                "desfecho": "O atraso provoca deterioração rápida e reduz a probabilidade de retorno da circulação.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Circulação",
+                        "antes": "ausente",
+                        "depois": "permanece ausente",
+                        "tendencia": "piora",
+                    }
+                ],
+            },
+        },
+        "reacao_paciente_referencia": "A resposta depende principalmente da qualidade da RCP e do tempo até o choque.",
+        "desfecho_referencia": "Após retorno da circulação, iniciar cuidados pós-parada e tratar a causa provável.",
+        "temas_estudo": [
+            "PCR em ritmo chocável",
+            "RCP de alta qualidade",
+            "Cuidados pós-parada",
+        ],
+        "fontes_clinicas": [
+            _source(
+                "Adult Cardiac Arrest Algorithm",
+                "American Heart Association",
+                2014,
+                "https://cpr.heart.org/-/media/CPR-Files/CPR-Guidelines-Files/2025-Algorithms/Algorithm-ACLS-CA-250527.pdf",
+            )
+        ],
+    },
+    36: {
+        "diagnostico_referencia": "Sepse com provável foco gastrointestinal e sinais de hipoperfusão.",
+        "diagnostico_termos": [
+            "sepse de foco gastrointestinal",
+            "sepse gastrointestinal",
+            "sepse com foco abdominal",
+        ],
+        "diagnostico_parcial": ["sepse", "choque septico", "infeccao intestinal"],
+        "exames_essenciais": [
+            "lactato",
+            "hemoculturas",
+            "hemo",
+            "funcao_renal_eletrolitos",
+        ],
+        "exames_opcionais": ["tc_abdome"],
+        "exames_desnecessarios": ["colonoscopia"],
+        "justificativa_exames": {
+            "lactato": "Ajuda a reconhecer hipoperfusão e deve ser interpretado no contexto clínico.",
+            "hemoculturas": "Devem ser coletadas antes do antimicrobiano se isso não causar atraso relevante.",
+            "hemo": "Caracteriza resposta inflamatória e alterações hematológicas.",
+            "funcao_renal_eletrolitos": "Avalia disfunção orgânica e orienta reposição e doses.",
+            "tc_abdome": "Pode localizar foco e complicações após a estabilização inicial.",
+            "colonoscopia": "Não é prioridade em paciente instável e pode atrasar ressuscitação e antimicrobiano.",
+        },
+        "conduta_criterios": [
+            {
+                "nome": "Ressuscitação e monitorização",
+                "pontos": 10,
+                "termos": [
+                    "cristaloide",
+                    "reposicao volemica",
+                    "acesso venoso",
+                    "monitorizacao",
+                    "pressao arterial media",
+                ],
+            },
+            {
+                "nome": "Antimicrobiano precoce",
+                "pontos": 10,
+                "termos": ["antibiotico", "antimicrobiano", "amplo espectro"],
+            },
+            {
+                "nome": "Reavaliação e controle do foco",
+                "pontos": 10,
+                "termos": [
+                    "reavaliar",
+                    "controle do foco",
+                    "controle da fonte",
+                    "imagem",
+                    "vasopressor",
+                    "noradrenalina",
+                ],
+            },
+        ],
+        "conduta_referencia": "Obter acesso e monitorização, colher culturas sem atrasar tratamento, iniciar antimicrobiano adequado, ressuscitar com cristaloide e reavaliar perfusão; usar vasopressor se necessário e buscar controle precoce do foco.",
+        "feedback_hipotese_parcial": "Você reconheceu sepse, mas deve integrar o provável foco gastrointestinal e os sinais de hipoperfusão.",
+        "feedback_hipotese_incorreta": "Infecção provável, alteração do sensório, hipotensão e taquicardia exigem reconhecimento imediato de sepse.",
+        "feedback_seguranca": "Culturas e exames não podem atrasar antimicrobiano e ressuscitação no paciente instável.",
+        "objetivos_aprendizagem": [
+            "Reconhecer sepse",
+            "Avaliar perfusão e disfunção orgânica",
+            "Priorizar antimicrobiano, ressuscitação e controle do foco",
+        ],
+        "criterios_seguranca": [
+            {
+                "nome": "Antimicrobiano precoce",
+                "termos": ["antibiotico", "antimicrobiano"],
+                "feedback_omissao": "A omissão do antimicrobiano permite progressão da infecção e disfunção orgânica.",
+            },
+            {
+                "nome": "Suporte hemodinâmico",
+                "termos": [
+                    "cristaloide",
+                    "reposicao volemica",
+                    "noradrenalina",
+                    "vasopressor",
+                ],
+                "feedback_omissao": "Hipotensão e hipoperfusão exigem suporte hemodinâmico e reavaliação frequente.",
+            },
+        ],
+        "desfechos_conduta": {
+            "adequada": {
+                "reacao": "Após ressuscitação e antimicrobiano, a perfusão e o estado mental começam a melhorar.",
+                "desfecho": "O paciente permanece monitorizado, com investigação do foco e ajuste conforme culturas.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Pressão arterial",
+                        "antes": "90x65 mmHg",
+                        "depois": "tendência de recuperação da perfusão",
+                        "tendencia": "melhora",
+                    }
+                ],
+            },
+            "parcial": {
+                "reacao": "A resposta é incompleta e persistem taquicardia ou sinais de hipoperfusão.",
+                "desfecho": "É necessária correção imediata das medidas omitidas e nova avaliação do foco.",
+            },
+            "insegura": {
+                "reacao": "Sem antimicrobiano ou suporte circulatório, hipotensão e alteração do sensório pioram.",
+                "desfecho": "O paciente pode evoluir para choque e falência orgânica.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Perfusão",
+                        "antes": "comprometida",
+                        "depois": "deterioração progressiva",
+                        "tendencia": "piora",
+                    }
+                ],
+            },
+        },
+        "reacao_paciente_referencia": "A resposta é acompanhada por perfusão, pressão, estado mental, diurese e lactato seriado quando indicado.",
+        "desfecho_referencia": "O prognóstico depende de tratamento precoce e controle adequado do foco.",
+        "temas_estudo": [
+            "Reconhecimento de sepse",
+            "Ressuscitação hemodinâmica",
+            "Controle de foco abdominal",
+        ],
+        "fontes_clinicas": [
+            _source(
+                "Surviving Sepsis Campaign Guidelines",
+                "Society of Critical Care Medicine",
+                2026,
+                "https://www.sccm.org/clinical-resources/guidelines/guidelines/surviving-sepsis-campaign-international-guidelines-for-management-of-sepsis-and-septic-shock-2026",
+            )
+        ],
+    },
+    38: {
+        "diagnostico_referencia": "Edema agudo de pulmão cardiogênico hipertensivo com insuficiência respiratória hipoxêmica.",
+        "diagnostico_termos": [
+            "edema agudo de pulmao",
+            "edema pulmonar cardiogenico",
+            "insuficiencia cardiaca aguda hipertensiva",
+        ],
+        "diagnostico_parcial": ["insuficiencia cardiaca aguda", "congestao pulmonar"],
+        "exames_essenciais": ["raiox_torax", "ecg", "gaso", "funcao_renal_eletrolitos"],
+        "exames_opcionais": ["bnp"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "raiox_torax": "Documenta congestão pulmonar e ajuda a avaliar diagnósticos alternativos.",
+            "ecg": "Pesquisa isquemia e arritmia como precipitantes.",
+            "gaso": "Quantifica a insuficiência respiratória e auxilia a monitorar suporte ventilatório.",
+            "funcao_renal_eletrolitos": "Orienta segurança do tratamento e identifica disfunção associada.",
+            "bnp": "Pode reforçar origem cardíaca quando o diagnóstico permanece incerto.",
+        },
+        "conduta_criterios": [
+            {
+                "nome": "Suporte respiratório imediato",
+                "pontos": 10,
+                "termos": [
+                    "oxigenio",
+                    "ventilacao nao invasiva",
+                    "vni",
+                    "cpap",
+                    "bipap",
+                ],
+            },
+            {
+                "nome": "Redução segura da congestão e pós-carga",
+                "pontos": 10,
+                "termos": [
+                    "nitrato",
+                    "nitroglicerina",
+                    "vasodilatador",
+                    "diuretico",
+                    "furosemida",
+                ],
+            },
+            {
+                "nome": "Monitorização e causa precipitante",
+                "pontos": 10,
+                "termos": [
+                    "monitorizacao",
+                    "monitorar",
+                    "sindrome coronariana",
+                    "isquemia",
+                    "ecg",
+                    "reavaliar",
+                ],
+            },
+        ],
+        "conduta_referencia": "Tratar imediatamente a hipoxemia, considerar ventilação não invasiva pela insuficiência respiratória, reduzir a pós-carga com vasodilatador diante da hipertensão, tratar congestão, monitorizar e investigar precipitantes.",
+        "feedback_hipotese_parcial": "Você reconheceu insuficiência cardíaca, mas deve explicitar o edema pulmonar agudo hipertensivo e a insuficiência respiratória.",
+        "feedback_hipotese_incorreta": "Dispneia súbita, expectoração rósea, crepitações, hipoxemia e padrão radiográfico bilateral favorecem edema pulmonar cardiogênico.",
+        "feedback_seguranca": "Saturação de 82% e esforço respiratório exigem suporte imediato; atrasar ventilação e controle da pós-carga pode causar deterioração.",
+        "objetivos_aprendizagem": [
+            "Reconhecer edema pulmonar agudo",
+            "Priorizar suporte respiratório",
+            "Tratar o fenótipo hipertensivo e pesquisar precipitantes",
+        ],
+        "criterios_seguranca": [
+            {
+                "nome": "Suporte respiratório",
+                "termos": [
+                    "oxigenio",
+                    "vni",
+                    "cpap",
+                    "bipap",
+                    "ventilacao nao invasiva",
+                ],
+                "feedback_omissao": "A hipoxemia grave com esforço respiratório requer suporte imediato e reavaliação.",
+            },
+            {
+                "nome": "Controle da hipertensão",
+                "termos": [
+                    "nitrato",
+                    "nitroglicerina",
+                    "vasodilatador",
+                    "reduzir pressao",
+                ],
+                "feedback_omissao": "A pós-carga muito elevada perpetua a congestão e deve ser tratada com monitorização.",
+            },
+        ],
+        "desfechos_conduta": {
+            "adequada": {
+                "reacao": "Com suporte ventilatório e redução da pós-carga, a dispneia e a saturação melhoram progressivamente.",
+                "desfecho": "O paciente permanece monitorizado para tratamento da congestão e investigação do fator precipitante.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Saturação",
+                        "antes": "82%",
+                        "depois": "elevação progressiva com suporte",
+                        "tendencia": "melhora",
+                    }
+                ],
+            },
+            "parcial": {
+                "reacao": "Há melhora incompleta, com persistência de taquipneia ou hipertensão.",
+                "desfecho": "É necessário completar o suporte e reavaliar resposta hemodinâmica e respiratória.",
+            },
+            "insegura": {
+                "reacao": "Sem suporte respiratório e controle da pós-carga, a hipoxemia e o esforço respiratório pioram.",
+                "desfecho": "O paciente pode evoluir para fadiga, necessidade de via aérea avançada e instabilidade.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Trabalho respiratório",
+                        "antes": "aumentado",
+                        "depois": "deterioração progressiva",
+                        "tendencia": "piora",
+                    }
+                ],
+            },
+        },
+        "reacao_paciente_referencia": "A melhora deve ser acompanhada por saturação, frequência respiratória, pressão e trabalho respiratório.",
+        "desfecho_referencia": "Após estabilização, tratar a congestão e identificar o precipitante da insuficiência cardíaca aguda.",
+        "temas_estudo": [
+            "Edema pulmonar agudo",
+            "Ventilação não invasiva",
+            "Insuficiência cardíaca aguda hipertensiva",
+        ],
+        "fontes_clinicas": [
+            _source(
+                "Acute heart failure: diagnosis and management",
+                "National Institute for Health and Care Excellence",
+                2025,
+                "https://www.nice.org.uk/guidance/cg187/chapter/recommendations",
+            )
+        ],
+    },
+    39: {
+        "diagnostico_referencia": "Obstrução infravesical por hiperplasia prostática benigna, complicada por retenção, hidroureteronefrose bilateral e disfunção renal.",
+        "diagnostico_termos": [
+            "hiperplasia prostatica benigna",
+            "obstrucao prostatica benigna",
+            "obstrucao infravesical por hpb",
+        ],
+        "diagnostico_parcial": [
+            "sintomas do trato urinario inferior",
+            "obstrucao infravesical",
+            "retencao urinaria",
+        ],
+        "exames_essenciais": ["urina1", "usg_vias_urinarias", "funcao_renal"],
+        "exames_opcionais": ["psa", "urofluxometria"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "urina1": "Pesquisa infecção, hematúria, proteinúria e outros diagnósticos associados.",
+            "usg_vias_urinarias": "Avalia próstata, resíduo pós-miccional e repercussão no trato urinário superior.",
+            "funcao_renal": "É essencial diante de hidronefrose e suspeita de obstrução com repercussão renal.",
+            "psa": "Auxilia decisão quando o resultado puder mudar manejo e exige aconselhamento e interpretação contextual.",
+            "urofluxometria": "Objetiva redução do fluxo, mas isoladamente não define o mecanismo da obstrução.",
+        },
+        "conduta_criterios": [
+            {
+                "nome": "Reconhecer complicação obstrutiva",
+                "pontos": 10,
+                "termos": [
+                    "retencao",
+                    "obstrucao",
+                    "hidronefrose",
+                    "disfuncao renal",
+                    "insuficiencia renal",
+                ],
+            },
+            {
+                "nome": "Descompressão e avaliação urológica",
+                "pontos": 10,
+                "termos": [
+                    "sondagem",
+                    "cateter",
+                    "descompressao",
+                    "urologia",
+                    "urologista",
+                ],
+            },
+            {
+                "nome": "Tratamento definitivo e seguimento",
+                "pontos": 10,
+                "termos": [
+                    "cirurgia",
+                    "tratamento cirurgico",
+                    "desobstrucao",
+                    "reavaliar creatinina",
+                    "monitorar diurese",
+                ],
+            },
+        ],
+        "conduta_referencia": "Reconhecer retenção com repercussão renal, promover descompressão vesical e monitorar diurese e função renal; solicitar avaliação urológica para definição do tratamento desobstrutivo e interpretar PSA no contexto adequado.",
+        "feedback_hipotese_parcial": "Os sintomas urinários foram reconhecidos, mas faltou integrar retenção, hidronefrose e disfunção renal à obstrução prostática.",
+        "feedback_hipotese_incorreta": "Próstata aumentada e lisa, fluxo reduzido, resíduo elevado e dilatação bilateral sustentam obstrução prostática benigna complicada.",
+        "feedback_seguranca": "Hidronefrose bilateral e creatinina elevada afastam simples observação; é necessário aliviar a obstrução e avaliar repercussões.",
+        "objetivos_aprendizagem": [
+            "Avaliar LUTS masculinos",
+            "Reconhecer obstrução complicada",
+            "Priorizar descompressão e avaliação urológica",
+        ],
+        "criterios_seguranca": [
+            {
+                "nome": "Alívio da obstrução",
+                "termos": ["sondagem", "cateter", "descompressao"],
+                "feedback_omissao": "Manter retenção com hidronefrose pode agravar lesão renal e sintomas.",
+            },
+            {
+                "nome": "Avaliação da função renal",
+                "termos": [
+                    "creatinina",
+                    "funcao renal",
+                    "insuficiencia renal",
+                    "diurese",
+                ],
+                "feedback_omissao": "A repercussão renal precisa ser monitorada após a descompressão.",
+            },
+        ],
+        "desfechos_conduta": {
+            "adequada": {
+                "reacao": "Após descompressão, o desconforto vesical melhora e a diurese é monitorada.",
+                "desfecho": "O paciente segue com reavaliação renal e planejamento urológico definitivo.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Distensão vesical",
+                        "antes": "globo vesical palpável",
+                        "depois": "redução após descompressão",
+                        "tendencia": "melhora",
+                    }
+                ],
+            },
+            "parcial": {
+                "reacao": "Os sintomas podem aliviar parcialmente, mas a repercussão renal permanece sem plano definitivo.",
+                "desfecho": "É necessário completar avaliação urológica e seguimento da função renal.",
+            },
+            "insegura": {
+                "reacao": "Sem aliviar a obstrução, retenção e dilatação urinária persistem.",
+                "desfecho": "Há risco de piora da função renal, infecção e nova retenção.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Função renal",
+                        "antes": "creatinina elevada",
+                        "depois": "risco de piora",
+                        "tendencia": "piora",
+                    }
+                ],
+            },
+        },
+        "reacao_paciente_referencia": "A resposta é acompanhada por dor, distensão, diurese, resíduo e função renal.",
+        "desfecho_referencia": "A obstrução complicada requer seguimento urológico e definição de tratamento definitivo.",
+        "temas_estudo": [
+            "LUTS masculinos",
+            "Retenção urinária",
+            "Obstrução prostática com repercussão renal",
+        ],
+        "fontes_clinicas": [
+            _source(
+                "EAU Guidelines on Non-neurogenic Male LUTS: Diagnostic Evaluation",
+                "European Association of Urology",
+                2026,
+                "https://uroweb.org/guidelines/management-of-non-neurogenic-male-luts/chapter/diagnostic-evaluation",
+            )
+        ],
+    },
+    40: {
+        "diagnostico_referencia": "Pielonefrite aguda direita com sinais sistêmicos, sem obstrução demonstrada.",
+        "diagnostico_termos": [
+            "pielonefrite aguda",
+            "pielonefrite direita",
+            "infeccao urinaria alta",
+        ],
+        "diagnostico_parcial": [
+            "infeccao urinaria",
+            "itu",
+            "infeccao urinaria sistemica",
+        ],
+        "exames_essenciais": [
+            "urina1",
+            "urocultura",
+            "hemo",
+            "funcao_renal_eletrolitos",
+        ],
+        "exames_opcionais": ["hemoculturas", "usg_vias_urinarias"],
+        "exames_desnecessarios": ["tc_abdome"],
+        "justificativa_exames": {
+            "urina1": "Leucocitúria, nitrito e cilindros apoiam infecção do trato urinário superior.",
+            "urocultura": "É recomendada em todos os casos para identificação e ajuste do antimicrobiano.",
+            "hemo": "Ajuda a avaliar resposta sistêmica e gravidade.",
+            "funcao_renal_eletrolitos": "Avalia repercussão e orienta escolha e dose de antimicrobianos.",
+            "hemoculturas": "São consideradas diante de doença sistêmica grave ou suspeita de sepse.",
+            "usg_vias_urinarias": "Pesquisa obstrução ou cálculo quando há fatores de risco ou dúvida clínica.",
+            "tc_abdome": "Não é obrigatória de rotina sem deterioração, suspeita de complicação ou falha após 48–72 horas.",
+        },
+        "conduta_criterios": [
+            {
+                "nome": "Antimicrobiano empírico adequado",
+                "pontos": 10,
+                "termos": [
+                    "antibiotico",
+                    "antimicrobiano",
+                    "ceftriaxona",
+                    "fluoroquinolona",
+                    "cefalosporina",
+                ],
+            },
+            {
+                "nome": "Suporte e estratificação",
+                "pontos": 10,
+                "termos": [
+                    "hidratacao",
+                    "cristaloide",
+                    "analgesia",
+                    "antitermico",
+                    "internacao",
+                    "gravidade",
+                ],
+            },
+            {
+                "nome": "Cultura, reavaliação e ajuste",
+                "pontos": 10,
+                "termos": [
+                    "urocultura",
+                    "antibiograma",
+                    "ajustar antibiotico",
+                    "reavaliar",
+                    "48",
+                    "72",
+                ],
+            },
+        ],
+        "conduta_referencia": "Coletar urocultura, iniciar antimicrobiano empírico conforme gravidade, fatores individuais e resistência local, oferecer hidratação e controle sintomático, decidir necessidade de internação e reavaliar em 48–72 horas, ajustando pela cultura.",
+        "feedback_hipotese_parcial": "Você reconheceu infecção urinária, mas febre, dor lombar e Giordano positivo indicam acometimento renal.",
+        "feedback_hipotese_incorreta": "A combinação de febre, calafrios, dor lombar, sintomas urinários e Giordano positivo é típica de pielonefrite.",
+        "feedback_seguranca": "Nitrofurantoína e fosfomicina oral não são adequadas para pielonefrite; sinais de gravidade ou obstrução exigem escalonamento e imagem.",
+        "objetivos_aprendizagem": [
+            "Diagnosticar pielonefrite",
+            "Estratificar gravidade e obstrução",
+            "Usar cultura e reavaliação para orientar tratamento",
+        ],
+        "criterios_seguranca": [
+            {
+                "nome": "Antimicrobiano efetivo no parênquima renal",
+                "termos": [
+                    "ceftriaxona",
+                    "fluoroquinolona",
+                    "cefalosporina",
+                    "antibiotico intravenoso",
+                    "antimicrobiano",
+                ],
+                "feedback_omissao": "Sem antimicrobiano apropriado, a infecção pode progredir para sepse.",
+            },
+            {
+                "nome": "Reavaliar gravidade e obstrução",
+                "termos": [
+                    "reavaliar",
+                    "internacao",
+                    "imagem",
+                    "ultrassom",
+                    "obstrucao",
+                    "sepse",
+                ],
+                "feedback_omissao": "Piora ou ausência de resposta exige busca de obstrução e complicações.",
+            },
+        ],
+        "desfechos_conduta": {
+            "adequada": {
+                "reacao": "Com hidratação e antimicrobiano adequado, febre, taquicardia e dor começam a regredir.",
+                "desfecho": "A cultura permite ajuste do tratamento e a paciente é reavaliada em 48–72 horas.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Temperatura",
+                        "antes": "38,6 °C",
+                        "depois": "tendência de queda",
+                        "tendencia": "melhora",
+                    }
+                ],
+            },
+            "parcial": {
+                "reacao": "A melhora é incompleta se faltam cultura, avaliação de gravidade ou seguimento definido.",
+                "desfecho": "A paciente necessita reavaliação precoce para corrigir o plano.",
+            },
+            "insegura": {
+                "reacao": "Sem antimicrobiano apropriado ou diante de obstrução não reconhecida, febre e instabilidade podem piorar.",
+                "desfecho": "Há risco de urosepse, abscesso ou dano renal.",
+                "reavaliacao": [
+                    {
+                        "indicador": "Estado sistêmico",
+                        "antes": "febre e taquicardia",
+                        "depois": "deterioração prevista",
+                        "tendencia": "piora",
+                    }
+                ],
+            },
+        },
+        "reacao_paciente_referencia": "A resposta é acompanhada por febre, dor, tolerância oral, pressão, frequência cardíaca e função renal.",
+        "desfecho_referencia": "Resposta inadequada em 48–72 horas requer nova cultura, imagem e busca de complicação.",
+        "temas_estudo": [
+            "Pielonefrite",
+            "Urocultura e resistência",
+            "Obstrução e urosepse",
+        ],
+        "fontes_clinicas": [
+            _source(
+                "EAU Guidelines on Urological Infections: Pyelonephritis",
+                "European Association of Urology",
+                2026,
+                "https://uroweb.org/guidelines/urological-infections/chapter/the-guideline",
+            )
+        ],
+    },
+}
+
+
 CLINICAL_CASE_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
     6: [
         {
@@ -807,6 +1454,154 @@ CLINICAL_CASE_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
             "nome": "Perfil metabólico",
             "resultado": "Dislipidemia e hipertensão associadas à exposição crônica a glicocorticoide.",
             "correto": True,
+        },
+    ],
+    33: [
+        {
+            "id": "dea",
+            "nome": "Análise imediata do ritmo (DEA/monitor)",
+            "resultado": "Fibrilação ventricular, ritmo chocável.",
+            "correto": True,
+        },
+        {
+            "id": "glicemia_capilar",
+            "nome": "Glicemia capilar",
+            "resultado": "118 mg/dL.",
+            "correto": False,
+        },
+        {
+            "id": "ecg_12_derivacoes",
+            "nome": "ECG de 12 derivações durante a parada",
+            "resultado": "Não deve atrasar RCP, desfibrilação e análise do ritmo; considerar após retorno da circulação espontânea.",
+            "correto": False,
+        },
+    ],
+    36: [
+        {
+            "id": "lactato",
+            "nome": "Lactato sérico",
+            "resultado": "2,1 mmol/L, acima do valor de referência do laboratório.",
+            "correto": True,
+        },
+        {
+            "id": "hemoculturas",
+            "nome": "Hemoculturas (dois conjuntos)",
+            "resultado": "Amostras coletadas antes do antimicrobiano; crescimento ainda não disponível.",
+            "correto": True,
+        },
+        {
+            "id": "funcao_renal_eletrolitos",
+            "nome": "Função renal e eletrólitos",
+            "resultado": "Creatinina 1,8 mg/dL, sódio 132 mEq/L e potássio 3,4 mEq/L.",
+            "correto": True,
+        },
+        {
+            "id": "tc_abdome",
+            "nome": "TC de abdome com contraste, após estabilização inicial",
+            "resultado": "Colite extensa, sem pneumoperitônio ou coleção drenável.",
+            "correto": True,
+        },
+        {
+            "id": "colonoscopia",
+            "nome": "Colonoscopia imediata",
+            "resultado": "Exame adiado por instabilidade clínica e risco de atrasar a ressuscitação.",
+            "correto": False,
+        },
+    ],
+    38: [
+        {
+            "id": "raiox_torax",
+            "nome": "Raio-X de tórax",
+            "resultado": "Infiltrado alveolar bilateral em asa de borboleta e cardiomegalia.",
+            "correto": True,
+        },
+        {
+            "id": "bnp",
+            "nome": "BNP",
+            "resultado": "1.120 pg/mL, elevado.",
+            "correto": True,
+        },
+        {
+            "id": "ecg",
+            "nome": "ECG de 12 derivações",
+            "resultado": "Taquicardia sinusal e critérios de sobrecarga ventricular esquerda, sem supradesnivelamento de ST.",
+            "correto": True,
+        },
+        {
+            "id": "gaso",
+            "nome": "Gasometria arterial",
+            "resultado": "Hipoxemia importante e alcalose respiratória inicial.",
+            "correto": True,
+        },
+        {
+            "id": "funcao_renal_eletrolitos",
+            "nome": "Função renal e eletrólitos",
+            "resultado": "Creatinina 1,4 mg/dL; sódio e potássio sem alterações críticas.",
+            "correto": True,
+        },
+    ],
+    39: [
+        {
+            "id": "psa",
+            "nome": "PSA total",
+            "resultado": "6,0 ng/mL; resultado que exige interpretação conforme idade, volume prostático e contexto clínico.",
+            "correto": True,
+        },
+        {
+            "id": "usg_vias_urinarias",
+            "nome": "USG de rins e vias urinárias com resíduo pós-miccional",
+            "resultado": "Próstata estimada em 70 g, parede vesical espessada, resíduo pós-miccional elevado e hidroureteronefrose bilateral.",
+            "correto": True,
+        },
+        {
+            "id": "urina1",
+            "nome": "Urina tipo 1",
+            "resultado": "Sem leucocitúria, nitrito, hematúria ou proteinúria significativas.",
+            "correto": True,
+        },
+        {
+            "id": "funcao_renal",
+            "nome": "Função renal",
+            "resultado": "Creatinina 2,0 mg/dL, com redução da função renal em contexto de obstrução urinária.",
+            "correto": True,
+        },
+        {
+            "id": "urofluxometria",
+            "nome": "Urofluxometria",
+            "resultado": "Fluxo urinário máximo reduzido, compatível com obstrução infravesical.",
+            "correto": True,
+        },
+    ],
+    40: [
+        {
+            "id": "urocultura",
+            "nome": "Urocultura com antibiograma",
+            "resultado": "Crescimento de Escherichia coli; antibiograma pendente no momento da decisão inicial.",
+            "correto": True,
+        },
+        {
+            "id": "funcao_renal_eletrolitos",
+            "nome": "Função renal e eletrólitos",
+            "resultado": "Creatinina 1,3 mg/dL, sem distúrbio eletrolítico grave.",
+            "correto": True,
+        },
+        {
+            "id": "hemoculturas",
+            "nome": "Hemoculturas",
+            "resultado": "Sem crescimento nas primeiras horas; resultado definitivo pendente.",
+            "correto": True,
+        },
+        {
+            "id": "usg_vias_urinarias",
+            "nome": "USG de rins e vias urinárias",
+            "resultado": "Sem hidronefrose ou cálculo obstrutivo.",
+            "correto": True,
+        },
+        {
+            "id": "tc_abdome",
+            "nome": "TC de abdome",
+            "resultado": "Reservada para suspeita de obstrução, complicação ou ausência de resposta clínica; não é obrigatória de rotina neste momento.",
+            "correto": False,
         },
     ],
 }
