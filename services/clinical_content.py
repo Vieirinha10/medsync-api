@@ -7,6 +7,7 @@ from case_catalog import CLINICAL_CASES
 from clinical_rubric_catalog import (
     CLINICAL_CASE_EXAM_UPDATES,
     DRAFT_CLINICAL_RUBRICS,
+    RELEASED_CLINICAL_RUBRIC_IDS,
 )
 from clinical_titles import PUBLIC_CASE_TITLES, formatted_public_title
 from evaluation import (
@@ -145,7 +146,8 @@ def _sync_pilot_rubrics(db: Session) -> None:
 
 
 def _sync_draft_rubrics(db: Session) -> None:
-    """Mantém novas rubricas como rascunho até homologação clínica explícita."""
+    """Sincroniza rubricas de expansão respeitando a decisão editorial."""
+    now = datetime.now(UTC)
     changed = False
     for case_id, source_definition in DRAFT_CLINICAL_RUBRICS.items():
         case = db.get(ClinicalCase, case_id)
@@ -153,24 +155,30 @@ def _sync_draft_rubrics(db: Session) -> None:
             continue
 
         definition = _validated_rubric(source_definition)
+        released = case_id in RELEASED_CLINICAL_RUBRIC_IDS
+        desired_status = "revisada" if released else "rascunho"
+        reviewer = "Administração MedSync — liberação editorial" if released else None
         if case.rubrica is None:
             case.rubrica = ClinicalRubric(
                 versao=PILOT_RUBRIC_VERSION,
-                status="rascunho",
+                status=desired_status,
                 definicao=definition,
-                revisado_por=None,
-                revisado_em=None,
+                revisado_por=reviewer,
+                revisado_em=now if released else None,
             )
             changed = True
             continue
 
-        # Nunca rebaixa uma rubrica já homologada pela equipe clínica.
-        if case.rubrica.status != "revisada" and case.rubrica.definicao != definition:
+        # Nunca rebaixa uma rubrica já homologada; libera apenas IDs aprovados.
+        if case.rubrica.status != "revisada" and (
+            case.rubrica.definicao != definition
+            or case.rubrica.status != desired_status
+        ):
             case.rubrica.versao = PILOT_RUBRIC_VERSION
-            case.rubrica.status = "rascunho"
+            case.rubrica.status = desired_status
             case.rubrica.definicao = definition
-            case.rubrica.revisado_por = None
-            case.rubrica.revisado_em = None
+            case.rubrica.revisado_por = reviewer
+            case.rubrica.revisado_em = now if released else None
             changed = True
 
     if changed:
