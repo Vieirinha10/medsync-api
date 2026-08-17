@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from schemas import PublicStatsResponse
 from settings import admin_emails
 
 router = APIRouter(tags=["Sistema"])
@@ -15,7 +14,7 @@ def health_check():
     return {"status": "ok"}
 
 
-@router.get("/estatisticas-publicas", response_model=PublicStatsResponse)
+@router.get("/estatisticas-publicas")
 def public_stats(response: Response, db: Session = Depends(get_db)):
     query = select(func.count()).select_from(User)
     excluded_admins = admin_emails()
