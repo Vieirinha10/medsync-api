@@ -354,6 +354,93 @@ class AdminOverviewResponse(BaseModel):
     atividade_diaria: list[AdminDailyMetric]
 
 
+class AdminFinancialSummary(BaseModel):
+    total_pedidos: int
+    pedidos_pendentes: int
+    pedidos_pagos: int
+    falhas_30_dias: int
+    assinaturas_ativas: int
+    assinaturas_recorrentes: int
+    receita_bruta_centavos: int
+    estornos_centavos: int
+    receita_liquida_centavos: int
+    receita_mes_centavos: int
+    mrr_centavos: int
+    ticket_medio_centavos: int
+    conversao_percentual: float
+
+
+class AdminFinancialOrder(BaseModel):
+    id: str
+    usuario_id: int
+    usuario_nome: str
+    usuario_email: EmailStr
+    plano_id: str
+    valor_centavos: int
+    forma_pagamento: str
+    tipo_cobranca: str
+    status: str
+    referencia_asaas: str | None = None
+    criado_em: datetime
+    atualizado_em: datetime
+    pago_em: datetime | None = None
+
+
+class AdminFinancialPayment(BaseModel):
+    pagamento_id: str
+    pedido_id: str
+    usuario_nome: str
+    usuario_email: EmailStr
+    plano_id: str
+    valor_centavos: int
+    forma_pagamento: str
+    confirmado_em: datetime
+    origem: Literal["asaas", "checkout", "pedido"]
+
+
+class AdminFinancialSubscription(BaseModel):
+    usuario_id: int
+    usuario_nome: str
+    usuario_email: EmailStr
+    plano_id: str
+    status: str
+    situacao: Literal["ativa", "expirada", "suspensa"]
+    renovacao_automatica: bool
+    valido_ate: datetime
+    dias_restantes: int
+    assinatura_asaas_id: str | None = None
+    atualizado_em: datetime
+
+
+class AdminFinancialFailure(BaseModel):
+    pedido_id: str
+    usuario_nome: str
+    usuario_email: EmailStr
+    plano_id: str
+    valor_centavos: int
+    forma_pagamento: str
+    status: str
+    referencia_asaas: str | None = None
+    ocorrido_em: datetime
+
+
+class AdminMonthlyRevenue(BaseModel):
+    mes: str
+    receita_centavos: int
+    pagamentos: int
+
+
+class AdminFinancialResponse(BaseModel):
+    resumo: AdminFinancialSummary
+    pedidos: list[AdminFinancialOrder]
+    pagamentos: list[AdminFinancialPayment]
+    assinaturas: list[AdminFinancialSubscription]
+    falhas: list[AdminFinancialFailure]
+    receita_mensal: list[AdminMonthlyRevenue]
+    status_pedidos: dict[str, int]
+    planos_ativos: dict[str, int]
+
+
 class CheckoutCreate(BaseModel):
     plano_id: Literal["avulso", "recorrente", "trimestral"]
 
@@ -470,3 +557,4 @@ class PaymentStatusResponse(BaseModel):
     status: str
     premium_ativo: bool
     premium_valido_ate: datetime | None = None
+
