@@ -59,6 +59,43 @@ def test_health_check():
     assert ready.json() == {"status": "ready", "database": "ok"}
 
 
+def test_public_stats_counts_students_without_exposing_admins():
+    admin_email = f"admin-{uuid.uuid4().hex}@example.com"
+    student_email = f"student-{uuid.uuid4().hex}@example.com"
+    previous_admin_emails = os.environ.get("ADMIN_EMAILS")
+    os.environ["ADMIN_EMAILS"] = admin_email
+
+    try:
+        before = client.get("/estatisticas-publicas")
+        assert before.status_code == 200
+
+        for email in (student_email, admin_email):
+            response = client.post(
+                "/usuarios/registrar",
+                json={
+                    "nome": "Estudante MedSync",
+                    "email": email,
+                    "periodo_curso": 6,
+                    "faculdade": "Universidade Federal do Maranhão",
+                    "password": "senha-segura",
+                    "aceite_termos": True,
+                },
+            )
+            assert response.status_code == 201
+
+        after = client.get("/estatisticas-publicas")
+        assert after.status_code == 200
+        assert after.json() == {
+            "estudantes_medsync": before.json()["estudantes_medsync"] + 1
+        }
+        assert after.headers["cache-control"] == "public, max-age=300"
+    finally:
+        if previous_admin_emails is None:
+            os.environ.pop("ADMIN_EMAILS", None)
+        else:
+            os.environ["ADMIN_EMAILS"] = previous_admin_emails
+
+
 def test_login_rate_limit_can_be_enabled():
     os.environ["RATE_LIMIT_ENABLED"] = "true"
     limited_client = TestClient(main.create_app())
