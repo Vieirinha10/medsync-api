@@ -17,9 +17,12 @@ from models import (
     ClinicalCase,
     ClinicalExam,
     ClinicalRubric,
+    PaymentGrant,
+    PaymentOrder,
     Progresso,
     User,
     UserActivity,
+    UserEntitlement,
     VisualChallenge,
 )
 from routers.content import serialize_admin_challenge
@@ -27,6 +30,7 @@ from schemas import (
     AcademicAnalyticsResponse,
     AdminClinicalCaseResponse,
     AdminClinicalCaseUpsert,
+    AdminFinancialResponse,
     AdminOverviewResponse,
     AdminVisualChallengeResponse,
     AdminVisualChallengeUpsert,
@@ -50,6 +54,20 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
 
 def percentage(value: int, total: int) -> float:
     return round((value / total) * 100, 1) if total else 0.0
+
+
+def as_utc(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+
+
+def recent_month_keys(now: datetime, count: int = 6) -> list[str]:
+    current = now.year * 12 + now.month - 1
+    keys = []
+    for offset in range(count - 1, -1, -1):
+        month_index = current - offset
+        year, zero_based_month = divmod(month_index, 12)
+        keys.append(f"{year:04d}-{zero_based_month + 1:02d}")
+    return keys
 
 
 def serialize_admin_case(case: ClinicalCase) -> dict:
@@ -349,6 +367,211 @@ def operational_overview(
     }
 
 
+@router.get("/financeiro", response_model=AdminFinancialResponse)
+def financial_overview(
+    _: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(UTC)
+    orders = db.execute(
+        select(PaymentOrder, User)
+        .join(User, User.id == PaymentOrder.id_usuario)
+        .order_by(PaymentOrder.created_at.desc())
+    ).all()
+    grant_rows = db.execute(
+        select(PaymentGrant, PaymentOrder, User)
+        .join(PaymentOrder, PaymentOrder.id == PaymentGrant.pedido_id)
+        .join(User, User.id == PaymentOrder.id_usuario)
+        .order_by(PaymentGrant.granted_at.desc())
+    ).all()
+    entitlement_rows = db.execute(
+        select(UserEntitlement, User)
+        .join(User, User.id == UserEntitlement.id_usuario)
+        .order_by(UserEntitlement.valido_ate.desc())
+    ).all()
+
+    real_grant_order_ids = {
+        order.id
+        for grant, order, _user in grant_rows
+        if not grant.asaas_payment_id.startswith("checkout:")
+    }
+    payment_records = []
+    paid_order_ids = set()
+    for grant, order, user in grant_rows:
+        is_checkout = grant.asaas_payment_id.startswith("checkout:")
+        if is_checkout and order.id in real_grant_order_ids:
+            continue
+        paid_order_ids.add(order.id)
+        payment_records.append(
+            {
+                "pagamento_id": grant.asaas_payment_id,
+                "pedido_id": order.id,
+                "usuario_nome": user.nome,
+                "usuario_email": user.email,
+                "plano_id": order.plano_id,
+                "valor_centavos": order.valor_centavos,
+                "forma_pagamento": order.forma_pagamento,
+                "confirmado_em": grant.granted_at,
+                "origem": "checkout" if is_checkout else "asaas",
+            }
+        )
+
+    for order, user in orders:
+        if order.status != "pago" or order.id in paid_order_ids:
+            continue
+        payment_records.append(
+            {
+                "pagamento_id": order.ultimo_pagamento_asaas_id
+                or f"pedido:{order.id}",
+                "pedido_id": order.id,
+                "usuario_nome": user.nome,
+                "usuario_email": user.email,
+                "plano_id": order.plano_id,
+                "valor_centavos": order.valor_centavos,
+                "forma_pagamento": order.forma_pagamento,
+                "confirmado_em": order.paid_at or order.updated_at,
+                "origem": "pedido",
+            }
+        )
+    payment_records.sort(key=lambda item: as_utc(item["confirmado_em"]), reverse=True)
+
+    failure_statuses = {
+        "falhou",
+        "recusado",
+        "cancelado",
+        "expirado",
+        "estornado",
+        "suspenso",
+    }
+    pending_statuses = {
+        "criado",
+        "processando",
+        "aguardando_pagamento",
+        "aguardando_confirmacao",
+    }
+    order_records = []
+    failures = []
+    status_counts: dict[str, int] = defaultdict(int)
+    for order, user in orders:
+        status_counts[order.status] += 1
+        reference = order.ultimo_pagamento_asaas_id or order.asaas_checkout_id
+        order_records.append(
+            {
+                "id": order.id,
+                "usuario_id": user.id,
+                "usuario_nome": user.nome,
+                "usuario_email": user.email,
+                "plano_id": order.plano_id,
+                "valor_centavos": order.valor_centavos,
+                "forma_pagamento": order.forma_pagamento,
+                "tipo_cobranca": order.tipo_cobranca,
+                "status": order.status,
+                "referencia_asaas": reference,
+                "criado_em": order.created_at,
+                "atualizado_em": order.updated_at,
+                "pago_em": order.paid_at,
+            }
+        )
+        if order.status in failure_statuses:
+            failures.append(
+                {
+                    "pedido_id": order.id,
+                    "usuario_nome": user.nome,
+                    "usuario_email": user.email,
+                    "plano_id": order.plano_id,
+                    "valor_centavos": order.valor_centavos,
+                    "forma_pagamento": order.forma_pagamento,
+                    "status": order.status,
+                    "referencia_asaas": reference,
+                    "ocorrido_em": order.updated_at,
+                }
+            )
+
+    subscriptions = []
+    active_subscriptions = 0
+    recurring_subscriptions = 0
+    active_plans: dict[str, int] = defaultdict(int)
+    for entitlement, user in entitlement_rows:
+        valid_until = as_utc(entitlement.valido_ate)
+        if entitlement.status != "ativo":
+            situation = "suspensa"
+        elif valid_until <= now:
+            situation = "expirada"
+        else:
+            situation = "ativa"
+            active_subscriptions += 1
+            active_plans[entitlement.plano_id] += 1
+            if entitlement.renovacao_automatica:
+                recurring_subscriptions += 1
+        subscriptions.append(
+            {
+                "usuario_id": user.id,
+                "usuario_nome": user.nome,
+                "usuario_email": user.email,
+                "plano_id": entitlement.plano_id,
+                "status": entitlement.status,
+                "situacao": situation,
+                "renovacao_automatica": entitlement.renovacao_automatica,
+                "valido_ate": entitlement.valido_ate,
+                "dias_restantes": max(0, (valid_until.date() - now.date()).days),
+                "assinatura_asaas_id": entitlement.asaas_subscription_id,
+                "atualizado_em": entitlement.updated_at,
+            }
+        )
+
+    gross_revenue = sum(item["valor_centavos"] for item in payment_records)
+    refunds = sum(
+        order.valor_centavos for order, _user in orders if order.status == "estornado"
+    )
+    current_month = now.strftime("%Y-%m")
+    monthly_keys = recent_month_keys(now)
+    monthly = {key: {"receita_centavos": 0, "pagamentos": 0} for key in monthly_keys}
+    for payment in payment_records:
+        key = as_utc(payment["confirmado_em"]).strftime("%Y-%m")
+        if key in monthly:
+            monthly[key]["receita_centavos"] += payment["valor_centavos"]
+            monthly[key]["pagamentos"] += 1
+
+    paid_orders = sum(1 for order, _user in orders if order.status == "pago")
+    failed_recent = sum(
+        1
+        for failure in failures
+        if as_utc(failure["ocorrido_em"]) >= now - timedelta(days=30)
+    )
+    return {
+        "resumo": {
+            "total_pedidos": len(orders),
+            "pedidos_pendentes": sum(
+                1 for order, _user in orders if order.status in pending_statuses
+            ),
+            "pedidos_pagos": paid_orders,
+            "falhas_30_dias": failed_recent,
+            "assinaturas_ativas": active_subscriptions,
+            "assinaturas_recorrentes": recurring_subscriptions,
+            "receita_bruta_centavos": gross_revenue,
+            "estornos_centavos": refunds,
+            "receita_liquida_centavos": max(0, gross_revenue - refunds),
+            "receita_mes_centavos": monthly.get(current_month, {}).get(
+                "receita_centavos", 0
+            ),
+            "mrr_centavos": recurring_subscriptions * 2390,
+            "ticket_medio_centavos": round(gross_revenue / len(payment_records))
+            if payment_records
+            else 0,
+            "conversao_percentual": percentage(paid_orders, len(orders)),
+        },
+        "pedidos": order_records[:200],
+        "pagamentos": payment_records[:200],
+        "assinaturas": subscriptions[:200],
+        "falhas": failures[:200],
+        "receita_mensal": [
+            {"mes": key, **monthly[key]} for key in monthly_keys
+        ],
+        "status_pedidos": dict(status_counts),
+        "planos_ativos": dict(active_plans),
+    }
+
+
 @router.get("/casos", response_model=list[AdminClinicalCaseResponse])
 def admin_list_cases(
     _: User = Depends(get_current_admin),
@@ -558,3 +781,4 @@ def export_anonymized_report(
             "Content-Disposition": "attachment; filename=medsync-relatorio-anonimizado.csv"
         },
     )
+
