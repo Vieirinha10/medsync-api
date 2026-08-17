@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import inspect, text
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
 from database import get_db
+from models import User
+from schemas import PublicStatsResponse
+from settings import admin_emails
 
 router = APIRouter(tags=["Sistema"])
 
@@ -10,6 +13,17 @@ router = APIRouter(tags=["Sistema"])
 @router.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@router.get("/estatisticas-publicas", response_model=PublicStatsResponse)
+def public_stats(response: Response, db: Session = Depends(get_db)):
+    query = select(func.count()).select_from(User)
+    excluded_admins = admin_emails()
+    if excluded_admins:
+        query = query.where(func.lower(User.email).not_in(excluded_admins))
+
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return {"estudantes_medsync": db.scalar(query) or 0}
 
 
 @router.get("/ready")
