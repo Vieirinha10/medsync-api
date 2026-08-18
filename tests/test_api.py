@@ -1567,6 +1567,17 @@ def test_question_catalog_and_answer_flow_are_isolated_from_review_features(
     assert answer.json()["alternativa_correta_id"] == correct_id
     assert answer.json()["explicacao"]["fonte"] == "synapse"
     assert "ponto_chave" not in answer.json()["explicacao"]
+    assert answer.json()["total_respondentes"] >= 1
+    assert {
+        item["id"] for item in answer.json()["distribuicao_alternativas"]
+    } == {item["id"] for item in public_question["alternativas"]}
+    assert round(
+        sum(
+            item["percentual"]
+            for item in answer.json()["distribuicao_alternativas"]
+        ),
+        1,
+    ) in {99.9, 100.0, 100.1}
     assert answer.json()["respondidas_hoje"] == 1
 
     retry_explanation = client.post(
@@ -1610,6 +1621,76 @@ def test_question_catalog_and_answer_flow_are_isolated_from_review_features(
         assert db.scalar(
             select(func.count(StudyError.id)).where(StudyError.id_usuario == user_id)
         ) == study_errors_before
+
+
+def test_question_distribution_counts_each_user_latest_answer_once():
+    first_email = "questoes-distribuicao-1@example.com"
+    second_email = "questoes-distribuicao-2@example.com"
+    first_token = _register_and_login(first_email)
+    _register_and_login(second_email)
+
+    with SessionLocal() as db:
+        first_user_id = db.scalar(select(User.id).where(User.email == first_email))
+        second_user_id = db.scalar(select(User.id).where(User.email == second_email))
+        question = ExamQuestion(
+            ano=2026,
+            instituicao="MedSync",
+            cabecalho="Questão de validação interna",
+            especialidade="Clínica Médica",
+            assunto="Distribuição de respostas",
+            enunciado="Qual alternativa representa o gabarito desta questão?",
+            alternativas=[
+                {"id": "A", "texto": "Primeira alternativa"},
+                {"id": "B", "texto": "Segunda alternativa"},
+                {"id": "C", "texto": "Terceira alternativa"},
+            ],
+            alternativa_correta_id="B",
+            fingerprint=uuid.uuid4().hex,
+            status="publicada",
+        )
+        db.add(question)
+        db.flush()
+        question.explicacao = _independent_question_explanation(question).model_dump(
+            mode="json"
+        )
+        question.explicacao_status = "gerada"
+        db.add_all(
+            [
+                QuestionAttempt(
+                    id_usuario=first_user_id,
+                    id_questao=question.id,
+                    alternativa_selecionada_id="A",
+                    correta=False,
+                    tempo_segundos=30,
+                ),
+                QuestionAttempt(
+                    id_usuario=second_user_id,
+                    id_questao=question.id,
+                    alternativa_selecionada_id="C",
+                    correta=False,
+                    tempo_segundos=40,
+                ),
+            ]
+        )
+        db.commit()
+        question_id = question.id
+
+    response = client.post(
+        f"/questoes/{question_id}/responder",
+        headers={"Authorization": f"Bearer {first_token}"},
+        json={"alternativa_id": "B", "tempo_segundos": 25},
+    )
+    assert response.status_code == 200
+    assert response.json()["total_respondentes"] == 2
+    distribution = {
+        item["id"]: item for item in response.json()["distribuicao_alternativas"]
+    }
+    assert distribution["A"] == {"id": "A", "escolhas": 0, "percentual": 0.0}
+    assert distribution["B"] == {"id": "B", "escolhas": 1, "percentual": 50.0}
+    assert distribution["C"] == {"id": "C", "escolhas": 1, "percentual": 50.0}
+    with SessionLocal() as db:
+        db.delete(db.get(ExamQuestion, question_id))
+        db.commit()
 
 
 def test_free_question_limit_counts_unique_questions_per_day():

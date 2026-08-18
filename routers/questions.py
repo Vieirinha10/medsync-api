@@ -67,6 +67,53 @@ def answered_today(db: Session, user_id: int) -> int:
     )
 
 
+def question_answer_distribution(
+    db: Session,
+    question: ExamQuestion,
+) -> tuple[list[dict[str, object]], int]:
+    valid_alternative_ids = [item["id"] for item in question.alternativas]
+    latest_attempts = (
+        select(func.max(QuestionAttempt.id).label("attempt_id"))
+        .where(QuestionAttempt.id_questao == question.id)
+        .group_by(QuestionAttempt.id_usuario)
+        .subquery()
+    )
+    counts = {
+        str(alternative_id): int(total)
+        for alternative_id, total in db.execute(
+            select(
+                QuestionAttempt.alternativa_selecionada_id,
+                func.count(QuestionAttempt.id),
+            )
+            .join(
+                latest_attempts,
+                QuestionAttempt.id == latest_attempts.c.attempt_id,
+            )
+            .where(
+                QuestionAttempt.alternativa_selecionada_id.in_(
+                    valid_alternative_ids
+                )
+            )
+            .group_by(QuestionAttempt.alternativa_selecionada_id)
+        ).all()
+    }
+    total_respondents = sum(counts.values())
+    distribution = [
+        {
+            "id": alternative["id"],
+            "escolhas": counts.get(alternative["id"], 0),
+            "percentual": round(
+                counts.get(alternative["id"], 0) * 100 / total_respondents,
+                1,
+            )
+            if total_respondents
+            else 0.0,
+        }
+        for alternative in question.alternativas
+    ]
+    return distribution, total_respondents
+
+
 def serialize_question(question: ExamQuestion) -> dict:
     return {
         "id": question.id,
@@ -218,10 +265,13 @@ def answer_question(
     )
     db.commit()
     used_after = answered_today(db, current_user.id)
+    distribution, total_respondents = question_answer_distribution(db, question)
     return {
         "correta": correct,
         "alternativa_correta_id": question.alternativa_correta_id,
         "explicacao": explanation,
+        "distribuicao_alternativas": distribution,
+        "total_respondentes": total_respondents,
         "respondidas_hoje": used_after,
         "restantes_hoje": None if premium else max(0, FREE_DAILY_LIMIT - used_after),
     }

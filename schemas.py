@@ -521,10 +521,18 @@ class QuestionExplanation(BaseModel):
     fonte: Literal["synapse", "revisao_medsync", "resumo_automatico"]
 
 
+class QuestionAlternativeSelectionStats(BaseModel):
+    id: str
+    escolhas: int
+    percentual: float
+
+
 class QuestionAnswerResponse(BaseModel):
     correta: bool
     alternativa_correta_id: str
     explicacao: QuestionExplanation
+    distribuicao_alternativas: list[QuestionAlternativeSelectionStats]
+    total_respondentes: int
     respondidas_hoje: int
     restantes_hoje: int | None
 
