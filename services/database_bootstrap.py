@@ -8,6 +8,7 @@ from alembic.config import Config
 from alembic import command
 from database import SessionLocal
 from services.clinical_content import seed_clinical_content
+from services.question_content import seed_question_content
 
 _bootstrap_lock = Lock()
 _bootstrap_completed = False
@@ -31,5 +32,6 @@ def prepare_database() -> None:
 
         with SessionLocal() as db:
             seed_clinical_content(db)
+            seed_question_content(db)
 
         _bootstrap_completed = True

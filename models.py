@@ -50,6 +50,12 @@ class User(Base):
     progressos_trilhas: Mapped[list["LearningPathProgress"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
     )
+    tentativas_questoes: Mapped[list["QuestionAttempt"]] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan"
+    )
+    relatos_questoes: Mapped[list["QuestionReport"]] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan"
+    )
     entitlement: Mapped["UserEntitlement | None"] = relationship(
         back_populates="usuario", cascade="all, delete-orphan", uselist=False
     )
@@ -256,6 +262,86 @@ class VisualChallenge(Base):
         default=lambda: datetime.now(UTC),
         onupdate=lambda: datetime.now(UTC),
     )
+
+
+class ExamQuestion(Base):
+    __tablename__ = "exam_questions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ano: Mapped[int] = mapped_column(Integer, index=True)
+    instituicao: Mapped[str] = mapped_column(String(180), index=True)
+    cabecalho: Mapped[str] = mapped_column(String(240))
+    especialidade: Mapped[str] = mapped_column(String(120), index=True)
+    assunto: Mapped[str] = mapped_column(String(160), index=True)
+    enunciado: Mapped[str] = mapped_column(Text)
+    alternativas: Mapped[list[dict[str, str]]] = mapped_column(JSON)
+    alternativa_correta_id: Mapped[str] = mapped_column(String(5))
+    fingerprint: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    explicacao: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    explicacao_status: Mapped[str] = mapped_column(
+        String(30), default="pendente", index=True
+    )
+    status: Mapped[str] = mapped_column(String(30), default="publicada", index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    tentativas: Mapped[list["QuestionAttempt"]] = relationship(
+        back_populates="questao", cascade="all, delete-orphan"
+    )
+    relatos: Mapped[list["QuestionReport"]] = relationship(
+        back_populates="questao", cascade="all, delete-orphan"
+    )
+
+
+class QuestionAttempt(Base):
+    __tablename__ = "question_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    id_questao: Mapped[int] = mapped_column(
+        ForeignKey("exam_questions.id", ondelete="CASCADE"), index=True
+    )
+    alternativa_selecionada_id: Mapped[str] = mapped_column(String(5))
+    correta: Mapped[bool] = mapped_column(Boolean, index=True)
+    tempo_segundos: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="tentativas_questoes")
+    questao: Mapped[ExamQuestion] = relationship(back_populates="tentativas")
+
+
+class QuestionReport(Base):
+    __tablename__ = "question_reports"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    id_questao: Mapped[int] = mapped_column(
+        ForeignKey("exam_questions.id", ondelete="CASCADE"), index=True
+    )
+    motivo: Mapped[str] = mapped_column(String(60), index=True)
+    descricao: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="aberto", index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="relatos_questoes")
+    questao: Mapped[ExamQuestion] = relationship(back_populates="relatos")
 
 
 class Announcement(Base):

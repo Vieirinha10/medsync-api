@@ -12,6 +12,7 @@ from routers import (
     learning_paths,
     payments,
     progress,
+    questions,
     simulations,
     system,
     users,
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
     application.include_router(error_notebook.router)
     application.include_router(learning_paths.router)
     application.include_router(payments.router)
+    application.include_router(questions.router)
     application.include_router(admin.router)
     return application
 

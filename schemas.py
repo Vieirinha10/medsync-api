@@ -441,6 +441,151 @@ class AdminFinancialResponse(BaseModel):
     planos_ativos: dict[str, int]
 
 
+class QuestionAlternative(BaseModel):
+    id: str
+    texto: str
+
+
+class QuestionListItem(BaseModel):
+    id: int
+    ano: int
+    instituicao: str
+    cabecalho: str
+    especialidade: str
+    assunto: str
+    enunciado: str
+    alternativas: list[QuestionAlternative]
+    explicacao_disponivel: bool = False
+
+
+class QuestionFacetCount(BaseModel):
+    valor: str
+    total: int
+
+
+class QuestionMetadataResponse(BaseModel):
+    total_questoes: int
+    especialidades: list[QuestionFacetCount]
+    assuntos: list[QuestionFacetCount]
+    anos: list[QuestionFacetCount]
+    instituicoes: list[QuestionFacetCount]
+    premium_ativo: bool
+    limite_diario: int | None
+    respondidas_hoje: int
+    restantes_hoje: int | None
+
+
+class QuestionAnswerRequest(BaseModel):
+    alternativa_id: str = Field(min_length=1, max_length=5)
+    tempo_segundos: int | None = Field(default=None, ge=0, le=3600)
+
+    @field_validator("alternativa_id")
+    @classmethod
+    def normalize_alternative_id(cls, value: str) -> str:
+        return value.strip().upper()
+
+
+class QuestionAlternativeExplanation(BaseModel):
+    id: str
+    correta: bool
+    explicacao: str
+
+
+class QuestionExplanation(BaseModel):
+    resumo: str
+    porque_correta: str
+    analise_alternativas: list[QuestionAlternativeExplanation]
+    ponto_chave: str
+    alerta_atualizacao: str | None = None
+    fonte: Literal["synapse", "revisao_medsync", "resumo_automatico"]
+
+
+class QuestionAnswerResponse(BaseModel):
+    correta: bool
+    alternativa_correta_id: str
+    explicacao: QuestionExplanation
+    respondidas_hoje: int
+    restantes_hoje: int | None
+
+
+class QuestionPerformanceTopic(BaseModel):
+    assunto: str
+    respondidas: int
+    acertos: int
+    percentual: float
+
+
+class QuestionPerformanceResponse(BaseModel):
+    respondidas: int
+    acertos: int
+    percentual: float
+    tempo_medio_segundos: int | None
+    assuntos: list[QuestionPerformanceTopic]
+
+
+class QuestionReportCreate(BaseModel):
+    motivo: Literal["gabarito", "enunciado", "explicacao", "desatualizada", "outro"]
+    descricao: str | None = Field(default=None, max_length=1000)
+
+
+class MessageWithIdResponse(BaseModel):
+    id: int
+    message: str
+
+
+class AdminQuestionSummary(BaseModel):
+    total: int
+    publicadas: int
+    explicacoes_pendentes: int
+    explicacoes_geradas: int
+    relatos_abertos: int
+    tentativas: int
+
+
+class AdminQuestionItem(BaseModel):
+    id: int
+    cabecalho: str
+    especialidade: str
+    assunto: str
+    enunciado: str
+    alternativas: list[QuestionAlternative]
+    alternativa_correta_id: str
+    explicacao: QuestionExplanation | None
+    explicacao_status: str
+    status: str
+    tentativas: int
+    percentual_acerto: float
+    relatos_abertos: int
+
+
+class AdminQuestionReport(BaseModel):
+    id: int
+    questao_id: int
+    questao_cabecalho: str
+    usuario_nome: str
+    usuario_email: EmailStr
+    motivo: str
+    descricao: str | None
+    status: str
+    created_at: datetime
+
+
+class AdminQuestionsResponse(BaseModel):
+    resumo: AdminQuestionSummary
+    questoes: list[AdminQuestionItem]
+    relatos: list[AdminQuestionReport]
+
+
+class AdminQuestionUpdate(BaseModel):
+    assunto: str | None = Field(default=None, min_length=2, max_length=160)
+    status: Literal["publicada", "oculta", "revisao"] | None = None
+    explicacao_status: Literal["pendente", "gerada", "revisada"] | None = None
+
+
+class AdminQuestionReportUpdate(BaseModel):
+    status: Literal["aberto", "em_analise", "resolvido"]
+
+
 class CheckoutCreate(BaseModel):
     plano_id: Literal["avulso", "recorrente", "trimestral"]
 

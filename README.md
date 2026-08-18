@@ -28,6 +28,8 @@ A API inicia em `http://127.0.0.1:8000` e a documentação interativa fica em
   é `true` em produção e `false` no desenvolvimento.
 - `ADMIN_EMAILS`: lista separada por vírgulas dos e-mails autorizados a acessar
   os indicadores acadêmicos agregados.
+- `OPENAI_QUESTION_MODEL`: modelo opcional usado apenas nas explicações próprias
+  das questões; quando vazio, utiliza `OPENAI_MODEL`.
 
 Em produção, configure um PostgreSQL persistente. O SQLite padrão é destinado
 somente ao desenvolvimento local.
@@ -56,6 +58,19 @@ O catálogo legado com os 40 casos é usado somente como carga inicial idempoten
 ```bash
 python -m scripts.seed_clinical_content
 ```
+
+O módulo de questões usa o catálogo compactado e auditável em
+`data/question_catalog.json.gz`. A carga é idempotente e mantém tentativas e
+relatos em tabelas próprias, sem alimentar revisões ou o caderno de erros. Para
+refazer o catálogo a partir de uma exportação autorizada:
+
+```bash
+python scripts/build_question_catalog.py questoes.html data/question_catalog.json.gz
+```
+
+O gerador remove duplicatas, questões anuladas, gabaritos inconsistentes,
+alternativas incompletas e itens que dependem de imagens ausentes. Comentários,
+vídeos e links de mídia da exportação não são incorporados.
 
 No Gunicorn, migrações e carga inicial são executadas uma única vez pelo processo
 principal antes da criação dos workers.
