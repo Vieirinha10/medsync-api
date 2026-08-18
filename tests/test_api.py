@@ -2,6 +2,7 @@ import importlib
 import os
 import sys
 import uuid
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from alembic.config import Config
@@ -17,11 +18,26 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")
 from database import SessionLocal
-from models import ClinicalCase, ClinicalExam, ClinicalRubric, User
+from models import (
+    ClinicalCase,
+    ClinicalExam,
+    ClinicalRubric,
+    ExamQuestion,
+    PaymentGrant,
+    PaymentOrder,
+    QuestionAttempt,
+    QuestionReport,
+    StudyError,
+    User,
+    UserEntitlement,
+)
+from schemas import QuestionExplanation
 from services.clinical_content import seed_clinical_content
+from services.question_content import seed_question_content
 
 with SessionLocal() as db:
     seed_clinical_content(db)
+    seed_question_content(db)
 main = importlib.import_module("main")
 client = TestClient(main.app)
 
@@ -39,6 +55,16 @@ def _register_and_login(email: str = "aluno@example.com") -> str:
         },
     )
     assert response.status_code == 201
+
+    # Os demais testes exercitam áreas autenticadas; a verificação em si possui
+    # cenários dedicados abaixo.
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email.lower()))
+        user.email_verified_at = datetime.now(UTC)
+        user.email_verification_token_hash = None
+        user.email_verification_expires_at = None
+        user.email_verification_sent_at = None
+        db.commit()
 
     response = client.post(
         "/usuarios/login", json={"email": email, "password": "senha-segura"}
@@ -166,6 +192,89 @@ def test_registration_saves_academic_profile():
     assert response.json()["nome"] == "Maria da Silva"
     assert response.json()["periodo_curso"] == 4
     assert response.json()["faculdade"] == "Universidade Federal do Piauí"
+    assert response.json()["email_verificado"] is False
+
+
+def test_new_account_requires_email_verification(monkeypatch):
+    captured = {}
+
+    def fake_send_verification_email(**payload):
+        captured.update(payload)
+
+    monkeypatch.setattr(
+        "routers.users.send_verification_email", fake_send_verification_email
+    )
+    email = "confirmacao@example.com"
+    registration = client.post(
+        "/usuarios/registrar",
+        json={
+            "nome": "Aluno Confirmação",
+            "email": email,
+            "periodo_curso": 6,
+            "faculdade": "UFMA",
+            "password": "senha-segura",
+            "aceite_termos": True,
+        },
+    )
+
+    assert registration.status_code == 201
+    assert registration.json()["email_verificado"] is False
+    assert captured["email"] == email
+    blocked_login = client.post(
+        "/usuarios/login", json={"email": email, "password": "senha-segura"}
+    )
+    assert blocked_login.status_code == 403
+    assert "ainda não foi confirmado" in blocked_login.json()["detail"]
+
+    confirmation = client.post(
+        "/usuarios/verificar-email", json={"token": captured["raw_token"]}
+    )
+    assert confirmation.status_code == 200
+    assert "conta MedSync está pronta" in confirmation.json()["message"]
+    assert client.post(
+        "/usuarios/login", json={"email": email, "password": "senha-segura"}
+    ).status_code == 200
+    assert client.post(
+        "/usuarios/verificar-email", json={"token": captured["raw_token"]}
+    ).status_code == 400
+
+
+def test_email_verification_can_be_resent_without_account_enumeration(monkeypatch):
+    sent_tokens = []
+
+    def fake_send_verification_email(**payload):
+        sent_tokens.append(payload["raw_token"])
+
+    monkeypatch.setattr(
+        "routers.users.send_verification_email", fake_send_verification_email
+    )
+    email = "reenvio@example.com"
+    registration = client.post(
+        "/usuarios/registrar",
+        json={
+            "nome": "Aluno Reenvio",
+            "email": email,
+            "periodo_curso": 5,
+            "faculdade": "UFMA",
+            "password": "senha-segura",
+            "aceite_termos": True,
+        },
+    )
+    assert registration.status_code == 201
+
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        user.email_verification_sent_at = datetime.now(UTC) - timedelta(minutes=2)
+        db.commit()
+
+    resend = client.post("/usuarios/reenviar-verificacao", json={"email": email})
+    unknown = client.post(
+        "/usuarios/reenviar-verificacao", json={"email": "desconhecido@example.com"}
+    )
+    assert resend.status_code == 202
+    assert unknown.status_code == 202
+    assert resend.json() == unknown.json()
+    assert len(sent_tokens) == 2
 
 
 def test_registration_requires_valid_academic_profile():
@@ -751,6 +860,88 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
     assert "operacoes-admin@example.com" not in report.text
 
 
+def test_admin_financial_center_consolidates_orders_revenue_and_subscriptions():
+    admin_email = f"financeiro-admin-{uuid.uuid4().hex}@example.com"
+    student_email = f"financeiro-aluno-{uuid.uuid4().hex}@example.com"
+    os.environ["ADMIN_EMAILS"] = admin_email
+    admin_token = _register_and_login(admin_email)
+    _register_and_login(student_email)
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    now = datetime.now(UTC)
+    paid_order_id = str(uuid.uuid4())
+    failed_order_id = str(uuid.uuid4())
+
+    with SessionLocal() as db:
+        student = db.scalar(select(User).where(User.email == student_email))
+        db.add_all(
+            [
+                PaymentOrder(
+                    id=paid_order_id,
+                    id_usuario=student.id,
+                    plano_id="recorrente",
+                    valor_centavos=2390,
+                    tipo_cobranca="RECURRENT",
+                    forma_pagamento="CREDIT_CARD",
+                    status="pago",
+                    ultimo_pagamento_asaas_id="pay_financeiro_confirmado",
+                    created_at=now - timedelta(days=2),
+                    updated_at=now - timedelta(days=2),
+                    paid_at=now - timedelta(days=2),
+                ),
+                PaymentOrder(
+                    id=failed_order_id,
+                    id_usuario=student.id,
+                    plano_id="trimestral",
+                    valor_centavos=6590,
+                    tipo_cobranca="INSTALLMENT",
+                    forma_pagamento="CREDIT_CARD",
+                    status="recusado",
+                    ultimo_pagamento_asaas_id="pay_financeiro_recusado",
+                    created_at=now - timedelta(days=1),
+                    updated_at=now - timedelta(days=1),
+                ),
+                UserEntitlement(
+                    id_usuario=student.id,
+                    plano_id="recorrente",
+                    status="ativo",
+                    valido_ate=now + timedelta(days=28),
+                    renovacao_automatica=True,
+                    asaas_subscription_id="sub_financeiro_ativo",
+                ),
+            ]
+        )
+        db.flush()
+        db.add(
+            PaymentGrant(
+                asaas_payment_id="pay_financeiro_confirmado",
+                pedido_id=paid_order_id,
+                granted_at=now - timedelta(days=2),
+            )
+        )
+        db.commit()
+
+    response = client.get("/admin/financeiro", headers=headers)
+    os.environ.pop("ADMIN_EMAILS")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["resumo"]["receita_bruta_centavos"] >= 2390
+    assert data["resumo"]["receita_liquida_centavos"] >= 2390
+    assert data["resumo"]["assinaturas_ativas"] >= 1
+    assert data["resumo"]["assinaturas_recorrentes"] >= 1
+    assert data["resumo"]["mrr_centavos"] >= 2390
+    assert any(item["id"] == paid_order_id for item in data["pedidos"])
+    assert any(
+        item["pagamento_id"] == "pay_financeiro_confirmado"
+        for item in data["pagamentos"]
+    )
+    assert any(item["pedido_id"] == failed_order_id for item in data["falhas"])
+    assert any(
+        item["assinatura_asaas_id"] == "sub_financeiro_ativo"
+        for item in data["assinaturas"]
+    )
+
+
 def test_protected_routes_require_a_valid_token():
     assert client.get("/casos-clinicos/").status_code == 401
     assert (
@@ -1302,3 +1493,219 @@ def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 409
+
+
+def _independent_question_explanation(question: ExamQuestion) -> QuestionExplanation:
+    return QuestionExplanation(
+        resumo="A resposta foi analisada a partir do enunciado e do gabarito validado.",
+        porque_correta=(
+            "A alternativa correta é compatível com os dados apresentados e com "
+            "a prioridade clínica descrita na questão."
+        ),
+        analise_alternativas=[
+            {
+                "id": alternative["id"],
+                "correta": alternative["id"] == question.alternativa_correta_id,
+                "explicacao": (
+                    "Esta alternativa corresponde ao gabarito validado."
+                    if alternative["id"] == question.alternativa_correta_id
+                    else "Esta alternativa não atende ao objetivo principal do enunciado."
+                ),
+            }
+            for alternative in question.alternativas
+        ],
+        alerta_atualizacao=None,
+        fonte="synapse",
+    )
+
+
+def test_question_catalog_and_answer_flow_are_isolated_from_review_features(
+    monkeypatch,
+):
+    token = _register_and_login("questoes-fluxo@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    monkeypatch.setattr(
+        "routers.questions.generate_question_explanation",
+        _independent_question_explanation,
+    )
+
+    metadata = client.get("/questoes/meta", headers=headers)
+    assert metadata.status_code == 200
+    assert metadata.json()["total_questoes"] == 2811
+    assert metadata.json()["limite_diario"] == 10
+
+    listing = client.get("/questoes?quantidade=10", headers=headers)
+    assert listing.status_code == 200
+    assert len(listing.json()) == 10
+    public_question = listing.json()[0]
+    assert "alternativa_correta_id" not in public_question
+    assert "explicacao" not in public_question
+
+    hidden_explanation = client.post(
+        f"/questoes/{public_question['id']}/explicacao",
+        headers=headers,
+    )
+    assert hidden_explanation.status_code == 403
+
+    with SessionLocal() as db:
+        question = db.get(ExamQuestion, public_question["id"])
+        correct_id = question.alternativa_correta_id
+        user_id = db.scalar(
+            select(User.id).where(User.email == "questoes-fluxo@example.com")
+        )
+        study_errors_before = db.scalar(
+            select(func.count(StudyError.id)).where(StudyError.id_usuario == user_id)
+        )
+
+    answer = client.post(
+        f"/questoes/{public_question['id']}/responder",
+        headers=headers,
+        json={"alternativa_id": correct_id, "tempo_segundos": 42},
+    )
+    assert answer.status_code == 200
+    assert answer.json()["correta"] is True
+    assert answer.json()["alternativa_correta_id"] == correct_id
+    assert answer.json()["explicacao"]["fonte"] == "synapse"
+    assert "ponto_chave" not in answer.json()["explicacao"]
+    assert answer.json()["respondidas_hoje"] == 1
+
+    retry_explanation = client.post(
+        f"/questoes/{public_question['id']}/explicacao",
+        headers=headers,
+    )
+    assert retry_explanation.status_code == 200
+    assert retry_explanation.json()["fonte"] == "synapse"
+    assert "ponto_chave" not in retry_explanation.json()
+
+    performance = client.get("/questoes/desempenho", headers=headers)
+    assert performance.status_code == 200
+    assert performance.json()["respondidas"] == 1
+    assert performance.json()["acertos"] == 1
+
+    report = client.post(
+        f"/questoes/{public_question['id']}/reportar",
+        headers=headers,
+        json={"motivo": "desatualizada", "descricao": "Solicito revisão editorial."},
+    )
+    assert report.status_code == 200
+    repeated_report = client.post(
+        f"/questoes/{public_question['id']}/reportar",
+        headers=headers,
+        json={"motivo": "gabarito", "descricao": "Detalhes atualizados."},
+    )
+    assert repeated_report.status_code == 200
+    assert repeated_report.json()["id"] == report.json()["id"]
+
+    with SessionLocal() as db:
+        assert db.scalar(
+            select(func.count(QuestionAttempt.id)).where(
+                QuestionAttempt.id_usuario == user_id
+            )
+        ) == 1
+        assert db.scalar(
+            select(func.count(QuestionReport.id)).where(
+                QuestionReport.id_usuario == user_id
+            )
+        ) == 1
+        assert db.scalar(
+            select(func.count(StudyError.id)).where(StudyError.id_usuario == user_id)
+        ) == study_errors_before
+
+
+def test_free_question_limit_counts_unique_questions_per_day():
+    email = "questoes-limite@example.com"
+    token = _register_and_login(email)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    with SessionLocal() as db:
+        user_id = db.scalar(select(User.id).where(User.email == email))
+        questions = list(
+            db.scalars(
+                select(ExamQuestion)
+                .where(ExamQuestion.status == "publicada")
+                .order_by(ExamQuestion.id)
+                .limit(11)
+            ).all()
+        )
+        db.add_all(
+            [
+                QuestionAttempt(
+                    id_usuario=user_id,
+                    id_questao=question.id,
+                    alternativa_selecionada_id=question.alternativa_correta_id,
+                    correta=True,
+                    tempo_segundos=30,
+                )
+                for question in questions[:10]
+            ]
+        )
+        db.commit()
+        eleventh_id = questions[10].id
+        eleventh_answer = questions[10].alternativa_correta_id
+
+    metadata = client.get("/questoes/meta", headers=headers)
+    assert metadata.json()["respondidas_hoje"] == 10
+    assert metadata.json()["restantes_hoje"] == 0
+    assert client.get("/questoes", headers=headers).json() == []
+
+    blocked = client.post(
+        f"/questoes/{eleventh_id}/responder",
+        headers=headers,
+        json={"alternativa_id": eleventh_answer},
+    )
+    assert blocked.status_code == 403
+    assert "10 questões gratuitas" in blocked.json()["detail"]
+
+
+def test_admin_can_search_moderate_and_generate_question_explanations(monkeypatch):
+    email = "questoes-admin@example.com"
+    previous_admin_emails = os.environ.get("ADMIN_EMAILS")
+    os.environ["ADMIN_EMAILS"] = email
+    try:
+        token = _register_and_login(email)
+        headers = {"Authorization": f"Bearer {token}"}
+        question_id = client.get(
+            "/questoes?quantidade=1", headers=headers
+        ).json()[0]["id"]
+        with SessionLocal() as db:
+            correct_id = db.get(ExamQuestion, question_id).alternativa_correta_id
+        monkeypatch.setattr(
+            "routers.questions.generate_question_explanation",
+            _independent_question_explanation,
+        )
+
+        response = client.get(
+            f"/admin/questoes?busca={question_id}&limite=20", headers=headers
+        )
+        assert response.status_code == 200
+        assert response.json()["resumo"]["total"] == 2811
+        assert [item["id"] for item in response.json()["questoes"]] == [question_id]
+
+        hidden = client.patch(
+            f"/admin/questoes/{question_id}",
+            headers=headers,
+            json={"status": "oculta", "assunto": "Cirurgia geral"},
+        )
+        assert hidden.status_code == 200
+        assert client.post(
+            f"/questoes/{question_id}/responder",
+            headers=headers,
+            json={"alternativa_id": correct_id},
+        ).status_code == 404
+
+        generated = client.post(
+            f"/admin/questoes/{question_id}/gerar-explicacao", headers=headers
+        )
+        assert generated.status_code == 200
+        with SessionLocal() as db:
+            question = db.get(ExamQuestion, question_id)
+            assert question.status == "oculta"
+            assert question.assunto == "Cirurgia geral"
+            assert question.explicacao_status == "gerada"
+            question.status = "publicada"
+            db.commit()
+    finally:
+        if previous_admin_emails is None:
+            os.environ.pop("ADMIN_EMAILS", None)
+        else:
+            os.environ["ADMIN_EMAILS"] = previous_admin_emails

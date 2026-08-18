@@ -11,10 +11,11 @@ from schemas import (
     AdminQuestionReportUpdate,
     AdminQuestionsResponse,
     AdminQuestionUpdate,
-    QuestionMessageResponse,
+    MessageResponse,
     MessageWithIdResponse,
     QuestionAnswerRequest,
     QuestionAnswerResponse,
+    QuestionExplanation,
     QuestionListItem,
     QuestionMetadataResponse,
     QuestionPerformanceResponse,
@@ -224,6 +225,47 @@ def answer_question(
         "respondidas_hoje": used_after,
         "restantes_hoje": None if premium else max(0, FREE_DAILY_LIMIT - used_after),
     }
+
+
+@router.post(
+    "/questoes/{question_id}/explicacao",
+    response_model=QuestionExplanation,
+)
+def retry_question_explanation(
+    question_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    question = db.get(ExamQuestion, question_id)
+    if question is None or question.status != "publicada":
+        raise HTTPException(status_code=404, detail="Questão não encontrada.")
+    attempted = db.scalar(
+        select(QuestionAttempt.id).where(
+            QuestionAttempt.id_usuario == current_user.id,
+            QuestionAttempt.id_questao == question.id,
+        ).limit(1)
+    )
+    if attempted is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Responda à questão antes de solicitar a explicação.",
+        )
+    if question.explicacao is not None:
+        return question.explicacao
+
+    explanation = generate_question_explanation(question)
+    if explanation.fonte == "resumo_automatico":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "A explicação clínica completa não ficou pronta. "
+                "Aguarde alguns instantes e tente novamente."
+            ),
+        )
+    question.explicacao = explanation.model_dump(mode="json")
+    question.explicacao_status = "gerada"
+    db.commit()
+    return explanation
 
 
 @router.get("/questoes/desempenho", response_model=QuestionPerformanceResponse)
@@ -464,7 +506,7 @@ def admin_questions(
     }
 
 
-@router.patch("/admin/questoes/{question_id}", response_model=QuestionMessageResponse)
+@router.patch("/admin/questoes/{question_id}", response_model=MessageResponse)
 def update_admin_question(
     question_id: int,
     payload: AdminQuestionUpdate,
@@ -481,7 +523,7 @@ def update_admin_question(
 
 
 @router.patch(
-    "/admin/questoes/relatos/{report_id}", response_model=QuestionMessageResponse
+    "/admin/questoes/relatos/{report_id}", response_model=MessageResponse
 )
 def update_question_report(
     report_id: int,
@@ -500,7 +542,7 @@ def update_question_report(
 
 @router.post(
     "/admin/questoes/{question_id}/gerar-explicacao",
-    response_model=QuestionMessageResponse,
+    response_model=MessageResponse,
 )
 def regenerate_question_explanation(
     question_id: int,

@@ -52,6 +52,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     periodo_curso: int | None
     faculdade: str | None
+    email_verificado: bool = False
     is_admin: bool = False
     premium_ativo: bool = False
     premium_plano: str | None = None
@@ -72,6 +73,27 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class EmailVerificationRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=200)
+
+
+class EmailVerificationResend(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        return str(value).strip().lower()
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class PublicStatsResponse(BaseModel):
+    estudantes_medsync: int
 
 
 class AcademicPeriodMetric(BaseModel):
@@ -495,7 +517,6 @@ class QuestionExplanation(BaseModel):
     resumo: str
     porque_correta: str
     analise_alternativas: list[QuestionAlternativeExplanation]
-    ponto_chave: str
     alerta_atualizacao: str | None = None
     fonte: Literal["synapse", "revisao_medsync", "resumo_automatico"]
 
@@ -530,10 +551,6 @@ class QuestionReportCreate(BaseModel):
 
 class MessageWithIdResponse(BaseModel):
     id: int
-    message: str
-
-
-class QuestionMessageResponse(BaseModel):
     message: str
 
 
@@ -706,4 +723,3 @@ class PaymentStatusResponse(BaseModel):
     status: str
     premium_ativo: bool
     premium_valido_ate: datetime | None = None
-
