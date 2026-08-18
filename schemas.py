@@ -533,6 +533,10 @@ class MessageWithIdResponse(BaseModel):
     message: str
 
 
+class QuestionMessageResponse(BaseModel):
+    message: str
+
+
 class AdminQuestionSummary(BaseModel):
     total: int
     publicadas: int

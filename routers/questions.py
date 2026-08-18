@@ -11,7 +11,7 @@ from schemas import (
     AdminQuestionReportUpdate,
     AdminQuestionsResponse,
     AdminQuestionUpdate,
-    MessageResponse,
+    QuestionMessageResponse,
     MessageWithIdResponse,
     QuestionAnswerRequest,
     QuestionAnswerResponse,
@@ -464,7 +464,7 @@ def admin_questions(
     }
 
 
-@router.patch("/admin/questoes/{question_id}", response_model=MessageResponse)
+@router.patch("/admin/questoes/{question_id}", response_model=QuestionMessageResponse)
 def update_admin_question(
     question_id: int,
     payload: AdminQuestionUpdate,
@@ -481,7 +481,7 @@ def update_admin_question(
 
 
 @router.patch(
-    "/admin/questoes/relatos/{report_id}", response_model=MessageResponse
+    "/admin/questoes/relatos/{report_id}", response_model=QuestionMessageResponse
 )
 def update_question_report(
     report_id: int,
@@ -500,7 +500,7 @@ def update_question_report(
 
 @router.post(
     "/admin/questoes/{question_id}/gerar-explicacao",
-    response_model=MessageResponse,
+    response_model=QuestionMessageResponse,
 )
 def regenerate_question_explanation(
     question_id: int,
