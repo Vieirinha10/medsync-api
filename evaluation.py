@@ -368,9 +368,58 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", without_accents.lower()).strip()
 
 
+_TERM_ALIASES: dict[str, tuple[str, ...]] = {
+    "urgencia": (r"\burgenc\w*", r"\burgent\w*", r"\bemergenc\w*"),
+    "internacao": (r"\bintern\w*", r"\bhospitaliz\w*"),
+    "transfusao": (r"\b(?:hemo)?transfus\w*",),
+    "estabilizacao": (r"\bestabiliz\w*",),
+    "reavaliar": (r"\breavali\w*",),
+    "acompanhamento": (r"\bacompanh\w*",),
+}
+
+_NEGATION_PATTERN = re.compile(
+    r"\b(?:nao|nem|sem|dispens\w*|desnecessar\w*|evit\w*|"
+    r"contraindic\w*|recus\w*|proib\w*|suspender|retirar|interromper|omitir)\b"
+)
+_ADVERSATIVE_PATTERN = re.compile(r"\b(?:mas|porem|contudo|entretanto|todavia)\b")
+
+
+def _term_patterns(term: str) -> tuple[str, ...]:
+    normalized = _normalize(term)
+    aliases = _TERM_ALIASES.get(normalized)
+    if aliases:
+        return aliases
+    return (rf"(?<!\w){re.escape(normalized)}(?!\w)",)
+
+
+def _is_negated(text: str, occurrence_start: int) -> bool:
+    prefix = text[:occurrence_start]
+    boundary = max(prefix.rfind(marker) for marker in ".!?;:\n")
+    clause = prefix[boundary + 1 :]
+    adversatives = list(_ADVERSATIVE_PATTERN.finditer(clause))
+    if adversatives:
+        clause = clause[adversatives[-1].end() :]
+
+    # Portuguese clinical prose frequently negates an entire coordinated list,
+    # e.g. "não há necessidade de internação, transfusão ou avaliação urgente".
+    # Twelve words cover that list without letting a negation leak across a sentence.
+    recent_words = clause.split()[-12:]
+    recent = " ".join(recent_words)
+    if re.search(r"\bnao\s+(?:deixar|deixe)\s+de\b", recent):
+        return False
+    if re.search(r"\bsem\s+contraindic\w*(?:\s+\w+){0,4}\s*$", recent):
+        return False
+    return bool(_NEGATION_PATTERN.search(recent))
+
+
 def _contains_any(text: str, terms: list[str]) -> bool:
     normalized = _normalize(text)
-    return any(_normalize(term) in normalized for term in terms)
+    for term in terms:
+        for pattern in _term_patterns(term):
+            for match in re.finditer(pattern, normalized):
+                if not _is_negated(normalized, match.start()):
+                    return True
+    return False
 
 
 def _exam_name_map(case: dict[str, Any]) -> dict[str, str]:
