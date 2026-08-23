@@ -27,6 +27,7 @@ from models import (
     PaymentOrder,
     QuestionAttempt,
     QuestionReport,
+    SimulationRequest,
     StudyError,
     User,
     UserEntitlement,
@@ -1203,6 +1204,71 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
     )
     assert saved.status_code == 200
     assert saved.json() == result
+
+
+def test_simulation_submission_is_idempotent():
+    email = "simulacao-idempotente@example.com"
+    token = _register_and_login(email)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-Idempotency-Key": "simulation-test-key-00000001",
+    }
+    payload = {
+        "exames_solicitados": ["angiotc", "doppler_mmss", "gaso"],
+        "hipotese_diagnostica": "Tromboembolismo pulmonar agudo",
+        "conduta_proposta": (
+            "Estabilização pelo ABC, oxigênio, anticoagulação com heparina, "
+            "estratificação de risco e internação para monitorização."
+        ),
+    }
+
+    first = client.post("/simulacoes/8/finalizar", json=payload, headers=headers)
+    repeated = client.post("/simulacoes/8/finalizar", json=payload, headers=headers)
+
+    assert first.status_code == 201
+    assert repeated.status_code == 201
+    assert repeated.json() == first.json()
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        requests = db.scalars(
+            select(SimulationRequest).where(SimulationRequest.id_usuario == user.id)
+        ).all()
+        assert len(requests) == 1
+        assert requests[0].status == "completed"
+        assert requests[0].progresso_id == first.json()["progresso_id"]
+
+
+def test_simulation_duplicate_is_blocked_while_original_is_processing():
+    email = "simulacao-processando@example.com"
+    token = _register_and_login(email)
+    idempotency_key = "simulation-test-key-processing"
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        db.add(
+            SimulationRequest(
+                id_usuario=user.id,
+                id_caso=8,
+                idempotency_key=idempotency_key,
+                status="processing",
+            )
+        )
+        db.commit()
+
+    response = client.post(
+        "/simulacoes/8/finalizar",
+        json={
+            "exames_solicitados": ["angiotc"],
+            "hipotese_diagnostica": "Tromboembolismo pulmonar",
+            "conduta_proposta": "Oxigênio, anticoagulação e monitorização.",
+        },
+        headers={
+            "Authorization": f"Bearer {token}",
+            "X-Idempotency-Key": idempotency_key,
+        },
+    )
+
+    assert response.status_code == 409
+    assert "ainda está processando" in response.json()["detail"]
 
 
 def test_simulation_v2_penalizes_low_value_exam_and_missing_actions():

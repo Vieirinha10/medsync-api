@@ -40,6 +40,18 @@ class User(Base):
     )
     terms_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
     privacy_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    email_verification_token_hash: Mapped[str | None] = mapped_column(
+        String(64), unique=True, nullable=True, index=True
+    )
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    email_verification_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
@@ -59,6 +71,9 @@ class User(Base):
     entitlement: Mapped["UserEntitlement | None"] = relationship(
         back_populates="usuario", cascade="all, delete-orphan", uselist=False
     )
+    simulation_requests: Mapped[list["SimulationRequest"]] = relationship(
+        back_populates="usuario", cascade="all, delete-orphan"
+    )
 
 
 class Progresso(Base):
@@ -74,6 +89,70 @@ class Progresso(Base):
     )
 
     usuario: Mapped[User] = relationship(back_populates="progressos")
+
+
+class SimulationRequest(Base):
+    """Reserva persistente que torna o envio à Synapse idempotente."""
+
+    __tablename__ = "simulation_requests"
+    __table_args__ = (
+        UniqueConstraint(
+            "id_usuario",
+            "idempotency_key",
+            name="uq_simulation_request_user_key",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    id_caso: Mapped[int] = mapped_column(Integer, index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(20), default="processing", index=True)
+    progresso_id: Mapped[int | None] = mapped_column(
+        ForeignKey("progressos.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+    usuario: Mapped[User] = relationship(back_populates="simulation_requests")
+    progresso: Mapped[Progresso | None] = relationship()
+
+
+class AIUsageRecord(Base):
+    """Métrica financeira e operacional de cada chamada feita pela Synapse."""
+
+    __tablename__ = "ai_usage_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    id_usuario: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    progresso_id: Mapped[int | None] = mapped_column(
+        ForeignKey("progressos.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    operacao: Mapped[str] = mapped_column(String(40), index=True)
+    modelo: Mapped[str] = mapped_column(String(80), index=True)
+    input_tokens: Mapped[int] = mapped_column(Integer)
+    cached_input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer)
+    reasoning_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    total_tokens: Mapped[int] = mapped_column(Integer)
+    duracao_ms: Mapped[int] = mapped_column(Integer)
+    custo_estimado_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
+    response_id: Mapped[str | None] = mapped_column(
+        String(120), unique=True, nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )
 
 
 class StudyError(Base):

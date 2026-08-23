@@ -2,7 +2,9 @@ import json
 import logging
 import os
 import re
+import time
 import unicodedata
+from functools import lru_cache
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -10,6 +12,140 @@ from pydantic import BaseModel, Field, model_validator
 from clinical_rubric_catalog import CLINICAL_RUBRIC_VERSION, CLINICAL_RUBRICS
 
 logger = logging.getLogger(__name__)
+
+MODEL_PRICING_USD_PER_MILLION = {
+    "gpt-5.6": (4.0, 0.4, 20.0),
+    "gpt-5.6-sol": (4.0, 0.4, 20.0),
+    "gpt-5.6-terra": (2.0, 0.2, 12.0),
+    "gpt-5.6-luna": (0.2, 0.02, 1.2),
+}
+
+
+class AIUsageMetrics(BaseModel):
+    input_tokens: int = Field(ge=0)
+    cached_input_tokens: int = Field(default=0, ge=0)
+    output_tokens: int = Field(ge=0)
+    reasoning_tokens: int = Field(default=0, ge=0)
+    total_tokens: int = Field(ge=0)
+    duracao_ms: int = Field(ge=0)
+    custo_estimado_usd: float | None = Field(default=None, ge=0)
+    response_id: str | None = None
+
+
+@lru_cache(maxsize=1)
+def _openai_client(api_key: str):
+    """Mantém um único cliente e pool HTTP por processo do Gunicorn."""
+
+    from openai import OpenAI
+
+    return OpenAI(
+        api_key=api_key,
+        timeout=float(os.getenv("OPENAI_TIMEOUT_SECONDS", "40")),
+        max_retries=int(os.getenv("OPENAI_MAX_RETRIES", "0")),
+    )
+
+
+def _nested_value(value: Any, *names: str, default: Any = None) -> Any:
+    current = value
+    for name in names:
+        if current is None:
+            return default
+        if isinstance(current, dict):
+            current = current.get(name)
+        else:
+            current = getattr(current, name, None)
+    return default if current is None else current
+
+
+def _price_rates(model: str) -> tuple[float, float, float] | None:
+    default = MODEL_PRICING_USD_PER_MILLION.get(model)
+    configured = (
+        os.getenv("OPENAI_INPUT_USD_PER_1M"),
+        os.getenv("OPENAI_CACHED_INPUT_USD_PER_1M"),
+        os.getenv("OPENAI_OUTPUT_USD_PER_1M"),
+    )
+    if all(value not in {None, ""} for value in configured):
+        return tuple(float(value) for value in configured)  # type: ignore[return-value]
+    return default
+
+
+def _usage_metrics(response: Any, model: str, started_at: float) -> AIUsageMetrics | None:
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return None
+
+    input_tokens = int(_nested_value(usage, "input_tokens", default=0))
+    cached_tokens = int(
+        _nested_value(
+            usage,
+            "input_tokens_details",
+            "cached_tokens",
+            default=0,
+        )
+    )
+    output_tokens = int(_nested_value(usage, "output_tokens", default=0))
+    reasoning_tokens = int(
+        _nested_value(
+            usage,
+            "output_tokens_details",
+            "reasoning_tokens",
+            default=0,
+        )
+    )
+    total_tokens = int(
+        _nested_value(
+            usage,
+            "total_tokens",
+            default=input_tokens + output_tokens,
+        )
+    )
+    estimated_cost = None
+    rates = _price_rates(model)
+    if rates is not None:
+        input_rate, cached_rate, output_rate = rates
+        # A tabela oficial cobra contexto acima de 272 mil tokens com fatores
+        # diferentes. Os prompts atuais ficam muito abaixo desse limite, mas o
+        # cálculo permanece correto caso a entrada cresça no futuro.
+        if input_tokens > 272_000:
+            input_rate *= 2
+            cached_rate *= 2
+            output_rate *= 1.5
+        uncached_tokens = max(0, input_tokens - cached_tokens)
+        estimated_cost = round(
+            (
+                uncached_tokens * input_rate
+                + cached_tokens * cached_rate
+                + output_tokens * output_rate
+            )
+            / 1_000_000,
+            8,
+        )
+
+    metrics = AIUsageMetrics(
+        input_tokens=input_tokens,
+        cached_input_tokens=cached_tokens,
+        output_tokens=output_tokens,
+        reasoning_tokens=reasoning_tokens,
+        total_tokens=total_tokens,
+        duracao_ms=round((time.perf_counter() - started_at) * 1000),
+        custo_estimado_usd=estimated_cost,
+        response_id=getattr(response, "id", None),
+    )
+    logger.info(
+        "Synapse usage model=%s input_tokens=%s cached_input_tokens=%s "
+        "output_tokens=%s reasoning_tokens=%s total_tokens=%s duration_ms=%s "
+        "estimated_cost_usd=%s response_id=%s",
+        model,
+        metrics.input_tokens,
+        metrics.cached_input_tokens,
+        metrics.output_tokens,
+        metrics.reasoning_tokens,
+        metrics.total_tokens,
+        metrics.duracao_ms,
+        metrics.custo_estimado_usd,
+        metrics.response_id,
+    )
+    return metrics
 
 
 class SimulationSubmission(BaseModel):
@@ -118,6 +254,7 @@ class SimulationEvaluation(BaseModel):
     versao_rubrica: int | None = None
     fonte_feedback: Literal["openai", "agente_regras"]
     modelo_ia: str | None = None
+    uso_ia: AIUsageMetrics | None = None
     aviso_educacional: str = (
         "Feedback destinado exclusivamente ao treinamento acadêmico. "
         "Não substitui protocolos locais, supervisão docente ou decisão médica real."
@@ -150,6 +287,7 @@ class SimulationQuestionResponse(BaseModel):
     resposta: str
     fonte_feedback: Literal["openai", "agente_regras"]
     modelo_ia: str | None = None
+    uso_ia: AIUsageMetrics | None = None
     aviso_educacional: str = "Resposta restrita ao caso simulado e à rubrica revisada; não constitui orientação para pacientes reais."
 
 
@@ -596,7 +734,12 @@ def enhance_narrative_with_ai(
     score: ScoreBreakdown,
     exams: ExamFeedback,
     context: dict[str, Any],
-) -> tuple[ClinicalNarrative, Literal["openai", "agente_regras"], str | None]:
+) -> tuple[
+    ClinicalNarrative,
+    Literal["openai", "agente_regras"],
+    str | None,
+    AIUsageMetrics | None,
+]:
     fallback = build_rule_based_narrative(
         submission,
         score,
@@ -605,13 +748,11 @@ def enhance_narrative_with_ai(
     )
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        return fallback, "agente_regras", None
+        return fallback, "agente_regras", None, None
 
     model = os.getenv("OPENAI_MODEL", "gpt-5.6")
     try:
-        from openai import OpenAI
-
-        client = OpenAI(api_key=api_key)
+        client = _openai_client(api_key)
         payload = {
             "caso": {
                 "titulo": case["titulo"],
@@ -623,6 +764,7 @@ def enhance_narrative_with_ai(
             "avaliacao_de_exames": exams.model_dump(),
             "gabarito_clinico": context["rubrica"],
         }
+        started_at = time.perf_counter()
         response = client.responses.parse(
             model=model,
             input=[
@@ -654,14 +796,21 @@ def enhance_narrative_with_ai(
             text_format=ClinicalNarrative,
         )
         if response.output_parsed is None:
-            return fallback, "agente_regras", None
-        return response.output_parsed, "openai", model
+            return fallback, "agente_regras", None, _usage_metrics(
+                response, model, started_at
+            )
+        return (
+            response.output_parsed,
+            "openai",
+            model,
+            _usage_metrics(response, model, started_at),
+        )
     except Exception:
         logger.exception(
             "Falha ao gerar feedback clínico com OpenAI usando o modelo %s",
             model,
         )
-        return fallback, "agente_regras", None
+        return fallback, "agente_regras", None, None
 
 
 def answer_simulation_question(
@@ -717,10 +866,10 @@ def answer_simulation_question(
             fonte_feedback="agente_regras",
         )
 
-    model = os.getenv("OPENAI_MODEL", "gpt-5.6")
+    model = os.getenv("OPENAI_QUESTION_MODEL") or os.getenv(
+        "OPENAI_MODEL", "gpt-5.6"
+    )
     try:
-        from openai import OpenAI
-
         payload = {
             "pergunta": question,
             "caso": {
@@ -732,7 +881,8 @@ def answer_simulation_question(
             "resultado": evaluation,
             "rubrica_revisada": rubric,
         }
-        response = OpenAI(api_key=api_key).responses.create(
+        started_at = time.perf_counter()
+        response = _openai_client(api_key).responses.create(
             model=model,
             store=False,
             instructions=(
@@ -751,6 +901,7 @@ def answer_simulation_question(
             resposta=answer,
             fonte_feedback="openai",
             modelo_ia=model,
+            uso_ia=_usage_metrics(response, model, started_at),
         )
     except Exception:
         logger.exception(
