@@ -2,7 +2,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from evaluation import _usage_metrics
+from evaluation import (
+    PILOT_RUBRICS,
+    SimulationSubmission,
+    _contains_any,
+    _usage_metrics,
+    evaluate_objective,
+)
 
 
 def test_openai_usage_metrics_include_cache_reasoning_duration_and_cost(monkeypatch):
@@ -28,3 +34,61 @@ def test_openai_usage_metrics_include_cache_reasoning_duration_and_cost(monkeypa
     assert metrics.duracao_ms == 1250
     assert metrics.custo_estimado_usd == pytest.approx(0.01328)
     assert metrics.response_id == "resp_synapse_123"
+
+
+def _case_seven():
+    return {
+        "id": 7,
+        "titulo": "Fadiga após cirurgia bariátrica",
+        "exames_disponiveis": [
+            {"id": "hemo", "nome": "Hemograma"},
+            {"id": "ferro", "nome": "Perfil de Ferro"},
+            {"id": "vit_b12", "nome": "Vitamina B12 e Folato"},
+        ],
+    }
+
+
+def test_conduct_matching_accepts_clinical_language_variants_without_losing_safety():
+    submission = SimulationSubmission(
+        exames_solicitados=["hemo"],
+        hipotese_diagnostica="Anemia ferropriva após bypass gástrico",
+        conduta_proposta=(
+            "Encaminhar para avaliação urgente devido à anemia grave. "
+            "Considerar suporte transfusional conforme estabilidade e iniciar "
+            "ferro intravenoso. Reavaliar com hemograma e ferritina."
+        ),
+    )
+
+    score, _, context = evaluate_objective(
+        _case_seven(), submission, PILOT_RUBRICS[7]
+    )
+
+    assert score.conduta == 24
+    assert context["seguranca_ausente"] == []
+    assert context["nivel_conduta"] == "adequada"
+
+
+def test_negated_interventions_do_not_earn_conduct_or_safety_credit():
+    submission = SimulationSubmission(
+        exames_solicitados=["vit_b12"],
+        hipotese_diagnostica="Ansiedade com sintomas somáticos",
+        conduta_proposta=(
+            "Dar alta para acompanhamento ambulatorial e usar multivitamínico. "
+            "Não há necessidade de internação, transfusão ou avaliação urgente."
+        ),
+    )
+
+    score, _, context = evaluate_objective(
+        _case_seven(), submission, PILOT_RUBRICS[7]
+    )
+
+    assert score.conduta == 6
+    assert len(context["seguranca_ausente"]) == 2
+    assert context["nivel_conduta"] == "insegura"
+
+
+def test_negated_diagnosis_does_not_match_reference_term():
+    assert not _contains_any(
+        "O quadro não é anemia ferropriva.",
+        ["anemia ferropriva"],
+    )
