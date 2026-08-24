@@ -305,12 +305,18 @@ def test_new_account_requires_email_verification(monkeypatch):
     )
     assert confirmation.status_code == 200
     assert "conta MedSync está pronta" in confirmation.json()["message"]
-    assert client.post(
-        "/usuarios/login", json={"email": email, "password": "senha-segura"}
-    ).status_code == 200
-    assert client.post(
-        "/usuarios/verificar-email", json={"token": captured["raw_token"]}
-    ).status_code == 400
+    assert (
+        client.post(
+            "/usuarios/login", json={"email": email, "password": "senha-segura"}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/usuarios/verificar-email", json={"token": captured["raw_token"]}
+        ).status_code
+        == 400
+    )
 
 
 def test_email_verification_can_be_resent_without_account_enumeration(monkeypatch):
@@ -1106,7 +1112,7 @@ def test_v2_case_is_identified_in_case_catalog():
 
     cases = response.json()
     pilot = next(case for case in cases if case["id"] == 8)
-    legacy = next(case for case in cases if case["id"] == 1)
+    legacy = next(case for case in cases if case["id"] == 13)
     assert pilot["titulo"].startswith("Caso #008 – ")
     assert "tromboembolismo" not in pilot["titulo"].lower()
     assert "pericardite" not in legacy["titulo"].lower()
@@ -1137,7 +1143,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
-    assert availability[1] is False
+    assert availability[13] is False
 
     with SessionLocal() as db:
         for case_id in {6, 7, 8, 11, 12}:
@@ -1180,9 +1186,7 @@ def test_first_feedback_expansion_batch_is_structured_and_clinically_corrected()
 
     herpes = client.get("/casos-clinicos/18", headers=headers)
     assert herpes.status_code == 200
-    herpes_exams = {
-        exam["id"]: exam for exam in herpes.json()["exames_disponiveis"]
-    }
+    herpes_exams = {exam["id"]: exam for exam in herpes.json()["exames_disponiveis"]}
     assert herpes_exams["pcr_hsv_lesao"]["correto"] is True
     assert herpes_exams["raspado"]["correto"] is False
 
@@ -1195,9 +1199,7 @@ def test_first_feedback_expansion_batch_is_structured_and_clinically_corrected()
 
     bells_palsy = client.get("/casos-clinicos/21", headers=headers)
     assert bells_palsy.status_code == 200
-    bell_exams = {
-        exam["id"]: exam for exam in bells_palsy.json()["exames_disponiveis"]
-    }
+    bell_exams = {exam["id"]: exam for exam in bells_palsy.json()["exames_disponiveis"]}
     assert bell_exams["avaliacao_clinica_bell"]["correto"] is True
     assert bell_exams["rm_cranio"]["correto"] is False
 
@@ -1310,9 +1312,7 @@ def test_second_feedback_expansion_batch_is_structured_and_clinically_corrected(
 
     fibroid = client.get("/casos-clinicos/5", headers=headers)
     assert fibroid.status_code == 200
-    fibroid_exams = {
-        exam["id"]: exam for exam in fibroid.json()["exames_disponiveis"]
-    }
+    fibroid_exams = {exam["id"]: exam for exam in fibroid.json()["exames_disponiveis"]}
     assert "primeira linha" in fibroid_exams["usg_tv"]["resultado"].lower()
     assert fibroid_exams["ferritina"]["correto"] is True
 
@@ -1326,17 +1326,14 @@ def test_second_feedback_expansion_batch_is_structured_and_clinically_corrected(
 
     turner = client.get("/casos-clinicos/16", headers=headers)
     assert turner.status_code == 200
-    turner_exams = {
-        exam["id"]: exam for exam in turner.json()["exames_disponiveis"]
-    }
+    turner_exams = {exam["id"]: exam for exam in turner.json()["exames_disponiveis"]}
     assert turner_exams["imagem_cardio_aorta"]["correto"] is True
     assert turner_exams["usg_renal"]["correto"] is True
 
     endometriosis = client.get("/casos-clinicos/17", headers=headers)
     assert endometriosis.status_code == 200
     endometriosis_exams = {
-        exam["id"]: exam
-        for exam in endometriosis.json()["exames_disponiveis"]
+        exam["id"]: exam for exam in endometriosis.json()["exames_disponiveis"]
     }
     assert endometriosis_exams["ca125"]["correto"] is False
     assert "confirmar ou excluir" in endometriosis_exams["ca125"]["resultado"]
@@ -1414,6 +1411,156 @@ def test_second_feedback_expansion_batch_generates_complete_safe_feedback():
                 "à ginecologia especializada. Fazer decisão compartilhada conforme "
                 "desejo reprodutivo e fertilidade, reservando laparoscopia se falha "
                 "do tratamento ou imagem negativa."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
+def test_third_feedback_expansion_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("terceiro-lote-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {1, 3, 4, 9, 10}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    chest_pain = client.get("/casos-clinicos/1", headers=headers)
+    assert chest_pain.status_code == 200
+    chest_exams = {exam["id"]: exam for exam in chest_pain.json()["exames_disponiveis"]}
+    assert chest_exams["confirmacao_histologica"]["correto"] is True
+    assert chest_exams["pet_ct_rotina"]["correto"] is False
+
+    amyloidosis = client.get("/casos-clinicos/3", headers=headers)
+    assert amyloidosis.status_code == 200
+    amyloid_exams = {
+        exam["id"]: exam for exam in amyloidosis.json()["exames_disponiveis"]
+    }
+    assert "AL lambda" in amyloid_exams["biopsia_amiloide"]["resultado"]
+    assert amyloid_exams["cintilografia_isolada"]["correto"] is False
+
+    leprosy_reaction = client.get("/casos-clinicos/10", headers=headers)
+    assert leprosy_reaction.status_code == 200
+    leprosy_exams = {
+        exam["id"]: exam for exam in leprosy_reaction.json()["exames_disponiveis"]
+    }
+    assert leprosy_exams["avaliacao_funcao_neural"]["correto"] is True
+    assert leprosy_exams["baciloscopia"]["correto"] is False
+    assert "DRESS" in leprosy_exams["revisao_medicamentos_renal"]["resultado"]
+
+
+def test_third_feedback_expansion_batch_generates_complete_safe_feedback():
+    token = _register_and_login("terceiro-lote-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        1: {
+            "exames_solicitados": [
+                "tc_torax",
+                "marcadores_tumorais",
+                "tc_abdome_pelve",
+                "confirmacao_histologica",
+            ],
+            "hipotese_diagnostica": "Recidiva de seminoma com massa mediastinal",
+            "conduta_proposta": (
+                "Avaliar estabilidade e excluir síndrome coronariana e embolia "
+                "pulmonar. Dosar AFP, beta-HCG e LDH, completar estadiamento com "
+                "TC de abdome, controlar com analgesia e encaminhar à oncologia e "
+                "cirurgia torácica para biópsia e confirmação histológica."
+            ),
+        },
+        3: {
+            "exames_solicitados": [
+                "imunofixacao_cadeias_leves",
+                "biopsia_mo",
+                "biopsia_amiloide",
+                "biomarcadores_cardiorrenais",
+            ],
+            "hipotese_diagnostica": "Amiloidose AL cardíaca associada a mieloma múltiplo",
+            "conduta_proposta": (
+                "Internação para diurético e avaliar transfusão pela anemia grave. "
+                "Confirmar com biópsia, vermelho Congo, tipagem do amiloide e cadeias "
+                "leves livres. Acionar hematologia e cardiologia especializada para "
+                "tratamento do clone plasmocitário com bortezomibe conforme "
+                "estratificação cardíaca."
+            ),
+        },
+        4: {
+            "exames_solicitados": [
+                "eco",
+                "troponina_bnp",
+                "rm_cardiaca",
+                "atividade_les_renal",
+                "investigacao_infecciosa",
+            ],
+            "hipotese_diagnostica": "Miopericardite lúpica com insuficiência cardíaca de fração reduzida",
+            "conduta_proposta": (
+                "Internação com telemetria e monitorização cardíaca, diurético e "
+                "tratamento da insuficiência cardíaca conforme tolerância. Fazer "
+                "hemoculturas e excluir infecção antes de imunossupressão; discutir "
+                "corticosteroide em alta dose com reumatologia e cardiologia."
+            ),
+        },
+        9: {
+            "exames_solicitados": [
+                "clinico",
+                "avaliacao_ocular_neurologica",
+                "audiometria",
+            ],
+            "hipotese_diagnostica": "Síndrome de Ramsay Hunt por herpes zóster ótico",
+            "conduta_proposta": (
+                "Iniciar valaciclovir e prednisona após avaliar contraindicações. "
+                "Fazer proteção ocular com lágrima artificial e oclusão noturna, "
+                "analgesia, controle da vertigem e encaminhar ao otorrino para "
+                "audiometria e seguimento."
+            ),
+        },
+        10: {
+            "exames_solicitados": [
+                "avaliacao_funcao_neural",
+                "hemo",
+                "funcao_hepatica",
+                "revisao_medicamentos_renal",
+            ],
+            "hipotese_diagnostica": "Reação hansênica tipo 1 com neurite",
+            "conduta_proposta": (
+                "Documentar função neural, sensibilidade e força muscular e iniciar "
+                "prednisona em tratamento supervisionado com desmame gradual. "
+                "Investigar DRESS e hipersensibilidade à dapsona pela hepatite e "
+                "eosinofilia, suspendendo dapsona se confirmada; encaminhar ao "
+                "serviço de referência para ajustar a PQT."
             ),
         },
     }
@@ -1907,10 +2054,10 @@ def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
 def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
     token = _register_and_login("caso-legado@example.com")
     response = client.post(
-        "/simulacoes/1/finalizar",
+        "/simulacoes/13/finalizar",
         json={
-            "exames_solicitados": ["ecg"],
-            "hipotese_diagnostica": "Pericardite aguda",
+            "exames_solicitados": ["funcao_hepatica"],
+            "hipotese_diagnostica": "Colangite esclerosante primária",
             "conduta_proposta": "Monitorização e tratamento conforme avaliação.",
         },
         headers={"Authorization": f"Bearer {token}"},
@@ -1991,14 +2138,11 @@ def test_question_catalog_and_answer_flow_are_isolated_from_review_features(
     assert answer.json()["explicacao"]["fonte"] == "synapse"
     assert "ponto_chave" not in answer.json()["explicacao"]
     assert answer.json()["total_respondentes"] >= 1
-    assert {
-        item["id"] for item in answer.json()["distribuicao_alternativas"]
-    } == {item["id"] for item in public_question["alternativas"]}
+    assert {item["id"] for item in answer.json()["distribuicao_alternativas"]} == {
+        item["id"] for item in public_question["alternativas"]
+    }
     assert round(
-        sum(
-            item["percentual"]
-            for item in answer.json()["distribuicao_alternativas"]
-        ),
+        sum(item["percentual"] for item in answer.json()["distribuicao_alternativas"]),
         1,
     ) in {99.9, 100.0, 100.1}
     assert answer.json()["respondidas_hoje"] == 1
@@ -2031,19 +2175,30 @@ def test_question_catalog_and_answer_flow_are_isolated_from_review_features(
     assert repeated_report.json()["id"] == report.json()["id"]
 
     with SessionLocal() as db:
-        assert db.scalar(
-            select(func.count(QuestionAttempt.id)).where(
-                QuestionAttempt.id_usuario == user_id
+        assert (
+            db.scalar(
+                select(func.count(QuestionAttempt.id)).where(
+                    QuestionAttempt.id_usuario == user_id
+                )
             )
-        ) == 1
-        assert db.scalar(
-            select(func.count(QuestionReport.id)).where(
-                QuestionReport.id_usuario == user_id
+            == 1
+        )
+        assert (
+            db.scalar(
+                select(func.count(QuestionReport.id)).where(
+                    QuestionReport.id_usuario == user_id
+                )
             )
-        ) == 1
-        assert db.scalar(
-            select(func.count(StudyError.id)).where(StudyError.id_usuario == user_id)
-        ) == study_errors_before
+            == 1
+        )
+        assert (
+            db.scalar(
+                select(func.count(StudyError.id)).where(
+                    StudyError.id_usuario == user_id
+                )
+            )
+            == study_errors_before
+        )
 
 
 def test_question_distribution_counts_each_user_latest_answer_once():
@@ -2168,9 +2323,9 @@ def test_admin_can_search_moderate_and_generate_question_explanations(monkeypatc
     try:
         token = _register_and_login(email)
         headers = {"Authorization": f"Bearer {token}"}
-        question_id = client.get(
-            "/questoes?quantidade=1", headers=headers
-        ).json()[0]["id"]
+        question_id = client.get("/questoes?quantidade=1", headers=headers).json()[0][
+            "id"
+        ]
         with SessionLocal() as db:
             correct_id = db.get(ExamQuestion, question_id).alternativa_correta_id
         monkeypatch.setattr(
@@ -2191,11 +2346,14 @@ def test_admin_can_search_moderate_and_generate_question_explanations(monkeypatc
             json={"status": "oculta", "assunto": "Cirurgia geral"},
         )
         assert hidden.status_code == 200
-        assert client.post(
-            f"/questoes/{question_id}/responder",
-            headers=headers,
-            json={"alternativa_id": correct_id},
-        ).status_code == 404
+        assert (
+            client.post(
+                f"/questoes/{question_id}/responder",
+                headers=headers,
+                json={"alternativa_id": correct_id},
+            ).status_code
+            == 404
+        )
 
         generated = client.post(
             f"/admin/questoes/{question_id}/gerar-explicacao", headers=headers
