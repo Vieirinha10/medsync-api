@@ -1,5 +1,7 @@
 """Catálogo clínico legado enquanto os casos migram para o banco de dados."""
 
+from primary_care_catalog import PRIMARY_CARE_CASES
+
 CLINICAL_CASES = [
     {
         "id": 1,
@@ -1020,6 +1022,8 @@ CLINICAL_CASES = [
         ],
     },
 ]
+
+CLINICAL_CASES.extend(PRIMARY_CARE_CASES)
 
 
 def list_clinical_cases() -> list[dict]:
