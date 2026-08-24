@@ -1280,6 +1280,161 @@ def test_first_feedback_expansion_batch_generates_complete_safe_feedback():
         assert result["feedback"]["plano_pessoal_melhoria"], case_id
 
 
+def test_second_feedback_expansion_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("segundo-lote-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {2, 5, 15, 16, 17}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        assert all(rubric.versao == 5 for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["objetivos_aprendizagem"]
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    fibroid = client.get("/casos-clinicos/5", headers=headers)
+    assert fibroid.status_code == 200
+    fibroid_exams = {
+        exam["id"]: exam for exam in fibroid.json()["exames_disponiveis"]
+    }
+    assert "primeira linha" in fibroid_exams["usg_tv"]["resultado"].lower()
+    assert fibroid_exams["ferritina"]["correto"] is True
+
+    adenomyosis = client.get("/casos-clinicos/15", headers=headers)
+    assert adenomyosis.status_code == 200
+    adenomyosis_exams = {
+        exam["id"]: exam for exam in adenomyosis.json()["exames_disponiveis"]
+    }
+    assert adenomyosis_exams["usg_tv_adenomiose"]["correto"] is True
+    assert "complementar" in adenomyosis_exams["rm_pelvica"]["resultado"].lower()
+
+    turner = client.get("/casos-clinicos/16", headers=headers)
+    assert turner.status_code == 200
+    turner_exams = {
+        exam["id"]: exam for exam in turner.json()["exames_disponiveis"]
+    }
+    assert turner_exams["imagem_cardio_aorta"]["correto"] is True
+    assert turner_exams["usg_renal"]["correto"] is True
+
+    endometriosis = client.get("/casos-clinicos/17", headers=headers)
+    assert endometriosis.status_code == 200
+    endometriosis_exams = {
+        exam["id"]: exam
+        for exam in endometriosis.json()["exames_disponiveis"]
+    }
+    assert endometriosis_exams["ca125"]["correto"] is False
+    assert "confirmar ou excluir" in endometriosis_exams["ca125"]["resultado"]
+
+
+def test_second_feedback_expansion_batch_generates_complete_safe_feedback():
+    token = _register_and_login("segundo-lote-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        2: {
+            "exames_solicitados": [
+                "mapa",
+                "lab_renal",
+                "urina_albumina",
+                "risco_cv",
+            ],
+            "hipotese_diagnostica": "Hipertensão arterial mascarada com lesão de órgão-alvo",
+            "conduta_proposta": (
+                "Reconhecer retinopatia e hipertrofia ventricular como lesão de "
+                "órgão-alvo e estratificar risco cardiovascular. Iniciar "
+                "anti-hipertensivo individualizado, orientar redução de sal e "
+                "atividade física e acompanhar com MAPA ou pressão domiciliar, "
+                "reavaliando função renal e eletrólitos."
+            ),
+        },
+        5: {
+            "exames_solicitados": ["beta_hcg", "hemo", "ferritina", "usg_tv"],
+            "hipotese_diagnostica": "Sangramento uterino anormal por leiomioma uterino com anemia ferropriva",
+            "conduta_proposta": (
+                "Avaliar sinais vitais e estabilidade hemodinâmica, sangramento "
+                "ativo e beta-HCG. Controlar o fluxo com ácido tranexâmico ou "
+                "progestagênio conforme contraindicações, fazer reposição de ferro "
+                "e avaliação ginecológica considerando desejo reprodutivo e "
+                "possível miomectomia."
+            ),
+        },
+        15: {
+            "exames_solicitados": [
+                "beta_hcg",
+                "hemo",
+                "ferritina",
+                "usg_tv_adenomiose",
+            ],
+            "hipotese_diagnostica": "Adenomiose uterina com anemia ferropriva",
+            "conduta_proposta": (
+                "Discutir SIU-LNG com levonorgestrel ou outra opção individualizada "
+                "para dor e sangramento, fazer reposição de ferro e reavaliar "
+                "hemoglobina. Considerar desejo reprodutivo e decisão compartilhada, "
+                "com avaliação ginecológica pela anemia importante."
+            ),
+        },
+        16: {
+            "exames_solicitados": [
+                "cariotipo",
+                "hormonios",
+                "imagem_cardio_aorta",
+                "usg_renal",
+                "tireoide_metabolico",
+            ],
+            "hipotese_diagnostica": "Síndrome de Turner 45,X com insuficiência ovariana",
+            "conduta_proposta": (
+                "Iniciar reposição estrogênica com estradiol e planejar adicionar "
+                "progestagênio. Realizar ecocardiograma e avaliar aorta e coarctação "
+                "antes de gestação. Organizar seguimento multidisciplinar com função "
+                "tireoidiana, saúde óssea e ultrassom renal, além de aconselhamento "
+                "reprodutivo e discussão do risco gestacional."
+            ),
+        },
+        17: {
+            "exames_solicitados": ["usg_tv_preparo"],
+            "hipotese_diagnostica": "Endometriose profunda",
+            "conduta_proposta": (
+                "Explicar que CA-125 não confirma endometriose. Iniciar tratamento "
+                "empírico com progestagênio e analgesia, reavaliar dor e encaminhar "
+                "à ginecologia especializada. Fazer decisão compartilhada conforme "
+                "desejo reprodutivo e fertilidade, reservando laparoscopia se falha "
+                "do tratamento ou imagem negativa."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
 def test_second_batch_is_released_after_editorial_approval():
     token = _register_and_login("lote-rubricas-rascunho@example.com")
     response = client.get(
