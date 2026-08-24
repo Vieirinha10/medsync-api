@@ -1112,7 +1112,7 @@ def test_v2_case_is_identified_in_case_catalog():
 
     cases = response.json()
     pilot = next(case for case in cases if case["id"] == 8)
-    legacy = next(case for case in cases if case["id"] == 13)
+    legacy = next(case for case in cases if case["id"] == 26)
     assert pilot["titulo"].startswith("Caso #008 – ")
     assert "tromboembolismo" not in pilot["titulo"].lower()
     assert "pericardite" not in legacy["titulo"].lower()
@@ -1143,7 +1143,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
-    assert availability[13] is False
+    assert availability[26] is False
 
     with SessionLocal() as db:
         for case_id in {6, 7, 8, 11, 12}:
@@ -1561,6 +1561,177 @@ def test_third_feedback_expansion_batch_generates_complete_safe_feedback():
                 "Investigar DRESS e hipersensibilidade à dapsona pela hepatite e "
                 "eosinofilia, suspendendo dapsona se confirmada; encaminhar ao "
                 "serviço de referência para ajustar a PQT."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
+def test_fourth_feedback_expansion_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("quarto-lote-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {13, 20, 23, 24, 25}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        assert all(rubric.versao == 5 for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["objetivos_aprendizagem"]
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    psc = client.get("/casos-clinicos/13", headers=headers)
+    assert psc.status_code == 200
+    psc_exams = {exam["id"]: exam for exam in psc.json()["exames_disponiveis"]}
+    assert psc_exams["colangio_rm"]["correto"] is True
+    assert psc_exams["anticorpos"]["correto"] is False
+    assert "terapêutica" in psc_exams["cpre"]["nome"].lower()
+
+    locked_in = client.get("/casos-clinicos/20", headers=headers)
+    assert locked_in.status_code == 200
+    locked_exams = {
+        exam["id"]: exam for exam in locked_in.json()["exames_disponiveis"]
+    }
+    assert locked_exams["angio_tc_basilar"]["correto"] is True
+    assert locked_exams["puncao_lombar"]["correto"] is False
+
+    west = client.get("/casos-clinicos/23", headers=headers)
+    assert west.status_code == 200
+    west_exams = {exam["id"]: exam for exam in west.json()["exames_disponiveis"]}
+    assert west_exams["video_eeg_sono"]["correto"] is True
+    assert west_exams["rm_encefalo"]["correto"] is True
+    assert west_exams["tc_cranio"]["correto"] is False
+
+    migraine = client.get("/casos-clinicos/24", headers=headers)
+    assert migraine.status_code == 200
+    migraine_exams = {
+        exam["id"]: exam for exam in migraine.json()["exames_disponiveis"]
+    }
+    assert migraine_exams["avaliacao_tempo_neuro_glicemia"]["correto"] is True
+
+    status = client.get("/casos-clinicos/25", headers=headers)
+    assert status.status_code == 200
+    status_exams = {
+        exam["id"]: exam for exam in status.json()["exames_disponiveis"]
+    }
+    assert status_exams["glicemia_capilar"]["correto"] is True
+    assert "sem atrasar" in status_exams["eeg"]["resultado"].lower()
+
+
+def test_fourth_feedback_expansion_batch_generates_complete_safe_feedback():
+    token = _register_and_login("quarto-lote-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        13: {
+            "exames_solicitados": [
+                "funcao_hepatica",
+                "hemoculturas_lactato",
+                "usg_abdome",
+                "colangio_rm",
+                "cpre",
+            ],
+            "hipotese_diagnostica": (
+                "Colangite bacteriana aguda em colangite esclerosante primária"
+            ),
+            "conduta_proposta": (
+                "Internar, avaliar sepse, colher hemoculturas e lactato, fazer "
+                "reposição volêmica e monitorização. Iniciar antibiótico com "
+                "cobertura biliar e acionar hepatologia e endoscopia para CPRE "
+                "terapêutica com drenagem biliar da estenose dominante. Manter "
+                "seguimento para colangiocarcinoma, retocolite e transplante hepático."
+            ),
+        },
+        20: {
+            "exames_solicitados": [
+                "glicemia_abc",
+                "tc_cranio",
+                "angio_tc_basilar",
+                "rm_difusao",
+            ],
+            "hipotese_diagnostica": (
+                "Síndrome do encarceramento por oclusão da artéria basilar"
+            ),
+            "conduta_proposta": (
+                "Ativar protocolo de AVC, proteger via aérea, verificar glicemia e "
+                "monitorizar. Avaliar trombólise na janela terapêutica e transferir "
+                "para centro de AVC para trombectomia mecânica urgente. Reconhecer "
+                "consciência preservada, estabelecer comunicação por movimentos "
+                "oculares verticais e prevenir broncoaspiração."
+            ),
+        },
+        23: {
+            "exames_solicitados": [
+                "video_eeg_sono",
+                "rm_encefalo",
+                "avaliacao_etiologica",
+            ],
+            "hipotese_diagnostica": "Síndrome de West com espasmos e hipsarritmia",
+            "conduta_proposta": (
+                "Encaminhar com urgência à neuropediatria e iniciar prednisolona em "
+                "alta dose associada a vigabatrina conforme protocolo. Investigar "
+                "esclerose tuberosa com ressonância de encéfalo e teste genético. "
+                "Confirmar cessação dos espasmos e repetir vídeo-EEG em 14 dias, "
+                "acompanhando o desenvolvimento."
+            ),
+        },
+        24: {
+            "exames_solicitados": [
+                "avaliacao_tempo_neuro_glicemia",
+                "tc_cranio",
+                "angio_rm_se_atipica",
+            ],
+            "hipotese_diagnostica": "Migrânea com aura de linguagem",
+            "conduta_proposta": (
+                "Ativar protocolo de AVC e registrar tempo de início para excluir AVC "
+                "antes de confirmar aura. Após a avaliação, tratar com sumatriptana, "
+                "naproxeno e antiemético. Suspender contraceptivo combinado, evitar "
+                "estrogênio e discutir método sem estrogênio. Manter diário de "
+                "cefaleia e retornar se houver déficit persistente."
+            ),
+        },
+        25: {
+            "exames_solicitados": [
+                "glicemia_capilar",
+                "laboratorio_causa_status",
+                "eeg",
+                "tc_pos_estabilizacao",
+            ],
+            "hipotese_diagnostica": "Estado de mal epiléptico convulsivo",
+            "conduta_proposta": (
+                "Proteger via aérea, oferecer oxigênio, monitorização, acesso venoso "
+                "e glicemia. Administrar lorazepam em dose plena e, se persistir, "
+                "carregar levetiracetam. Se evoluir como estado refratário, realizar "
+                "intubação, encaminhar à UTI, iniciar anestésico contínuo e EEG contínuo."
             ),
         },
     }
@@ -2054,10 +2225,10 @@ def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
 def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
     token = _register_and_login("caso-legado@example.com")
     response = client.post(
-        "/simulacoes/13/finalizar",
+        "/simulacoes/26/finalizar",
         json={
-            "exames_solicitados": ["funcao_hepatica"],
-            "hipotese_diagnostica": "Colangite esclerosante primária",
+            "exames_solicitados": ["tc_cranio"],
+            "hipotese_diagnostica": "AVC isquêmico",
             "conduta_proposta": "Monitorização e tratamento conforme avaliação.",
         },
         headers={"Authorization": f"Bearer {token}"},
