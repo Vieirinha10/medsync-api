@@ -1151,6 +1151,135 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
             assert rubric.definicao["fontes_clinicas"]
 
 
+def test_first_feedback_expansion_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("primeiro-lote-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {14, 18, 19, 21, 22}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        assert all(rubric.versao == 5 for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    herpes = client.get("/casos-clinicos/18", headers=headers)
+    assert herpes.status_code == 200
+    herpes_exams = {
+        exam["id"]: exam for exam in herpes.json()["exames_disponiveis"]
+    }
+    assert herpes_exams["pcr_hsv_lesao"]["correto"] is True
+    assert herpes_exams["raspado"]["correto"] is False
+
+    gonorrhea = client.get("/casos-clinicos/19", headers=headers)
+    assert gonorrhea.status_code == 200
+    gonorrhea_exams = {
+        exam["id"]: exam for exam in gonorrhea.json()["exames_disponiveis"]
+    }
+    assert gonorrhea_exams["pcr_gonococo"]["correto"] is True
+
+    bells_palsy = client.get("/casos-clinicos/21", headers=headers)
+    assert bells_palsy.status_code == 200
+    bell_exams = {
+        exam["id"]: exam for exam in bells_palsy.json()["exames_disponiveis"]
+    }
+    assert bell_exams["avaliacao_clinica_bell"]["correto"] is True
+    assert bell_exams["rm_cranio"]["correto"] is False
+
+
+def test_first_feedback_expansion_batch_generates_complete_safe_feedback():
+    token = _register_and_login("primeiro-lote-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        14: {
+            "exames_solicitados": [
+                "amilase_lipase",
+                "usg_abdome",
+                "funcao_renal_hepatica_eletrolitos",
+            ],
+            "hipotese_diagnostica": "Pancreatite aguda biliar",
+            "conduta_proposta": (
+                "Internar, avaliar gravidade e falência orgânica, monitorização e "
+                "diurese; hidratação venosa com Ringer lactato, analgesia e "
+                "alimentação precoce conforme tolerância. Avaliar colangite e provas "
+                "hepáticas e programar colecistectomia na mesma internação."
+            ),
+        },
+        18: {
+            "exames_solicitados": ["pcr_hsv_lesao", "hiv_sifilis"],
+            "hipotese_diagnostica": "Primeiro episódio de herpes genital",
+            "conduta_proposta": (
+                "Iniciar aciclovir por 7 a 10 dias, analgesia e hidratação. Testar "
+                "HIV e sífilis, investigar coinfecção e retenção urinária, orientar "
+                "parceiro, preservativo e abstinência durante as lesões."
+            ),
+        },
+        19: {
+            "exames_solicitados": [
+                "pcr_gonococo",
+                "pcr_clamidia",
+                "hiv_sifilis",
+            ],
+            "hipotese_diagnostica": "Cervicite gonocócica",
+            "conduta_proposta": (
+                "Ceftriaxona 500 mg IM em dose única; tratar clamídia se não "
+                "excluída. Testar HIV e sífilis, avaliar DIP, dor pélvica e gestação, "
+                "tratar parceiro, orientar abstinência por 7 dias e reteste em 3 meses."
+            ),
+        },
+        21: {
+            "exames_solicitados": ["avaliacao_clinica_bell"],
+            "hipotese_diagnostica": "Paralisia de Bell",
+            "conduta_proposta": (
+                "Realizar exame neurológico e iniciar prednisona dentro de 72 horas. "
+                "Fazer proteção ocular com lágrima artificial e pomada oftálmica; "
+                "reavaliar novos sintomas neurológicos e encaminhar se necessário."
+            ),
+        },
+        22: {
+            "exames_solicitados": ["clinico"],
+            "hipotese_diagnostica": "Migrânea sem aura",
+            "conduta_proposta": (
+                "Pesquisar sinais de alarme, cefaleia súbita, déficit neurológico, "
+                "febre e papiledema. Tratar no início com sumatriptana e naproxeno, "
+                "antiemético e repouso; manter diário de cefaleia, evitar opioide e "
+                "orientar sobre uso excessivo de analgésico."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
 def test_second_batch_is_released_after_editorial_approval():
     token = _register_and_login("lote-rubricas-rascunho@example.com")
     response = client.get(
