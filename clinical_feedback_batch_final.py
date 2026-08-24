@@ -1,0 +1,290 @@
+"""Lote final de rubricas estruturadas para casos clínicos legados."""
+
+from typing import Any
+
+
+def _source(title: str, organization: str, year: int, url: str) -> dict[str, Any]:
+    return {"titulo": title, "organizacao": organization, "ano": year, "url": url}
+
+
+def _outcomes(*items: str) -> dict[str, dict[str, str]]:
+    return {
+        "adequada": {"reacao": items[0], "desfecho": items[1]},
+        "parcial": {"reacao": items[2], "desfecho": items[3]},
+        "insegura": {"reacao": items[4], "desfecho": items[5]},
+    }
+
+
+AHT_SOURCE = _source(
+    "Abusive Head Trauma in Infants and Children: Technical Report",
+    "American Academy of Pediatrics",
+    2025,
+    "https://publications.aap.org/pediatrics/article/155/3/e2024070457/201049/Abusive-Head-Trauma-in-Infants-and-Children",
+)
+ACR_ABUSE_SOURCE = _source(
+    "ACR Appropriateness Criteria: Suspected Physical Abuse—Child",
+    "American College of Radiology",
+    2022,
+    "https://acsearch.acr.org/docs/69443/Narrative/",
+)
+
+
+FINAL_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
+    31: {
+        "diagnostico_referencia": "Trauma craniano abusivo em lactente, com hemorragia intracraniana, edema cerebral, crises epilépticas e hemorragias retinianas.",
+        "diagnostico_termos": ["trauma craniano abusivo", "traumatismo craniano abusivo", "síndrome do bebê sacudido", "sindrome do bebe sacudido", "abusive head trauma"],
+        "diagnostico_parcial": ["maus-tratos infantis", "maus tratos infantis", "abuso físico", "abuso fisico", "hemorragia subdural"],
+        "exames_essenciais": ["abc_glicemia_coagulacao", "tc_cranio", "rm_cranio_coluna", "oftalmo_documentacao", "inventario_osseo"],
+        "exames_opcionais": ["fundo_olho", "investigacao_mimetizadores"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "abc_glicemia_coagulacao": "ABC, glicemia, hemograma e coagulação orientam estabilização e diferenciais sem atrasar neuroimagem.",
+            "tc_cranio": "TC urgente identifica hemorragia, edema, efeito de massa e necessidade neurocirúrgica.",
+            "rm_cranio_coluna": "RM detalha lesão hipóxico-isquêmica, lesões de idades diferentes e possível lesão cervical quando estável.",
+            "oftalmo_documentacao": "Oftalmologista deve descrever número, camadas e distribuição das hemorragias; fundoscopia isolada não determina mecanismo.",
+            "inventario_osseo": "Série esquelética completa pesquisa fraturas ocultas em lactentes e crianças pequenas.",
+            "fundo_olho": "Hemorragias retinianas apoiam a investigação, mas não são exclusivas de abuso nem substituem neuroimagem.",
+            "investigacao_mimetizadores": "Coagulopatias, doenças metabólicas e trauma acidental devem ser avaliados conforme história e achados, sem atrasar proteção.",
+        },
+        "conduta_criterios": [
+            {"nome": "Estabilizar e controlar crises/pressão intracraniana", "pontos": 8, "termos": ["via aérea", "via aerea", "benzodiazepínico", "benzodiazepinico", "levetiracetam", "neurocirurgia", "pressão intracraniana", "pressao intracraniana"]},
+            {"nome": "Proteger imediatamente a criança", "pontos": 8, "termos": ["afastar do agressor", "proteção da criança", "protecao da crianca", "internação", "internacao", "ambiente seguro"]},
+            {"nome": "Notificar e acionar equipe de proteção", "pontos": 8, "termos": ["notificação compulsória", "notificacao compulsoria", "conselho tutelar", "serviço social", "servico social", "equipe de proteção", "equipe de protecao"]},
+            {"nome": "Documentar e investigar de forma multidisciplinar", "pontos": 6, "termos": ["documentar lesões", "documentar lesoes", "fotografar", "história separada", "historia separada", "pediatria forense", "oftalmologia"]},
+        ],
+        "conduta_referencia": "Estabilizar ABC, tratar convulsões e hipertensão intracraniana e acionar neurocirurgia. Internar em ambiente seguro, impedir retorno ao possível agressor, fazer notificação compulsória e envolver serviço social/conselho tutelar. Documentar história e lesões com precisão e completar neuroimagem, oftalmologia e série esquelética com equipe especializada.",
+        "feedback_hipotese_parcial": "Você reconheceu maus-tratos ou hemorragia, mas faltou integrar idade, crise, lesões cutâneas, hemorragia intracraniana e retiniana como trauma craniano abusivo.",
+        "feedback_hipotese_incorreta": "Trauma grave sem mecanismo plausível em lactente, com hematomas, hemorragia retiniana e intracraniana, exige investigação imediata de trauma craniano abusivo.",
+        "feedback_seguranca": "Não confronte o cuidador nem libere a criança antes de proteção formal. Hemorragia retiniana não é diagnóstico isolado e ausência dela não exclui abuso.",
+        "objetivos_aprendizagem": ["Reconhecer trauma craniano abusivo", "Estabilizar lesão cerebral traumática", "Acionar proteção legal e investigação multidisciplinar"],
+        "criterios_seguranca": [
+            {"nome": "Garantir proteção imediata", "termos": ["proteção da criança", "protecao da crianca", "afastar do agressor", "conselho tutelar", "notificação", "notificacao"], "feedback_omissao": "Sem proteção formal, o lactente pode retornar ao agressor e sofrer nova lesão fatal."},
+            {"nome": "Tratar emergência neurológica", "termos": ["via aérea", "via aerea", "benzodiazepínico", "benzodiazepinico", "levetiracetam", "neurocirurgia"], "feedback_omissao": "Crises, hipóxia e hipertensão intracraniana ampliam rapidamente a lesão cerebral."},
+        ],
+        "desfechos_conduta": _outcomes(
+            "As crises cessam, oxigenação e perfusão cerebral estabilizam e a criança permanece protegida.", "Lesões ocultas são identificadas e o seguimento ocorre em rede segura.",
+            "A estabilização ocorre, mas a investigação ou proteção fica incompleta.", "Persistem risco de sequelas não acompanhadas e revitimização.",
+            "Crises e edema progridem ou a criança retorna ao ambiente de risco.", "Pode haver herniação, incapacidade neurológica grave, novo abuso ou morte.",
+        ),
+        "reacao_paciente_referencia": "Monitorar consciência, crises, pupilas, respiração, perfusão, sinais de hipertensão intracraniana e novas lesões.",
+        "desfecho_referencia": "Sobrevida e redução de sequelas dependem de estabilização precoce e proteção efetiva contra nova violência.",
+        "temas_estudo": ["Trauma craniano abusivo", "Série esquelética e exame ocular", "Notificação e proteção infantil"],
+        "fontes_clinicas": [AHT_SOURCE, ACR_ABUSE_SOURCE],
+    },
+    32: {
+        "diagnostico_referencia": "Transtorno do espectro autista provável, com regressão de linguagem, exigindo avaliação diagnóstica multidisciplinar e investigação de diagnósticos associados.",
+        "diagnostico_termos": ["transtorno do espectro autista", "autismo", "tea com regressão de linguagem", "tea com regressao de linguagem"],
+        "diagnostico_parcial": ["atraso do desenvolvimento", "regressão da linguagem", "regressao da linguagem", "transtorno do neurodesenvolvimento"],
+        "exames_essenciais": ["mchat", "avaliacao_multidisciplinar", "avaliacao_auditiva"],
+        "exames_opcionais": ["avaliacao_genetica", "avaliacao_neuro"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "mchat": "M-CHAT-R/F é triagem apropriada entre 16 e 30 meses, mas resultado positivo não estabelece diagnóstico.",
+            "avaliacao_multidisciplinar": "Diagnóstico é clínico, baseado em história do desenvolvimento, observação e critérios padronizados por equipe experiente.",
+            "avaliacao_auditiva": "Avaliação auditiva é essencial em regressão/atraso de linguagem para identificar perda auditiva associada ou alternativa.",
+            "avaliacao_genetica": "Avaliação genética é individualizada, sobretudo com história familiar, dismorfismos, deficiência intelectual ou outras anomalias.",
+            "avaliacao_neuro": "Neuropediatria pode integrar a avaliação, mas TEA não exige exame de imagem rotineiro sem sinais neurológicos específicos.",
+        },
+        "conduta_criterios": [
+            {"nome": "Encaminhar para avaliação diagnóstica", "pontos": 8, "termos": ["avaliação multidisciplinar", "avaliacao multidisciplinar", "neuropediatria", "pediatria do desenvolvimento", "psicologia"]},
+            {"nome": "Iniciar intervenção precoce sem esperar laudo", "pontos": 8, "termos": ["intervenção precoce", "intervencao precoce", "fonoaudiologia", "terapia ocupacional", "estimulação", "estimulacao"]},
+            {"nome": "Avaliar audição e condições coexistentes", "pontos": 7, "termos": ["audiometria", "avaliação auditiva", "avaliacao auditiva", "sono", "epilepsia", "alimentação", "alimentacao"]},
+            {"nome": "Apoiar família e plano individual", "pontos": 7, "termos": ["orientar família", "orientar familia", "plano individual", "escola", "apoio familiar", "rede de cuidado"]},
+        ],
+        "conduta_referencia": "Encaminhar para avaliação multidisciplinar do desenvolvimento e audição, usando M-CHAT-R/F apenas como triagem. Iniciar intervenção precoce centrada em comunicação e habilidades funcionais sem aguardar o diagnóstico definitivo. Investigar condições coexistentes e genética conforme indicação, orientar a família e construir plano individual de cuidado e inclusão.",
+        "feedback_hipotese_parcial": "Você reconheceu atraso ou regressão, mas faltou integrar prejuízo sociocomunicativo e comportamentos repetitivos como provável TEA.",
+        "feedback_hipotese_incorreta": "Ausência de resposta ao nome, pouco contato visual, interesses repetitivos e regressão de linguagem exigem avaliação para TEA e perda auditiva.",
+        "feedback_seguranca": "M-CHAT não diagnostica TEA. Regressão da linguagem justifica encaminhamento e intervenção imediatos, mesmo antes do laudo final.",
+        "objetivos_aprendizagem": ["Diferenciar triagem de diagnóstico", "Organizar avaliação multidisciplinar", "Iniciar intervenção precoce e apoio familiar"],
+        "criterios_seguranca": [
+            {"nome": "Não atrasar intervenção", "termos": ["intervenção precoce", "intervencao precoce", "fonoaudiologia", "terapia ocupacional"], "feedback_omissao": "Esperar o diagnóstico definitivo pode perder uma janela importante de desenvolvimento e apoio familiar."},
+            {"nome": "Avaliar audição", "termos": ["avaliação auditiva", "avaliacao auditiva", "audiometria"], "feedback_omissao": "Perda auditiva pode coexistir ou explicar parte do atraso de linguagem e precisa ser identificada."},
+        ],
+        "desfechos_conduta": _outcomes(
+            "A criança engaja gradualmente em comunicação e atividades estruturadas, com menor frustração.", "Família e equipe acompanham metas funcionais individualizadas desde cedo.",
+            "A avaliação avança, mas a intervenção e o suporte familiar começam tardiamente.", "Ganhos ocorrem, porém oportunidades precoces são perdidas.",
+            "O rastreio é tratado como laudo final ou as preocupações são apenas observadas.", "Atrasam-se comunicação, inclusão, diagnóstico de perda auditiva e manejo de condições associadas.",
+        ),
+        "reacao_paciente_referencia": "Acompanhar comunicação, interação, brincadeira, sono, alimentação, comportamento e resposta às intervenções.",
+        "desfecho_referencia": "Apoio precoce e individualizado melhora participação e habilidades funcionais, independentemente do momento do laudo definitivo.",
+        "temas_estudo": ["Triagem e diagnóstico do TEA", "Regressão de linguagem", "Intervenção precoce"],
+        "fontes_clinicas": [
+            _source("Autism spectrum disorder in under 19s: recognition, referral and diagnosis", "National Institute for Health and Care Excellence", 2011, "https://www.nice.org.uk/guidance/cg128/chapter/recommendations"),
+            _source("Identification, Evaluation, and Management of Children With Autism Spectrum Disorder", "American Academy of Pediatrics", 2020, "https://publications.aap.org/pediatrics/article/145/1/e20193447/36917/Identification-Evaluation-and-Management-of"),
+        ],
+    },
+    34: {
+        "diagnostico_referencia": "Ataque isquêmico transitório de alto risco ou AVC isquêmico menor, com possível embolia paradoxal por forame oval patente ainda não comprovada.",
+        "diagnostico_termos": ["ataque isquêmico transitório por embolia paradoxal", "ataque isquemico transitorio por embolia paradoxal", "ait por embolia paradoxal", "avc menor por embolia paradoxal"],
+        "diagnostico_parcial": ["ataque isquêmico transitório", "ataque isquemico transitorio", "ait", "avc isquêmico", "avc isquemico", "forame oval patente"],
+        "exames_essenciais": ["tempo_neuro_glicemia", "tc_angio_tc", "rm_cranio", "ecg_monitorizacao"],
+        "exames_opcionais": ["eco_transesofagico", "doppler_venoso", "laboratorio_vascular"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "tempo_neuro_glicemia": "Déficit súbito exige horário, exame neurológico e glicemia, mesmo após regressão completa.",
+            "tc_angio_tc": "TC exclui hemorragia e angioTC pesquisa oclusão e estenose; TC normal não exclui isquemia.",
+            "rm_cranio": "RM com difusão diferencia TIA de infarto pequeno e ajuda a definir mecanismo.",
+            "ecg_monitorizacao": "ECG e monitorização pesquisam fibrilação atrial e outras causas cardioembólicas mais comuns.",
+            "eco_transesofagico": "Eco com microbolhas caracteriza shunt e estruturas cardíacas, mas encontrar FOP não prova causalidade.",
+            "doppler_venoso": "Pesquisa de trombose venosa fortalece a hipótese de embolia paradoxal quando clinicamente indicada.",
+            "laboratorio_vascular": "Hemograma, coagulação, função renal, glicemia e lipídios apoiam tratamento e prevenção; trombofilia é seletiva.",
+        },
+        "conduta_criterios": [
+            {"nome": "Ativar avaliação urgente de AVC/TIA", "pontos": 8, "termos": ["protocolo de avc", "avaliação urgente", "avaliacao urgente", "unidade de avc", "último momento bem", "ultimo momento bem"]},
+            {"nome": "Iniciar prevenção antitrombótica apropriada", "pontos": 8, "termos": ["aspirina", "antiagregante", "dupla antiagregação", "dupla antiagregacao", "clopidogrel"]},
+            {"nome": "Investigar mecanismo antes de atribuir ao FOP", "pontos": 7, "termos": ["monitorização cardíaca", "monitorizacao cardiaca", "fibrilação atrial", "fibrilacao atrial", "doppler venoso", "outras causas"]},
+            {"nome": "Discutir tratamento estrutural individualizado", "pontos": 7, "termos": ["fechamento do fop", "fechar fop", "heart team", "cirurgia cardíaca", "cirurgia cardiaca", "mixoma"]},
+        ],
+        "conduta_referencia": "Tratar como emergência cerebrovascular apesar da melhora, concluir TC/angioTC e RM e iniciar antiagregação após excluir hemorragia; dupla antiagregação curta pode ser indicada em TIA de alto risco/AVC menor selecionado. Investigar fibrilação atrial, vasos, fatores de risco, trombose venosa e outras causas. Só atribuir causalidade ao FOP e discutir fechamento após avaliação completa; massa atrial exige cardiologia/cirurgia.",
+        "feedback_hipotese_parcial": "Você reconheceu TIA ou FOP, mas faltou mostrar que o mecanismo paradoxal permanece uma hipótese até excluir causas vasculares e cardíacas mais comuns.",
+        "feedback_hipotese_incorreta": "Déficit focal súbito e reversível é emergência compatível com TIA/AVC menor; TC normal não encerra a investigação.",
+        "feedback_seguranca": "Não tranquilize pela melhora dos sintomas nem atribua automaticamente o evento a um FOP incidental. Anticoagulação empírica não é indicada sem fonte definida.",
+        "objetivos_aprendizagem": ["Tratar TIA como emergência", "Investigar mecanismos embólicos", "Selecionar pacientes para fechamento de FOP"],
+        "criterios_seguranca": [
+            {"nome": "Iniciar prevenção precoce", "termos": ["aspirina", "antiagregante", "clopidogrel", "dupla antiagregação", "dupla antiagregacao"], "feedback_omissao": "O risco de AVC é maior nas primeiras horas e dias após um TIA."},
+            {"nome": "Não encerrar investigação no FOP", "termos": ["fibrilação atrial", "fibrilacao atrial", "monitorização cardíaca", "monitorizacao cardiaca", "outras causas"], "feedback_omissao": "FOP é comum e pode ser incidental; perder outra etiologia muda completamente a prevenção."},
+        ],
+        "desfechos_conduta": _outcomes(
+            "O déficit não recorre e a prevenção começa enquanto o mecanismo é esclarecido.", "A causa provável é tratada e o risco de AVC incapacitante diminui.",
+            "A paciente permanece estável, mas investigação cardíaca ou vascular fica incompleta.", "Persiste risco de recorrência e tratamento estrutural inadequado.",
+            "A melhora é interpretada como resolução ou inicia-se anticoagulação/fechamento sem indicação.", "Pode ocorrer AVC recorrente, sangramento ou procedimento desnecessário.",
+        ),
+        "reacao_paciente_referencia": "Monitorar recorrência focal, ritmo cardíaco, pressão e achados de trombose venosa ou fonte cardíaca.",
+        "desfecho_referencia": "Investigação etiológica rápida e prevenção apropriada reduzem o risco precoce de AVC após TIA.",
+        "temas_estudo": ["TIA de alto risco", "Embolia paradoxal e FOP", "Prevenção secundária do AVC"],
+        "fontes_clinicas": [
+            _source("European Stroke Organisation guidelines on management of transient ischaemic attack", "European Stroke Organisation", 2021, "https://pmc.ncbi.nlm.nih.gov/articles/PMC8370080/"),
+            _source("2021 Guideline for the Prevention of Stroke in Patients With Stroke and TIA", "American Heart Association and American Stroke Association", 2021, "https://www.ahajournals.org/doi/10.1161/STR.0000000000000375"),
+        ],
+    },
+    35: {
+        "diagnostico_referencia": "Trauma craniano abusivo e maus-tratos físicos em lactente, com hemorragia intracraniana, retiniana e lesões em diferentes estágios.",
+        "diagnostico_termos": ["trauma craniano abusivo", "traumatismo craniano abusivo", "maus-tratos físicos com trauma craniano", "maus tratos fisicos com trauma craniano", "abusive head trauma"],
+        "diagnostico_parcial": ["maus-tratos infantis", "maus tratos infantis", "abuso físico", "abuso fisico", "traumatismo cranioencefálico", "traumatismo cranioencefalico"],
+        "exames_essenciais": ["abc_labs_abdominais", "tc_cranio", "rm_cranio_coluna", "rx_corpo", "oftalmo_documentacao"],
+        "exames_opcionais": ["investigacao_mimetizadores", "repetir_inventario_osseo"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "abc_labs_abdominais": "ABC, glicemia, hemograma, coagulação, função hepática e urina avaliam instabilidade e lesões ocultas.",
+            "tc_cranio": "TC urgente identifica hemorragia e edema no lactente sintomático.",
+            "rm_cranio_coluna": "RM após estabilização detalha parênquima, medula cervical e cronologia aproximada das lesões.",
+            "rx_corpo": "Série esquelética padronizada pesquisa fraturas ocultas; não deve ser substituída por uma radiografia corporal única.",
+            "oftalmo_documentacao": "Exame dilatado por oftalmologista documenta padrão retiniano e diagnósticos diferenciais.",
+            "investigacao_mimetizadores": "Coagulopatias e doenças ósseas devem ser consideradas conforme achados, sem atrasar proteção.",
+            "repetir_inventario_osseo": "Repetição dirigida em cerca de duas semanas pode revelar fraturas inicialmente ocultas.",
+        },
+        "conduta_criterios": [
+            {"nome": "Estabilizar trauma e acionar especialidades", "pontos": 8, "termos": ["via aérea", "via aerea", "neurocirurgia", "uti pediátrica", "uti pediatrica", "pressão intracraniana", "pressao intracraniana"]},
+            {"nome": "Garantir proteção e internação segura", "pontos": 8, "termos": ["internação", "internacao", "afastar do agressor", "proteção da criança", "protecao da crianca", "ambiente seguro"]},
+            {"nome": "Notificar e acionar rede", "pontos": 8, "termos": ["notificação compulsória", "notificacao compulsoria", "conselho tutelar", "serviço social", "servico social", "equipe de proteção", "equipe de protecao"]},
+            {"nome": "Documentar e preservar evidências clínicas", "pontos": 6, "termos": ["fotografar", "documentar lesões", "documentar lesoes", "história separada", "historia separada", "cadeia de custódia", "pediatria forense"]},
+        ],
+        "conduta_referencia": "Estabilizar o trauma, tratar lesão cerebral e acionar UTI/neurocirurgia. Internar sem contato não supervisionado com possível agressor, notificar compulsoriamente e envolver conselho tutelar/serviço social. Documentar história e lesões, completar série esquelética, neuroimagem, oftalmologia e avaliação de lesões ocultas, planejando seguimento e repetição do inventário quando indicada.",
+        "feedback_hipotese_parcial": "Você reconheceu TCE ou maus-tratos, mas faltou integrar história incompatível, fratura prévia, queimaduras, hemorragias retiniana e intracraniana como trauma abusivo.",
+        "feedback_hipotese_incorreta": "Uma queda baixa não explica adequadamente o conjunto de lesões e sinais de negligência; o caso exige protocolo de trauma craniano abusivo.",
+        "feedback_seguranca": "Não aceite o mecanismo relatado sem confrontá-lo com desenvolvimento e padrão das lesões. A criança não pode retornar ao ambiente de risco antes da decisão da rede de proteção.",
+        "objetivos_aprendizagem": ["Identificar história incompatível", "Investigar lesões ocultas", "Proteger e notificar corretamente"],
+        "criterios_seguranca": [
+            {"nome": "Proteger antes da alta", "termos": ["afastar do agressor", "proteção da criança", "protecao da crianca", "conselho tutelar", "notificação", "notificacao"], "feedback_omissao": "Alta sem plano protetivo expõe o lactente a revitimização potencialmente fatal."},
+            {"nome": "Tratar lesão cerebral", "termos": ["neurocirurgia", "uti pediátrica", "uti pediatrica", "pressão intracraniana", "pressao intracraniana", "via aérea", "via aerea"], "feedback_omissao": "Sonolência e vômitos podem indicar hipertensão intracraniana e deterioração rápida."},
+        ],
+        "desfechos_conduta": _outcomes(
+            "Consciência e sinais neurológicos estabilizam, e a criança permanece protegida.", "A rede define ambiente seguro e acompanha sequelas e lesões ocultas.",
+            "O trauma é tratado, mas investigação ou proteção permanece incompleta.", "Sequelas e risco de novo abuso não são adequadamente reduzidos.",
+            "A deterioração neurológica não é tratada ou ocorre retorno ao agressor.", "Pode haver herniação, nova violência, incapacidade grave ou morte.",
+        ),
+        "reacao_paciente_referencia": "Monitorar Glasgow pediátrico, pupilas, vômitos, crises, respiração, dor e surgimento de novas lesões.",
+        "desfecho_referencia": "O cuidado só é completo quando estabilização, investigação e proteção social acontecem em paralelo.",
+        "temas_estudo": ["Trauma craniano abusivo", "Inventário ósseo", "Rede de proteção à criança"],
+        "fontes_clinicas": [AHT_SOURCE, ACR_ABUSE_SOURCE],
+    },
+    37: {
+        "diagnostico_referencia": "Emergência hipertensiva com encefalopatia hipertensiva, possivelmente associada a feocromocitoma/paraganglioma.",
+        "diagnostico_termos": ["encefalopatia hipertensiva por feocromocitoma", "emergência hipertensiva com encefalopatia", "emergencia hipertensiva com encefalopatia", "crise de feocromocitoma com encefalopatia"],
+        "diagnostico_parcial": ["encefalopatia hipertensiva", "emergência hipertensiva", "emergencia hipertensiva", "feocromocitoma", "pres"],
+        "exames_essenciais": ["fundo_olho", "tc_cranio", "ecg_troponina_renal_urina", "rm_pres"],
+        "exames_opcionais": ["metanefrinas_pos_estabilizacao", "imagem_adrenal_pos_bioquimica"],
+        "exames_desnecessarios": [],
+        "justificativa_exames": {
+            "fundo_olho": "Papiledema e hemorragias demonstram lesão aguda de órgão-alvo.",
+            "tc_cranio": "TC exclui hemorragia e lesão expansiva, mas pode ser normal na encefalopatia/PRES.",
+            "ecg_troponina_renal_urina": "ECG, troponina, creatinina, eletrólitos e urina pesquisam dano cardíaco e renal concomitante.",
+            "rm_pres": "RM é mais sensível para edema vasogênico posterior compatível com PRES.",
+            "metanefrinas_pos_estabilizacao": "Metanefrinas plasmáticas livres ou urinárias fracionadas investigam feocromocitoma após estabilização e controle de interferentes.",
+            "imagem_adrenal_pos_bioquimica": "Imagem adrenal/abdominal deve seguir evidência bioquímica, salvo emergência estrutural específica.",
+        },
+        "conduta_criterios": [
+            {"nome": "Internar em UTI e monitorar continuamente", "pontos": 7, "termos": ["uti", "monitorização contínua", "monitorizacao continua", "linha arterial", "monitorização neurológica", "monitorizacao neurologica"]},
+            {"nome": "Reduzir pressão de modo controlado com IV", "pontos": 9, "termos": ["nicardipina", "clevidipina", "labetalol", "20%", "25%", "pressão arterial média", "pressao arterial media"]},
+            {"nome": "Avaliar e tratar órgãos-alvo", "pontos": 7, "termos": ["função renal", "funcao renal", "troponina", "ecg", "pres", "edema cerebral"]},
+            {"nome": "Investigar feocromocitoma com bloqueio seguro", "pontos": 7, "termos": ["metanefrinas", "bloqueio alfa", "alfabloqueio", "fenoxibenzamina", "doxazosina", "não usar beta isolado", "nao usar beta isolado"]},
+        ],
+        "conduta_referencia": "Internar em UTI, monitorar neurologicamente e iniciar anti-hipertensivo IV titulável, como nicardipina, reduzindo a pressão arterial média em cerca de 20–25% na primeira hora e depois gradualmente. Avaliar dano cerebral, cardíaco e renal. Após estabilização, investigar feocromocitoma com metanefrinas; se confirmado/suspeita forte, realizar bloqueio alfa antes de eventual beta-bloqueio e planejar imagem/cirurgia especializada.",
+        "feedback_hipotese_parcial": "Você reconheceu hipertensão grave ou feocromocitoma, mas faltou caracterizar a confusão com papiledema como emergência hipertensiva com lesão cerebral aguda.",
+        "feedback_hipotese_incorreta": "PA 230/145 com alteração mental e retinopatia grave define emergência hipertensiva; cefaleia, palpitações e sudorese paroxísticas sugerem causa catecolaminérgica.",
+        "feedback_seguranca": "Não normalize a pressão abruptamente: isso pode causar isquemia cerebral, renal e coronariana. Na suspeita de feocromocitoma, betabloqueio isolado pode piorar a vasoconstrição.",
+        "objetivos_aprendizagem": ["Reconhecer emergência hipertensiva", "Reduzir PA de forma controlada", "Investigar e bloquear feocromocitoma com segurança"],
+        "criterios_seguranca": [
+            {"nome": "Evitar queda excessiva da pressão", "termos": ["20%", "25%", "gradual", "titulável", "titulavel", "pressão arterial média", "pressao arterial media"], "feedback_omissao": "Queda rápida demais compromete autorregulação e pode provocar isquemia cerebral, cardíaca e renal."},
+            {"nome": "Evitar beta-bloqueio isolado", "termos": ["bloqueio alfa", "alfabloqueio", "fenoxibenzamina", "doxazosina", "não usar beta isolado", "nao usar beta isolado"], "feedback_omissao": "Bloquear beta antes de alfa em feocromocitoma pode causar crise hipertensiva por vasoconstrição alfa sem oposição."},
+        ],
+        "desfechos_conduta": _outcomes(
+            "Agitação e cefaleia cedem à medida que a pressão cai de forma controlada, sem hipoperfusão.", "Dano de órgão-alvo regride e a causa secundária é investigada com segurança.",
+            "A pressão melhora, mas o dano orgânico ou a causa catecolaminérgica permanece incompleto.", "Persistem risco de nova crise e sequelas renais ou neurológicas.",
+            "A pressão é reduzida abruptamente ou usa-se beta-bloqueador isolado.", "Pode ocorrer AVC, infarto, choque, falência renal ou morte.",
+        ),
+        "reacao_paciente_referencia": "Monitorar PA minuto a minuto, consciência, pupilas, diurese, ECG, troponina e função renal.",
+        "desfecho_referencia": "Redução controlada da pressão e tratamento da causa permitem reversão da encefalopatia e previnem recorrência.",
+        "temas_estudo": ["Emergência hipertensiva", "PRES", "Feocromocitoma e bloqueio alfa"],
+        "fontes_clinicas": [
+            _source("The Management of Elevated Blood Pressure in the Acute Care Setting", "American Heart Association", 2024, "https://www.ahajournals.org/doi/10.1161/HYP.0000000000000238"),
+            _source("Pheochromocytoma and Paraganglioma: An Endocrine Society Clinical Practice Guideline", "Endocrine Society", 2014, "https://academic.oup.com/jcem/article/99/6/1915/2537399"),
+        ],
+    },
+}
+
+
+FINAL_FEEDBACK_BATCH_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
+    31: [
+        {"id": "tc_cranio", "nome": "TC de crânio sem contraste", "resultado": "Hemorragias subdurais inter-hemisféricas, edema cerebral e efeito de massa.", "correto": True},
+        {"id": "fundo_olho", "nome": "Fundoscopia inicial", "resultado": "Hemorragias retinianas bilaterais; requer caracterização por oftalmologista e não determina isoladamente o mecanismo.", "correto": True},
+        {"id": "abc_glicemia_coagulacao", "nome": "ABC, glicemia, hemograma e coagulação", "resultado": "Glicemia normal, anemia leve e coagulação sem alteração capaz de explicar as hemorragias.", "correto": True},
+        {"id": "rm_cranio_coluna", "nome": "RM de encéfalo e coluna cervical", "resultado": "Lesão hipóxico-isquêmica, coleções subdurais de idades diferentes e lesão ligamentar cervical.", "correto": True},
+        {"id": "oftalmo_documentacao", "nome": "Exame oftalmológico dilatado documentado", "resultado": "Hemorragias multilaminares extensas até a periferia em ambos os olhos.", "correto": True},
+        {"id": "inventario_osseo", "nome": "Série esquelética completa", "resultado": "Fraturas costais posteriores em diferentes estágios de consolidação.", "correto": True},
+        {"id": "investigacao_mimetizadores", "nome": "Investigação dirigida de diagnósticos diferenciais", "resultado": "Sem coagulopatia, doença metabólica ou óssea que explique o conjunto de lesões.", "correto": True},
+    ],
+    32: [
+        {"id": "mchat", "nome": "M-CHAT-R/F", "resultado": "Triagem de alto risco; não equivale a diagnóstico de TEA.", "correto": True},
+        {"id": "avaliacao_neuro", "nome": "Avaliação com neuropediatria", "resultado": "Achados clínicos compatíveis com TEA, integrados à avaliação multidisciplinar do desenvolvimento.", "correto": True},
+        {"id": "avaliacao_multidisciplinar", "nome": "Avaliação diagnóstica multidisciplinar", "resultado": "História, observação e avaliação padronizada confirmam prejuízos sociocomunicativos e padrões restritos/repetitivos.", "correto": True},
+        {"id": "avaliacao_auditiva", "nome": "Avaliação auditiva", "resultado": "Audição periférica preservada, sem explicar a regressão da linguagem.", "correto": True},
+        {"id": "avaliacao_genetica", "nome": "Avaliação genética individualizada", "resultado": "Indicada pela história familiar e regressão, com aconselhamento prévio à família.", "correto": True},
+    ],
+    34: [
+        {"id": "eco_transesofagico", "nome": "Ecocardiograma transesofágico com microbolhas", "resultado": "FOP com shunt direita-esquerda e massa atrial direita compatível com mixoma; achados exigem correlação, pois não provam isoladamente o mecanismo do evento.", "correto": True},
+        {"id": "rm_cranio", "nome": "RM de encéfalo com difusão", "resultado": "Pequeno foco isquêmico agudo, reclassificando o episódio como AVC menor.", "correto": True},
+        {"id": "tempo_neuro_glicemia", "nome": "Cronologia, exame neurológico e glicemia", "resultado": "Déficit focal súbito e reversível; glicemia normal e último momento bem documentado.", "correto": True},
+        {"id": "tc_angio_tc", "nome": "TC e angioTC de crânio e pescoço", "resultado": "Sem hemorragia ou oclusão proximal; sem estenose carotídea relevante.", "correto": True},
+        {"id": "ecg_monitorizacao", "nome": "ECG e monitorização cardíaca", "resultado": "Ritmo sinusal; nenhuma fibrilação atrial detectada na monitorização inicial.", "correto": True},
+        {"id": "doppler_venoso", "nome": "Ultrassom Doppler venoso de membros inferiores", "resultado": "Sem trombose venosa profunda detectável no momento.", "correto": True},
+        {"id": "laboratorio_vascular", "nome": "Laboratório vascular e metabólico", "resultado": "Sem contraindicação à antiagregação; fatores de risco cardiovascular identificados.", "correto": True},
+    ],
+    35: [
+        {"id": "tc_cranio", "nome": "TC de crânio sem contraste", "resultado": "Hemorragia subdural inter-hemisférica e edema cerebral, incompatíveis com queda banal isolada.", "correto": True},
+        {"id": "rx_corpo", "nome": "Série esquelética completa", "resultado": "Fratura femoral antiga e fraturas costais/metafisárias em diferentes estágios de consolidação.", "correto": True},
+        {"id": "abc_labs_abdominais", "nome": "ABC e rastreio laboratorial de lesões ocultas", "resultado": "Sem choque; transaminases elevadas motivam imagem abdominal dirigida.", "correto": True},
+        {"id": "rm_cranio_coluna", "nome": "RM de encéfalo e coluna cervical", "resultado": "Lesão hipóxico-isquêmica e ligamentar cervical associada.", "correto": True},
+        {"id": "oftalmo_documentacao", "nome": "Exame oftalmológico dilatado", "resultado": "Hemorragias retinianas extensas, multilaminares e bilaterais, devidamente documentadas.", "correto": True},
+        {"id": "investigacao_mimetizadores", "nome": "Investigação dirigida de mimetizadores", "resultado": "Sem coagulopatia ou doença óssea metabólica que explique o padrão global.", "correto": True},
+        {"id": "repetir_inventario_osseo", "nome": "Série esquelética de seguimento", "resultado": "Novas fraturas em consolidação tornam-se visíveis após aproximadamente duas semanas.", "correto": True},
+    ],
+    37: [
+        {"id": "fundo_olho", "nome": "Fundoscopia", "resultado": "Papiledema e hemorragias retinianas, confirmando dano agudo de órgão-alvo.", "correto": True},
+        {"id": "tc_cranio", "nome": "TC de crânio", "resultado": "Sem hemorragia; não exclui encefalopatia hipertensiva ou PRES.", "correto": True},
+        {"id": "ecg_troponina_renal_urina", "nome": "ECG, troponina, função renal, eletrólitos e urina", "resultado": "Sobrecarga ventricular, proteinúria e lesão renal aguda leve, sem infarto agudo.", "correto": True},
+        {"id": "rm_pres", "nome": "RM de encéfalo", "resultado": "Edema vasogênico parieto-occipital bilateral, compatível com PRES.", "correto": True},
+        {"id": "metanefrinas_pos_estabilizacao", "nome": "Metanefrinas após estabilização", "resultado": "Metanefrinas plasmáticas livres muito elevadas, sustentando feocromocitoma.", "correto": True},
+        {"id": "imagem_adrenal_pos_bioquimica", "nome": "Imagem adrenal após confirmação bioquímica", "resultado": "Massa adrenal hipervascular compatível com feocromocitoma.", "correto": True},
+    ],
+}
