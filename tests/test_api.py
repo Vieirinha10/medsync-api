@@ -17,7 +17,13 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")
+from clinical_rubric_catalog import CLINICAL_RUBRICS
 from database import SessionLocal
+from evaluation import (
+    ClinicalRubricDefinition,
+    SimulationSubmission,
+    evaluate_objective,
+)
 from models import (
     ClinicalCase,
     ClinicalExam,
@@ -137,13 +143,80 @@ def test_login_rate_limit_can_be_enabled():
 
 def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
     with SessionLocal() as db:
-        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 40
-        assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 40
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 55
+        assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 55
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
         assert rubric.versao == 5
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
+
+
+def test_primary_care_collection_has_revised_rubrics_and_is_easy():
+    with SessionLocal() as db:
+        cases = list(
+            db.scalars(
+                select(ClinicalCase)
+                .where(ClinicalCase.id.between(41, 55))
+                .order_by(ClinicalCase.id)
+            ).all()
+        )
+        assert [case.id for case in cases] == list(range(41, 56))
+        assert all(case.nivel_dificuldade == "Fácil" for case in cases)
+        assert all(case.status == "publicado" for case in cases)
+        assert all(case.is_premium is False for case in cases)
+
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.between(41, 55))
+            ).all()
+        )
+        assert len(rubrics) == 15
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+
+    for case_id in range(41, 56):
+        ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case_id])
+
+
+def test_seed_adds_catalog_expansions_to_an_existing_database():
+    with SessionLocal() as db:
+        case = db.get(ClinicalCase, 55)
+        assert case is not None
+        db.delete(case)
+        db.commit()
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 54
+
+        assert seed_clinical_content(db) is False
+        restored = db.get(ClinicalCase, 55)
+        assert restored is not None
+        assert restored.titulo_publico == "Acordei com o olho vermelho"
+        assert restored.rubrica is not None
+        assert restored.rubrica.status == "revisada"
+
+
+def test_case_without_essential_exams_rewards_avoiding_low_value_tests():
+    case = {
+        "id": 41,
+        "exames_disponiveis": [
+            {"id": "teste_estreptococo", "nome": "Teste rápido"},
+            {"id": "hemograma", "nome": "Hemograma"},
+        ],
+    }
+    submission = SimulationSubmission(
+        exames_solicitados=[],
+        hipotese_diagnostica="Faringite viral",
+        conduta_proposta="Hidratação, analgesia, sem antibiótico e retorno se piora.",
+    )
+    score, _, _ = evaluate_objective(case, submission, CLINICAL_RUBRICS[41])
+    assert score.exames == 40
+
+    submission.exames_solicitados = ["hemograma"]
+    score_with_low_value_test, _, _ = evaluate_objective(
+        case,
+        submission,
+        CLINICAL_RUBRICS[41],
+    )
+    assert score_with_low_value_test.exames == 36
 
 
 def test_existing_pilot_rubric_is_safely_upgraded():
@@ -723,7 +796,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
 
     case_catalog = client.get("/admin/casos", headers=headers)
     assert case_catalog.status_code == 200
-    assert len(case_catalog.json()) == 40
+    assert len(case_catalog.json()) == 55
     assert {item["nivel_dificuldade"] for item in case_catalog.json()} >= {
         "Intermediário",
         "Crítico",

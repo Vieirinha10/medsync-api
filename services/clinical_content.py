@@ -20,8 +20,9 @@ from services.vital_signs import extract_vital_signs
 
 
 def seed_clinical_content(db: Session) -> bool:
-    """Carrega o catálogo legado somente quando o banco ainda está vazio."""
+    """Carrega o catálogo e acrescenta novos casos sem duplicar os existentes."""
     if db.scalar(select(func.count()).select_from(ClinicalCase)):
+        _sync_missing_catalog_cases(db)
         _sync_case_exam_updates(db)
         _sync_pilot_rubrics(db)
         _sync_draft_rubrics(db)
@@ -29,41 +30,57 @@ def seed_clinical_content(db: Session) -> bool:
 
     now = datetime.now(UTC)
     for source in CLINICAL_CASES:
-        case = ClinicalCase(
-            id=source["id"],
-            titulo=source["titulo"],
-            titulo_publico=PUBLIC_CASE_TITLES[source["id"]],
-            especialidade=source["especialidade"],
-            nivel_dificuldade=source["nivel_dificuldade"],
-            historia_clinica=source["historia_clinica"],
-            exame_fisico=source["exame_fisico"],
-            status="publicado",
-            versao_conteudo=1,
-        )
-        case.exames = [
-            ClinicalExam(
-                codigo=exam["id"],
-                nome=exam["nome"],
-                resultado=exam["resultado"],
-                referencia_adequada=exam.get("correto", True),
-                ordem=index,
-            )
-            for index, exam in enumerate(source.get("exames_disponiveis", []))
-        ]
-        if source["id"] in PILOT_RUBRICS:
-            case.rubrica = ClinicalRubric(
-                versao=PILOT_RUBRIC_VERSION,
-                status="revisada",
-                definicao=_validated_rubric(PILOT_RUBRICS[source["id"]]),
-                revisado_por="Rubrica editorial MedSync",
-                revisado_em=now,
-            )
-        db.add(case)
+        db.add(_case_from_catalog(source, now=now))
 
     db.commit()
     _sync_case_exam_updates(db)
     _sync_draft_rubrics(db)
     return True
+
+
+def _case_from_catalog(source: dict, *, now: datetime) -> ClinicalCase:
+    case = ClinicalCase(
+        id=source["id"],
+        titulo=source["titulo"],
+        titulo_publico=PUBLIC_CASE_TITLES[source["id"]],
+        especialidade=source["especialidade"],
+        nivel_dificuldade=source["nivel_dificuldade"],
+        historia_clinica=source["historia_clinica"],
+        exame_fisico=source["exame_fisico"],
+        status="publicado",
+        versao_conteudo=1,
+    )
+    case.exames = [
+        ClinicalExam(
+            codigo=exam["id"],
+            nome=exam["nome"],
+            resultado=exam["resultado"],
+            referencia_adequada=exam.get("correto", True),
+            ordem=index,
+        )
+        for index, exam in enumerate(source.get("exames_disponiveis", []))
+    ]
+    if source["id"] in PILOT_RUBRICS:
+        case.rubrica = ClinicalRubric(
+            versao=PILOT_RUBRIC_VERSION,
+            status="revisada",
+            definicao=_validated_rubric(PILOT_RUBRICS[source["id"]]),
+            revisado_por="Rubrica editorial MedSync",
+            revisado_em=now,
+        )
+    return case
+
+
+def _sync_missing_catalog_cases(db: Session) -> None:
+    """Inclui expansões do catálogo em bancos já inicializados."""
+    existing_ids = set(db.scalars(select(ClinicalCase.id)).all())
+    missing = [source for source in CLINICAL_CASES if source["id"] not in existing_ids]
+    if not missing:
+        return
+
+    now = datetime.now(UTC)
+    db.add_all([_case_from_catalog(source, now=now) for source in missing])
+    db.commit()
 
 
 def _sync_case_exam_updates(db: Session) -> None:

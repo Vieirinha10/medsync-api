@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from primary_care_catalog import PRIMARY_CARE_RUBRICS
+
 CLINICAL_RUBRIC_VERSION = 5
 
 
@@ -752,6 +754,8 @@ CLINICAL_RUBRICS: dict[int, dict[str, Any]] = {
         ],
     },
 }
+
+CLINICAL_RUBRICS.update(PRIMARY_CARE_RUBRICS)
 
 
 # Segunda leva em preparação editorial. A presença neste catálogo não libera a

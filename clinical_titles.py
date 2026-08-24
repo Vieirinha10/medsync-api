@@ -1,5 +1,7 @@
 """Chamadas públicas neutras dos casos clínicos, sem revelar o diagnóstico."""
 
+from primary_care_catalog import PRIMARY_CARE_TITLES
+
 PUBLIC_CASE_TITLES = {
     1: "Dor torácica progressiva em homem de 32 anos",
     2: "Cefaleia crônica em mulher de 48 anos",
@@ -42,6 +44,8 @@ PUBLIC_CASE_TITLES = {
     39: "Sintomas urinários progressivos em homem de 67 anos",
     40: "Febre, disúria e dor lombar em mulher de 55 anos",
 }
+
+PUBLIC_CASE_TITLES.update(PRIMARY_CARE_TITLES)
 
 
 def formatted_public_title(case_id: int, public_title: str) -> str:

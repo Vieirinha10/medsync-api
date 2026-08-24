@@ -443,7 +443,11 @@ def evaluate_objective(
     selected_unnecessary = selected & unnecessary
     accepted = selected_essential | (selected & optional)
 
-    essential_points = round(36 * len(selected_essential) / max(len(essential), 1))
+    essential_points = (
+        36
+        if not essential
+        else round(36 * len(selected_essential) / len(essential))
+    )
     unnecessary_penalty = 4 * len(selected_unnecessary)
     exam_score = max(0, min(40, essential_points + 4 - unnecessary_penalty))
 
