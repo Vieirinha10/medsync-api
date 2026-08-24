@@ -1112,7 +1112,7 @@ def test_v2_case_is_identified_in_case_catalog():
 
     cases = response.json()
     pilot = next(case for case in cases if case["id"] == 8)
-    legacy = next(case for case in cases if case["id"] == 26)
+    legacy = next(case for case in cases if case["id"] == 31)
     assert pilot["titulo"].startswith("Caso #008 – ")
     assert "tromboembolismo" not in pilot["titulo"].lower()
     assert "pericardite" not in legacy["titulo"].lower()
@@ -1143,7 +1143,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
-    assert availability[26] is False
+    assert availability[31] is False
 
     with SessionLocal() as db:
         for case_id in {6, 7, 8, 11, 12}:
@@ -1753,6 +1753,176 @@ def test_fourth_feedback_expansion_batch_generates_complete_safe_feedback():
         assert result["feedback"]["plano_pessoal_melhoria"], case_id
 
 
+def test_fifth_feedback_expansion_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("quinto-lote-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {26, 27, 28, 29, 30}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    stroke = client.get("/casos-clinicos/26", headers=headers)
+    stroke_exams = {
+        exam["id"]: exam for exam in stroke.json()["exames_disponiveis"]
+    }
+    assert stroke_exams["angio_tc"]["correto"] is True
+    assert "sem hemorragia" in stroke_exams["tc_cranio"]["resultado"].lower()
+
+    chagas = client.get("/casos-clinicos/27", headers=headers)
+    chagas_exams = {
+        exam["id"]: exam for exam in chagas.json()["exames_disponiveis"]
+    }
+    assert chagas_exams["avaliacao_nutricional"]["correto"] is True
+    assert "não diagnostica" in chagas_exams["albumina"]["resultado"].lower()
+
+    celiac = client.get("/casos-clinicos/28", headers=headers)
+    celiac_exams = {
+        exam["id"]: exam for exam in celiac.json()["exames_disponiveis"]
+    }
+    assert celiac_exams["iga_total"]["correto"] is True
+    assert "não dispensa biópsia" in celiac_exams["ema_segunda_amostra"][
+        "resultado"
+    ].lower()
+
+    scarlet = client.get("/casos-clinicos/29", headers=headers)
+    scarlet_exams = {
+        exam["id"]: exam for exam in scarlet.json()["exames_disponiveis"]
+    }
+    assert scarlet_exams["avaliacao_exantema"]["correto"] is True
+    assert scarlet_exams["cultura_orofaringe"]["correto"] is False
+
+    rheumatic = client.get("/casos-clinicos/30", headers=headers)
+    rheumatic_exams = {
+        exam["id"]: exam for exam in rheumatic.json()["exames_disponiveis"]
+    }
+    assert rheumatic_exams["ecg"]["correto"] is True
+    assert "isoladamente não confirma" in rheumatic_exams["aslo"][
+        "resultado"
+    ].lower()
+
+
+def test_fifth_feedback_expansion_batch_generates_complete_safe_feedback():
+    token = _register_and_login("quinto-lote-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        26: {
+            "exames_solicitados": [
+                "glicemia_abc",
+                "nihss_tempo",
+                "tc_cranio",
+                "angio_tc",
+                "rm_difusao",
+            ],
+            "hipotese_diagnostica": "AVC isquêmico de circulação posterior",
+            "conduta_proposta": (
+                "Ativar protocolo de AVC, proteger via aérea e verificar glicemia. "
+                "Avaliar trombólise na janela terapêutica e trombectomia em centro de "
+                "AVC. Tratar convulsão ativa, fazer avaliação da deglutição e, após "
+                "excluir hemorragia, iniciar antiagregante e estatina."
+            ),
+        },
+        27: {
+            "exames_solicitados": [
+                "avaliacao_nutricional",
+                "esofagograma",
+                "avaliacao_degluticao",
+                "laboratorio_refeeding",
+                "enema_opaco",
+            ],
+            "hipotese_diagnostica": (
+                "Doença de Chagas digestiva com megaesôfago e megacólon"
+            ),
+            "conduta_proposta": (
+                "Iniciar realimentação cautelosa com tiamina, fósforo e eletrólitos. "
+                "Adaptar consistência, pequenas refeições e avaliar com fonoaudiologia "
+                "para prevenir aspiração. Acionar gastroenterologia para dilatação ou "
+                "miotomia, tratar megacólon com laxativo e acompanhar nutricionista, "
+                "suplementação e peso semanal."
+            ),
+        },
+        28: {
+            "exames_solicitados": [
+                "anti_ttg",
+                "iga_total",
+                "hemo_ferritina",
+                "biopsia_duodeno",
+            ],
+            "hipotese_diagnostica": "Doença celíaca",
+            "conduta_proposta": (
+                "Manter glúten até confirmar o diagnóstico e encaminhar à "
+                "gastroenterologia pediátrica para biópsia duodenal. Após confirmação, "
+                "iniciar dieta sem glúten com nutricionista e orientar contaminação "
+                "cruzada. Repor ferro conforme ferritina e acompanhar peso e crescimento."
+            ),
+        },
+        29: {
+            "exames_solicitados": [
+                "avaliacao_exantema",
+                "teste_rapido_strepto",
+                "avaliacao_cardio_renal",
+            ],
+            "hipotese_diagnostica": "Escarlatina",
+            "conduta_proposta": (
+                "Avaliar dispneia e edema com oximetria, função renal e pesquisa de "
+                "insuficiência cardíaca. Tratar com amoxicilina por 10 dias, hidratação "
+                "e paracetamol. Orientar higiene, retorno se piora e afastamento da escola "
+                "até estar afebril e completar 24 horas de antibiótico."
+            ),
+        },
+        30: {
+            "exames_solicitados": [
+                "eco",
+                "aslo_anti_dnase",
+                "vhs_pcr",
+                "ecg",
+                "raiox_bnp_funcao_renal",
+            ],
+            "hipotese_diagnostica": "Febre reumática aguda com cardite",
+            "conduta_proposta": (
+                "Internação e cardiologia para tratar insuficiência cardíaca com "
+                "diurético. Erradicar estreptococo com penicilina benzatina, controlar "
+                "artrite com naproxeno e iniciar profilaxia secundária com penicilina "
+                "benzatina a cada intervalo recomendado e por longo prazo para prevenir "
+                "recorrência."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
 def test_second_batch_is_released_after_editorial_approval():
     token = _register_and_login("lote-rubricas-rascunho@example.com")
     response = client.get(
@@ -2225,10 +2395,10 @@ def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
 def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
     token = _register_and_login("caso-legado@example.com")
     response = client.post(
-        "/simulacoes/26/finalizar",
+        "/simulacoes/31/finalizar",
         json={
             "exames_solicitados": ["tc_cranio"],
-            "hipotese_diagnostica": "AVC isquêmico",
+            "hipotese_diagnostica": "Trauma craniano abusivo",
             "conduta_proposta": "Monitorização e tratamento conforme avaliação.",
         },
         headers={"Authorization": f"Bearer {token}"},
