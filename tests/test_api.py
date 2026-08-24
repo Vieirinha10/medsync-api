@@ -1112,12 +1112,12 @@ def test_v2_case_is_identified_in_case_catalog():
 
     cases = response.json()
     pilot = next(case for case in cases if case["id"] == 8)
-    legacy = next(case for case in cases if case["id"] == 31)
+    final_case = next(case for case in cases if case["id"] == 31)
     assert pilot["titulo"].startswith("Caso #008 – ")
     assert "tromboembolismo" not in pilot["titulo"].lower()
-    assert "pericardite" not in legacy["titulo"].lower()
+    assert "pericardite" not in final_case["titulo"].lower()
     assert pilot["avaliacao_2_disponivel"] is True
-    assert legacy["avaliacao_2_disponivel"] is False
+    assert final_case["avaliacao_2_disponivel"] is True
 
     detail = client.get(
         "/casos-clinicos/8",
@@ -1143,7 +1143,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
-    assert availability[31] is False
+    assert all(availability[case_id] for case_id in range(1, 56))
 
     with SessionLocal() as db:
         for case_id in {6, 7, 8, 11, 12}:
@@ -1923,6 +1923,179 @@ def test_fifth_feedback_expansion_batch_generates_complete_safe_feedback():
         assert result["feedback"]["plano_pessoal_melhoria"], case_id
 
 
+def test_final_feedback_batch_is_structured_and_clinically_corrected():
+    token = _register_and_login("lote-final-feedback@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    batch_ids = {31, 32, 34, 35, 37}
+
+    response = client.get("/casos-clinicos/", headers=headers)
+    assert response.status_code == 200
+    availability = {
+        case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
+    }
+    assert all(availability[case_id] for case_id in batch_ids)
+
+    with SessionLocal() as db:
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+        assert len(rubrics) == len(batch_ids)
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        for rubric in rubrics:
+            ClinicalRubricDefinition.model_validate(rubric.definicao)
+            assert rubric.definicao["criterios_seguranca"]
+            assert rubric.definicao["desfechos_conduta"]
+            assert rubric.definicao["fontes_clinicas"]
+
+    infant = client.get("/casos-clinicos/31", headers=headers)
+    infant_exams = {
+        exam["id"]: exam for exam in infant.json()["exames_disponiveis"]
+    }
+    assert infant_exams["inventario_osseo"]["correto"] is True
+    assert "não determina isoladamente" in infant_exams["fundo_olho"][
+        "resultado"
+    ].lower()
+
+    autism = client.get("/casos-clinicos/32", headers=headers)
+    autism_exams = {
+        exam["id"]: exam for exam in autism.json()["exames_disponiveis"]
+    }
+    assert autism_exams["avaliacao_auditiva"]["correto"] is True
+    assert "não equivale a diagnóstico" in autism_exams["mchat"][
+        "resultado"
+    ].lower()
+
+    tia = client.get("/casos-clinicos/34", headers=headers)
+    tia_exams = {exam["id"]: exam for exam in tia.json()["exames_disponiveis"]}
+    assert tia_exams["ecg_monitorizacao"]["correto"] is True
+    assert "não provam isoladamente" in tia_exams["eco_transesofagico"][
+        "resultado"
+    ].lower()
+
+    abuse = client.get("/casos-clinicos/35", headers=headers)
+    abuse_exams = {
+        exam["id"]: exam for exam in abuse.json()["exames_disponiveis"]
+    }
+    assert "série esquelética" in abuse_exams["rx_corpo"]["nome"].lower()
+
+    emergency = client.get("/casos-clinicos/37", headers=headers)
+    emergency_exams = {
+        exam["id"]: exam for exam in emergency.json()["exames_disponiveis"]
+    }
+    assert emergency_exams["rm_pres"]["correto"] is True
+    assert "não exclui" in emergency_exams["tc_cranio"]["resultado"].lower()
+
+
+def test_final_feedback_batch_generates_complete_safe_feedback():
+    token = _register_and_login("lote-final-simulacoes@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+    submissions = {
+        31: {
+            "exames_solicitados": [
+                "abc_glicemia_coagulacao",
+                "tc_cranio",
+                "rm_cranio_coluna",
+                "oftalmo_documentacao",
+                "inventario_osseo",
+            ],
+            "hipotese_diagnostica": "Trauma craniano abusivo",
+            "conduta_proposta": (
+                "Proteger via aérea, tratar crises com levetiracetam e acionar "
+                "neurocirurgia. Internação em ambiente seguro, afastar do agressor, "
+                "fazer notificação compulsória e acionar conselho tutelar e serviço "
+                "social. Documentar lesões, fotografar e envolver pediatria forense."
+            ),
+        },
+        32: {
+            "exames_solicitados": [
+                "mchat",
+                "avaliacao_multidisciplinar",
+                "avaliacao_auditiva",
+                "avaliacao_genetica",
+            ],
+            "hipotese_diagnostica": "Transtorno do espectro autista",
+            "conduta_proposta": (
+                "Encaminhar para avaliação multidisciplinar e neuropediatria. Iniciar "
+                "intervenção precoce com fonoaudiologia e terapia ocupacional sem "
+                "aguardar o laudo. Fazer avaliação auditiva, rastrear sono, epilepsia "
+                "e alimentação, orientar família e construir plano individual com a escola."
+            ),
+        },
+        34: {
+            "exames_solicitados": [
+                "tempo_neuro_glicemia",
+                "tc_angio_tc",
+                "rm_cranio",
+                "ecg_monitorizacao",
+                "eco_transesofagico",
+            ],
+            "hipotese_diagnostica": (
+                "Ataque isquêmico transitório por embolia paradoxal"
+            ),
+            "conduta_proposta": (
+                "Ativar protocolo de AVC e avaliação urgente em unidade de AVC. Após "
+                "excluir hemorragia, iniciar aspirina e considerar dupla antiagregação "
+                "curta com clopidogrel. Fazer monitorização cardíaca para fibrilação "
+                "atrial, investigar outras causas e discutir fechamento do FOP e mixoma "
+                "com heart team e cirurgia cardíaca."
+            ),
+        },
+        35: {
+            "exames_solicitados": [
+                "abc_labs_abdominais",
+                "tc_cranio",
+                "rm_cranio_coluna",
+                "rx_corpo",
+                "oftalmo_documentacao",
+            ],
+            "hipotese_diagnostica": "Trauma craniano abusivo",
+            "conduta_proposta": (
+                "Proteger via aérea, tratar pressão intracraniana e acionar UTI "
+                "pediátrica e neurocirurgia. Internação em ambiente seguro, afastar "
+                "do agressor, realizar notificação compulsória, conselho tutelar e "
+                "serviço social. Fotografar e documentar lesões com pediatria forense."
+            ),
+        },
+        37: {
+            "exames_solicitados": [
+                "fundo_olho",
+                "tc_cranio",
+                "ecg_troponina_renal_urina",
+                "rm_pres",
+                "metanefrinas_pos_estabilizacao",
+            ],
+            "hipotese_diagnostica": (
+                "Emergência hipertensiva com encefalopatia por feocromocitoma"
+            ),
+            "conduta_proposta": (
+                "Internar em UTI com monitorização contínua e iniciar nicardipina "
+                "titulável, reduzindo a pressão arterial média em 20 a 25% na primeira "
+                "hora e depois gradualmente. Avaliar ECG, troponina, função renal e "
+                "PRES. Após estabilização dosar metanefrinas e fazer bloqueio alfa com "
+                "doxazosina, sem usar beta isolado."
+            ),
+        },
+    }
+
+    for case_id, submission in submissions.items():
+        response = client.post(
+            f"/simulacoes/{case_id}/finalizar",
+            json=submission,
+            headers=headers,
+        )
+        assert response.status_code == 201, (case_id, response.text)
+        result = response.json()
+        assert result["nivel_conduta"] == "adequada", case_id
+        assert result["pontuacao_total"] >= 90, case_id
+        assert result["feedback"]["sintese_raciocinio"], case_id
+        assert result["feedback"]["feedback_seguranca"], case_id
+        assert result["feedback"]["reacao_paciente"], case_id
+        assert result["feedback"]["desfecho_clinico"], case_id
+        assert result["feedback"]["plano_pessoal_melhoria"], case_id
+
+
 def test_second_batch_is_released_after_editorial_approval():
     token = _register_and_login("lote-rubricas-rascunho@example.com")
     response = client.get(
@@ -2392,18 +2565,16 @@ def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
     assert "tromboembolismo" not in narrative.model_dump_json().lower()
 
 
-def test_legacy_case_cannot_use_v2_until_its_rubric_is_reviewed():
+def test_all_cases_are_available_after_final_rubric_review():
     token = _register_and_login("caso-legado@example.com")
-    response = client.post(
-        "/simulacoes/31/finalizar",
-        json={
-            "exames_solicitados": ["tc_cranio"],
-            "hipotese_diagnostica": "Trauma craniano abusivo",
-            "conduta_proposta": "Monitorização e tratamento conforme avaliação.",
-        },
+    response = client.get(
+        "/casos-clinicos/",
         headers={"Authorization": f"Bearer {token}"},
     )
-    assert response.status_code == 409
+    assert response.status_code == 200
+    official_cases = [case for case in response.json() if case["id"] <= 55]
+    assert len(official_cases) == 55
+    assert all(case["avaliacao_2_disponivel"] for case in official_cases)
 
 
 def _independent_question_explanation(question: ExamQuestion) -> QuestionExplanation:
