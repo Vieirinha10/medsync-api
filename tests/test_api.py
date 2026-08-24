@@ -17,6 +17,7 @@ os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")
+from challenge_answers import BUILTIN_CHALLENGE_ANSWERS, BUILTIN_CHALLENGE_SOURCES
 from clinical_rubric_catalog import CLINICAL_RUBRICS
 from database import SessionLocal
 from evaluation import (
@@ -47,6 +48,24 @@ with SessionLocal() as db:
     seed_question_content(db)
 main = importlib.import_module("main")
 client = TestClient(main.app)
+
+
+def test_builtin_visual_challenge_catalog_is_complete():
+    expected_ids = {f"desafio-visual-{index:03d}" for index in range(1, 26)}
+
+    assert set(BUILTIN_CHALLENGE_ANSWERS) == expected_ids
+    assert set(BUILTIN_CHALLENGE_SOURCES) == expected_ids
+
+    for challenge in BUILTIN_CHALLENGE_ANSWERS.values():
+        assert challenge["correct_option_id"]
+        assert challenge["diagnosis"]
+        assert challenge["explanation"]
+        assert len(challenge["key_findings"]) == 3
+
+    for credit, license_name, source_url in BUILTIN_CHALLENGE_SOURCES.values():
+        assert credit
+        assert license_name
+        assert source_url.startswith("https://commons.wikimedia.org/wiki/File:")
 
 
 def _register_and_login(email: str = "aluno@example.com") -> str:
