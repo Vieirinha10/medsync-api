@@ -2,6 +2,10 @@
 
 from typing import Any
 
+from clinical_feedback_batch_one import (
+    FIRST_FEEDBACK_BATCH_EXAM_UPDATES,
+    FIRST_FEEDBACK_BATCH_RUBRICS,
+)
 from primary_care_catalog import PRIMARY_CARE_RUBRICS
 
 CLINICAL_RUBRIC_VERSION = 5
@@ -755,6 +759,7 @@ CLINICAL_RUBRICS: dict[int, dict[str, Any]] = {
     },
 }
 
+CLINICAL_RUBRICS.update(FIRST_FEEDBACK_BATCH_RUBRICS)
 CLINICAL_RUBRICS.update(PRIMARY_CARE_RUBRICS)
 
 
@@ -1614,3 +1619,5 @@ CLINICAL_CASE_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
         },
     ],
 }
+
+CLINICAL_CASE_EXAM_UPDATES.update(FIRST_FEEDBACK_BATCH_EXAM_UPDATES)
