@@ -51,7 +51,7 @@ client = TestClient(main.app)
 
 
 def test_builtin_visual_challenge_catalog_is_complete():
-    expected_ids = {f"desafio-visual-{index:03d}" for index in range(1, 71)}
+    expected_ids = {f"desafio-visual-{index:03d}" for index in range(1, 86)}
 
     assert set(BUILTIN_CHALLENGE_ANSWERS) == expected_ids
     assert set(BUILTIN_CHALLENGE_SOURCES) == expected_ids
@@ -65,7 +65,7 @@ def test_builtin_visual_challenge_catalog_is_complete():
     for credit, license_name, source_url in BUILTIN_CHALLENGE_SOURCES.values():
         assert credit
         assert license_name
-        assert source_url.startswith("https://commons.wikimedia.org/wiki/File:")
+        assert source_url.startswith("https://")
 
 
 def _register_and_login(email: str = "aluno@example.com") -> str:

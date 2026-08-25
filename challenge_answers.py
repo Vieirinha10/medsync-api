@@ -701,6 +701,156 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Morfologia típica de Plasmodium falciparum",
         ],
     },
+    "desafio-visual-071": {
+        "correct_option_id": "obstrucao-intestino-delgado",
+        "diagnosis": "Obstrução do intestino delgado",
+        "explanation": "Alças centrais dilatadas, pregas que atravessam toda a luz e múltiplos níveis hidroaéreos em alturas diferentes formam o padrão clássico de obstrução mecânica do intestino delgado.",
+        "key_findings": [
+            "Alças de intestino delgado dilatadas",
+            "Múltiplos níveis hidroaéreos",
+            "Distribuição predominantemente central",
+        ],
+    },
+    "desafio-visual-072": {
+        "correct_option_id": "pancreatite-aguda",
+        "diagnosis": "Pancreatite aguda",
+        "explanation": "O aumento do pâncreas associado a edema e densificação da gordura peripancreática indica inflamação aguda. Coleções líquidas adjacentes podem surgir conforme a gravidade e o tempo de evolução.",
+        "key_findings": [
+            "Aumento e edema pancreático",
+            "Densificação da gordura peripancreática",
+            "Líquido ou coleção peripancreática",
+        ],
+    },
+    "desafio-visual-073": {
+        "correct_option_id": "diverticulite-aguda",
+        "diagnosis": "Diverticulite aguda do sigmoide",
+        "explanation": "O espessamento segmentar do sigmoide, a presença de divertículos e a inflamação desproporcional da gordura pericólica sustentam diverticulite aguda no contexto clínico adequado.",
+        "key_findings": [
+            "Divertículos no cólon sigmoide",
+            "Espessamento focal da parede colônica",
+            "Densificação da gordura pericólica",
+        ],
+    },
+    "desafio-visual-074": {
+        "correct_option_id": "isquemia-mesenterica-aguda",
+        "diagnosis": "Isquemia mesentérica aguda com sofrimento intestinal",
+        "explanation": "Pneumatose intestinal e gás no sistema venoso portal são sinais de alarme para isquemia intestinal avançada. O conjunto exige avaliação cirúrgica urgente e correlação com a perfusão mesentérica.",
+        "key_findings": [
+            "Gás na parede intestinal",
+            "Gás venoso portal ou mesentérico",
+            "Alças com sinais de hipoperfusão",
+        ],
+    },
+    "desafio-visual-075": {
+        "correct_option_id": "colecistite-aguda",
+        "diagnosis": "Colecistite aguda calculosa",
+        "explanation": "Cálculo vesicular associado a espessamento parietal e líquido perivesicular forma um conjunto típico de colecistite aguda. O sinal de Murphy ultrassonográfico reforça o diagnóstico.",
+        "key_findings": [
+            "Cálculo com sombra acústica posterior",
+            "Parede vesicular espessada",
+            "Líquido perivesicular",
+        ],
+    },
+    "desafio-visual-076": {
+        "correct_option_id": "esteatose-hepatica",
+        "diagnosis": "Esteatose hepática",
+        "explanation": "O depósito difuso de gordura aumenta a ecogenicidade do fígado em relação ao córtex renal e atenua o feixe, dificultando a visualização das estruturas profundas e das paredes portais.",
+        "key_findings": [
+            "Ecogenicidade hepática difusamente aumentada",
+            "Atenuação posterior do feixe",
+            "Menor definição dos vasos intra-hepáticos",
+        ],
+    },
+    "desafio-visual-077": {
+        "correct_option_id": "esplenomegalia",
+        "diagnosis": "Esplenomegalia",
+        "explanation": "A imagem longitudinal demonstra aumento do eixo máximo do baço. A medida deve ser interpretada conforme técnica, biotipo e referência local, mas o aumento inequívoco caracteriza esplenomegalia.",
+        "key_findings": [
+            "Eixo longitudinal esplênico aumentado",
+            "Contorno esplênico preservado",
+            "Parênquima relativamente homogêneo",
+        ],
+    },
+    "desafio-visual-078": {
+        "correct_option_id": "calculo-coraliforme",
+        "diagnosis": "Cálculo renal coraliforme",
+        "explanation": "A opacidade mineral ramificada molda a pelve e os cálices renais, aspecto que define o cálculo coraliforme. Esses cálculos frequentemente se associam a infecção urinária por bactérias produtoras de urease.",
+        "key_findings": [
+            "Opacidade mineral em topografia renal",
+            "Formato ramificado",
+            "Ocupação da pelve e dos cálices",
+        ],
+    },
+    "desafio-visual-079": {
+        "correct_option_id": "tumor-urotelial-bexiga",
+        "diagnosis": "Tumor urotelial papilífero da bexiga",
+        "explanation": "A lesão exofítica de superfície papilífera projetada para a luz vesical é típica de neoplasia urotelial papilífera. A ressecção transuretral fornece diagnóstico histológico e estadiamento inicial.",
+        "key_findings": [
+            "Lesão exofítica intravesical",
+            "Superfície papilífera irregular",
+            "Projeção para a luz da bexiga",
+        ],
+    },
+    "desafio-visual-080": {
+        "correct_option_id": "torcao-testicular",
+        "diagnosis": "Torção testicular",
+        "explanation": "O testículo aumentado e hipoecoico com fluxo intratesticular ausente ou muito reduzido em comparação ao lado contralateral indica isquemia por torção do cordão espermático. É uma emergência cirúrgica.",
+        "key_findings": [
+            "Ausência ou redução unilateral do fluxo",
+            "Aumento do volume testicular",
+            "Heterogeneidade ou hipoecogenicidade do parênquima",
+        ],
+    },
+    "desafio-visual-081": {
+        "correct_option_id": "gravidez-ectopica",
+        "diagnosis": "Gravidez ectópica tubária",
+        "explanation": "A identificação de saco gestacional com vesícula vitelínica fora da cavidade uterina estabelece gestação ectópica. Massa anexial separada do ovário e líquido livre reforçam a suspeita.",
+        "key_findings": [
+            "Saco gestacional em topografia anexial",
+            "Vesícula vitelínica extrauterina",
+            "Cavidade endometrial sem saco gestacional",
+        ],
+    },
+    "desafio-visual-082": {
+        "correct_option_id": "placenta-previa",
+        "diagnosis": "Placenta prévia",
+        "explanation": "A placenta implantada no segmento uterino inferior recobre o orifício interno do colo. A ultrassonografia transvaginal, quando indicada e realizada adequadamente, define com maior precisão essa relação.",
+        "key_findings": [
+            "Placenta no segmento uterino inferior",
+            "Cobertura do orifício cervical interno",
+            "Relação placentária direta com o colo",
+        ],
+    },
+    "desafio-visual-083": {
+        "correct_option_id": "torcao-ovariana",
+        "diagnosis": "Torção ovariana",
+        "explanation": "O ovário aumentado e edemaciado com folículos deslocados para a periferia sugere torção. Fluxo venoso reduzido e pedículo torcido reforçam o diagnóstico, mas fluxo arterial preservado não o exclui.",
+        "key_findings": [
+            "Aumento unilateral do ovário",
+            "Folículos periféricos por edema estromal",
+            "Fluxo venoso reduzido ou pedículo torcido",
+        ],
+    },
+    "desafio-visual-084": {
+        "correct_option_id": "ulcera-gastrica",
+        "diagnosis": "Úlcera gástrica",
+        "explanation": "A cratera profunda com base fibrinosa e bordas definidas corresponde a uma úlcera gástrica. Úlceras gástricas geralmente exigem biópsia das bordas para excluir malignidade.",
+        "key_findings": [
+            "Cratera com perda de substância",
+            "Base fibrinosa clara",
+            "Bordas mucosas convergentes",
+        ],
+    },
+    "desafio-visual-085": {
+        "correct_option_id": "varizes-esofagicas",
+        "diagnosis": "Varizes esofágicas",
+        "explanation": "Cordões venosos submucosos dilatados e tortuosos no esôfago são varizes decorrentes de hipertensão portal. Marcas vermelhas longitudinais indicam maior risco de sangramento.",
+        "key_findings": [
+            "Cordões submucosos dilatados",
+            "Trajeto longitudinal e tortuoso",
+            "Marcas vermelhas sobre as varizes",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1053,5 +1203,80 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Microrao / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Plasmodium_falciparum_gametocyte.jpg",
+    ),
+    "desafio-visual-071": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-072": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-073": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-074": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-075": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-076": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-077": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-078": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-079": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-080": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-081": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-082": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-083": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-084": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
+    ),
+    "desafio-visual-085": (
+        "MedSync — ilustração educacional original",
+        "CC BY 4.0",
+        "https://github.com/Vieirinha10/medsync-frontend/blob/main/public/images/desafios/README.md",
     ),
 }
