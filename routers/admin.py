@@ -421,8 +421,7 @@ def financial_overview(
             continue
         payment_records.append(
             {
-                "pagamento_id": order.ultimo_pagamento_asaas_id
-                or f"pedido:{order.id}",
+                "pagamento_id": order.ultimo_pagamento_asaas_id or f"pedido:{order.id}",
                 "pedido_id": order.id,
                 "usuario_nome": user.nome,
                 "usuario_email": user.email,
@@ -564,9 +563,7 @@ def financial_overview(
         "pagamentos": payment_records[:200],
         "assinaturas": subscriptions[:200],
         "falhas": failures[:200],
-        "receita_mensal": [
-            {"mes": key, **monthly[key]} for key in monthly_keys
-        ],
+        "receita_mensal": [{"mes": key, **monthly[key]} for key in monthly_keys],
         "status_pedidos": dict(status_counts),
         "planos_ativos": dict(active_plans),
     }
@@ -781,4 +778,3 @@ def export_anonymized_report(
             "Content-Disposition": "attachment; filename=medsync-relatorio-anonimizado.csv"
         },
     )
-
