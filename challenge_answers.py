@@ -251,6 +251,156 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Angulação dorsal na incidência lateral",
         ],
     },
+    "desafio-visual-026": {
+        "correct_option_id": "flutter-atrial",
+        "diagnosis": "Flutter atrial",
+        "explanation": "O traçado mostra atividade atrial rápida e regular, com ondas F repetitivas em padrão serrilhado, especialmente nas derivações inferiores. A condução atrioventricular ocorre em proporção fixa, produzindo resposta ventricular regular.",
+        "key_findings": [
+            "Ondas F regulares em padrão serrilhado",
+            "Frequência atrial próxima de 300 batimentos por minuto",
+            "Condução atrioventricular em proporção fixa",
+        ],
+    },
+    "desafio-visual-027": {
+        "correct_option_id": "tv-monomorfica",
+        "diagnosis": "Taquicardia ventricular monomórfica",
+        "explanation": "A taquicardia é regular, rápida e formada por complexos QRS largos com morfologia uniforme. Esse padrão deve ser considerado taquicardia ventricular até prova em contrário, sobretudo em contexto de cardiopatia estrutural.",
+        "key_findings": [
+            "Taquicardia regular de complexos largos",
+            "Morfologia uniforme dos complexos QRS",
+            "Frequência ventricular elevada",
+        ],
+    },
+    "desafio-visual-028": {
+        "correct_option_id": "hipercalemia",
+        "diagnosis": "Hipercalemia",
+        "explanation": "As ondas T altas, estreitas e simétricas em múltiplas derivações são típicas da hipercalemia. Conforme a elevação do potássio progride, podem surgir prolongamento do PR, desaparecimento das ondas P e alargamento do QRS.",
+        "key_findings": [
+            "Ondas T altas e apiculadas",
+            "Alterações presentes em múltiplas derivações",
+            "Base estreita e aspecto simétrico das ondas T",
+        ],
+    },
+    "desafio-visual-029": {
+        "correct_option_id": "pericardite-aguda",
+        "diagnosis": "Pericardite aguda",
+        "explanation": "O supradesnivelamento do segmento ST é difuso e não se restringe a um território coronariano. A associação com depressão do segmento PR favorece pericardite aguda em vez de infarto transmural localizado.",
+        "key_findings": [
+            "Supradesnivelamento difuso e côncavo do segmento ST",
+            "Ausência de distribuição territorial coronariana",
+            "Depressão do segmento PR em derivações compatíveis",
+        ],
+    },
+    "desafio-visual-030": {
+        "correct_option_id": "wpw",
+        "diagnosis": "Síndrome de Wolff-Parkinson-White",
+        "explanation": "O intervalo PR curto, o início lentificado do QRS formando a onda delta e o alargamento secundário do complexo demonstram pré-excitação ventricular por uma via atrioventricular acessória.",
+        "key_findings": [
+            "Intervalo PR curto",
+            "Onda delta no início do complexo QRS",
+            "Complexo QRS alargado por pré-excitação",
+        ],
+    },
+    "desafio-visual-031": {
+        "correct_option_id": "cardiomegalia",
+        "diagnosis": "Cardiomegalia",
+        "explanation": "A silhueta cardíaca ocupa uma proporção aumentada da largura interna do tórax. Em radiografia frontal tecnicamente adequada, uma relação cardiotorácica aumentada sustenta cardiomegalia.",
+        "key_findings": [
+            "Aumento global da silhueta cardíaca",
+            "Relação cardiotorácica aumentada",
+            "Predomínio da opacidade no mediastino inferior",
+        ],
+    },
+    "desafio-visual-032": {
+        "correct_option_id": "enfisema",
+        "diagnosis": "Enfisema pulmonar",
+        "explanation": "A hipertransparência pulmonar bilateral, a redução relativa da trama vascular periférica e a retificação dos hemidiafragmas refletem hiperinsuflação, padrão típico do enfisema pulmonar.",
+        "key_findings": [
+            "Hipertransparência pulmonar bilateral",
+            "Retificação dos hemidiafragmas",
+            "Aumento dos volumes pulmonares",
+        ],
+    },
+    "desafio-visual-033": {
+        "correct_option_id": "atelectasia-direita",
+        "diagnosis": "Atelectasia do pulmão direito",
+        "explanation": "A opacificação do hemitórax direito vem acompanhada de sinais de perda de volume, como elevação do hemidiafragma e deslocamento de estruturas para o mesmo lado. Esses achados diferenciam atelectasia de um derrame volumoso, que tende a afastar o mediastino.",
+        "key_findings": [
+            "Opacidade no hemitórax direito",
+            "Perda de volume pulmonar",
+            "Deslocamento de estruturas para o lado afetado",
+        ],
+    },
+    "desafio-visual-034": {
+        "correct_option_id": "sarcoidose",
+        "diagnosis": "Sarcoidose pulmonar",
+        "explanation": "O aumento bilateral e relativamente simétrico dos hilos pulmonares representa adenopatia hilar, apresentação radiográfica clássica da sarcoidose. A avaliação definitiva requer correlação clínica e, quando indicada, confirmação histológica.",
+        "key_findings": [
+            "Aumento bilateral dos hilos pulmonares",
+            "Distribuição hilar relativamente simétrica",
+            "Ausência de padrão alveolar cardiogênico predominante",
+        ],
+    },
+    "desafio-visual-035": {
+        "correct_option_id": "embolia-pulmonar",
+        "diagnosis": "Embolia pulmonar em sela",
+        "explanation": "A angiotomografia demonstra material hipodenso como falha de enchimento no ponto de bifurcação do tronco pulmonar, estendendo-se para as artérias pulmonares principais. Esse aspecto caracteriza um êmbolo em sela.",
+        "key_findings": [
+            "Falha de enchimento intraluminal",
+            "Comprometimento da bifurcação do tronco pulmonar",
+            "Extensão para artérias pulmonares principais",
+        ],
+    },
+    "desafio-visual-036": {
+        "correct_option_id": "disseccao-aortica",
+        "diagnosis": "Dissecção aguda da aorta",
+        "explanation": "A angiotomografia mostra um flap íntimal separando a luz verdadeira da falsa luz. A identificação de duas luzes contrastadas dentro da aorta é o achado fundamental da dissecção.",
+        "key_findings": [
+            "Flap íntimal visível",
+            "Luz verdadeira e falsa luz",
+            "Comprometimento da aorta torácica",
+        ],
+    },
+    "desafio-visual-037": {
+        "correct_option_id": "derrame-pericardico",
+        "diagnosis": "Derrame pericárdico volumoso",
+        "explanation": "A coleção anecoica circunda o coração no espaço pericárdico. Quando volumosa, deve motivar avaliação dinâmica de colapso das câmaras direitas e da veia cava inferior para investigar fisiologia de tamponamento.",
+        "key_findings": [
+            "Coleção anecoica ao redor do coração",
+            "Separação entre o miocárdio e o pericárdio",
+            "Distribuição pericárdica ampla",
+        ],
+    },
+    "desafio-visual-038": {
+        "correct_option_id": "linhas-b",
+        "diagnosis": "Múltiplas linhas B pulmonares",
+        "explanation": "As linhas B são artefatos verticais hiperecogênicos que nascem na linha pleural, alcançam o fundo da imagem e apagam as linhas A. Quando numerosas, indicam aumento do conteúdo de líquido ou espessamento do interstício pulmonar.",
+        "key_findings": [
+            "Artefatos verticais originados na pleura",
+            "Extensão até o fundo da tela",
+            "Apagamento das linhas A durante sua passagem",
+        ],
+    },
+    "desafio-visual-039": {
+        "correct_option_id": "tvp",
+        "diagnosis": "Trombose venosa profunda",
+        "explanation": "A ultrassonografia mostra material ecogênico no interior da veia femoral comum. No exame dinâmico, a ausência de compressibilidade completa da veia confirma o principal critério ultrassonográfico de trombose venosa profunda.",
+        "key_findings": [
+            "Material intraluminal na veia femoral",
+            "Perda da compressibilidade venosa",
+            "Localização no sistema venoso profundo",
+        ],
+    },
+    "desafio-visual-040": {
+        "correct_option_id": "obstrutivo",
+        "diagnosis": "Distúrbio ventilatório obstrutivo",
+        "explanation": "A curva fluxo-volume apresenta redução dos fluxos expiratórios e concavidade acentuada do ramo expiratório. Esse formato é típico de obstrução ao fluxo aéreo, como ocorre na doença pulmonar obstrutiva crônica.",
+        "key_findings": [
+            "Concavidade do ramo expiratório",
+            "Redução do pico de fluxo expiratório",
+            "Fluxos expiratórios reduzidos ao longo da curva",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -378,5 +528,80 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Lucien Monfils / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Colles%27_Fracture_of_Radius.jpg",
+    ),
+    "desafio-visual-026": (
+        "Ksheka / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Atrial_flutter_with_4-1_AV_block.png",
+    ),
+    "desafio-visual-027": (
+        "Karthik Sheka, M.D. / Wikimedia Commons",
+        "CC BY-SA 2.5",
+        "https://commons.wikimedia.org/wiki/File:Electrocardiogram_of_Ventricular_Tachycardia.png",
+    ),
+    "desafio-visual-028": (
+        "Michael-Joseph F. Agbayani e Eddieson Gonzales / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Hyperkalemia_ECG.jpg",
+    ),
+    "desafio-visual-029": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Acute_pericarditis.jpg",
+    ),
+    "desafio-visual-030": (
+        "Ksheka / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Wolff-Parkinson-White_syndrome_12_lead_EKG.png",
+    ),
+    "desafio-visual-031": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Cardiomegally.PNG",
+    ),
+    "desafio-visual-032": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Emphysema2008.jpg",
+    ),
+    "desafio-visual-033": (
+        "Pabloes / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Atelectasia1.jpg",
+    ),
+    "desafio-visual-034": (
+        "Antoniusziekenhuis Nieuwegein / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:Pulmonary_sarcoidosis_in_a_50_year_old_male_patient,_X-ray_thorax_image,_2006.jpg",
+    ),
+    "desafio-visual-035": (
+        "Aung Myat e Arif Ahsan / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Pulmonary_embolism_CTPA.JPEG",
+    ),
+    "desafio-visual-036": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:TypeAdissection.png",
+    ),
+    "desafio-visual-037": (
+        "Jer5150 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Pericardial_effusion_with_tamponade_(cropped).gif",
+    ),
+    "desafio-visual-038": (
+        "Tinss / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:B_lines_on_a_lung_ultrasound_of_a_patient_with_fibrosis.jpg",
+    ),
+    "desafio-visual-039": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:DVTUS.PNG",
+    ),
+    "desafio-visual-040": (
+        "Evgenios Metaxas, MD, MSc / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:COPD.png",
     ),
 }
