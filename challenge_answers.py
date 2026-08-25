@@ -851,6 +851,156 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Marcas vermelhas sobre as varizes",
         ],
     },
+    "desafio-visual-086": {
+        "correct_option_id": "pneumonia-viral",
+        "diagnosis": "Pneumonia viral em lactente",
+        "explanation": "Os infiltrados bilaterais e a atelectasia do lobo superior direito, sem derrame ou pneumotórax, são compatíveis com pneumonia viral. Em lactentes, o contexto de febre, taquipneia e esforço respiratório orienta a interpretação.",
+        "key_findings": [
+            "Infiltrados pulmonares bilaterais",
+            "Atelectasia no lobo superior direito",
+            "Ausência de derrame pleural",
+        ],
+    },
+    "desafio-visual-087": {
+        "correct_option_id": "doenca-mao-pe-boca",
+        "diagnosis": "Doença mão-pé-boca",
+        "explanation": "Máculas, pápulas e pequenas vesículas nas palmas, associadas a lesões orais, formam o padrão clássico da doença mão-pé-boca, geralmente causada por enterovírus.",
+        "key_findings": [
+            "Lesões vesiculares nas palmas",
+            "Distribuição bilateral",
+            "Associação clínica com enantema oral",
+        ],
+    },
+    "desafio-visual-088": {
+        "correct_option_id": "invaginacao-intestinal",
+        "diagnosis": "Invaginação intestinal",
+        "explanation": "Os anéis concêntricos vistos no corte transversal formam o sinal em alvo, produzido pela alça intestinal invaginada e seu mesentério. Dor em cólicas, palidez e vômitos em criança reforçam o diagnóstico.",
+        "key_findings": [
+            "Sinal em alvo",
+            "Anéis concêntricos de parede intestinal",
+            "Massa intestinal arredondada ao ultrassom",
+        ],
+    },
+    "desafio-visual-089": {
+        "correct_option_id": "estenose-pilorica",
+        "diagnosis": "Estenose hipertrófica do piloro",
+        "explanation": "O canal pilórico alongado e a camada muscular espessada são típicos de estenose hipertrófica do piloro. O quadro clássico é de vômitos progressivos em jato, não biliosos, nas primeiras semanas de vida.",
+        "key_findings": [
+            "Canal pilórico alongado",
+            "Espessamento da musculatura pilórica",
+            "Falha da passagem do conteúdo gástrico",
+        ],
+    },
+    "desafio-visual-090": {
+        "correct_option_id": "anemia-ferropriva",
+        "diagnosis": "Anemia ferropriva",
+        "explanation": "A microcitose, a hipocromia e a variação de tamanho e forma das hemácias são características da deficiência de ferro. Ferritina reduzida e aumento da capacidade total de ligação do ferro confirmam o mecanismo.",
+        "key_findings": [
+            "Microcitose",
+            "Hipocromia com halo central amplo",
+            "Anisopoquilocitose",
+        ],
+    },
+    "desafio-visual-091": {
+        "correct_option_id": "doenca-falciforme",
+        "diagnosis": "Doença falciforme",
+        "explanation": "As hemácias alongadas e curvas em forma de foice são drepanócitos, produzidos pela polimerização da hemoglobina S em condições de desoxigenação.",
+        "key_findings": [
+            "Drepanócitos",
+            "Hemácias alongadas e curvas",
+            "Anisopoiquilocitose",
+        ],
+    },
+    "desafio-visual-092": {
+        "correct_option_id": "leucemia-promielocitica-aguda",
+        "diagnosis": "Leucemia promielocítica aguda",
+        "explanation": "A presença de promielócitos anormais no sangue periférico deve levantar suspeita imediata de leucemia promielocítica aguda. É uma emergência hematológica pelo alto risco de coagulação intravascular disseminada e exige confirmação rápida e início precoce de ATRA quando clinicamente indicada.",
+        "key_findings": [
+            "Promielócitos anormais circulantes",
+            "Núcleos irregulares",
+            "Contexto de emergência hemorrágica",
+        ],
+    },
+    "desafio-visual-093": {
+        "correct_option_id": "carcinoma-papilifero-tireoide",
+        "diagnosis": "Carcinoma papilífero da tireoide",
+        "explanation": "Agrupamentos celulares papilíferos, sobreposição nuclear e alterações nucleares características favorecem carcinoma papilífero da tireoide na citologia aspirativa.",
+        "key_findings": [
+            "Agrupamentos papilíferos",
+            "Sobreposição e aumento nuclear",
+            "Arquitetura celular tridimensional",
+        ],
+    },
+    "desafio-visual-094": {
+        "correct_option_id": "adenocarcinoma-colorretal",
+        "diagnosis": "Adenocarcinoma colorretal invasivo",
+        "explanation": "Glândulas neoplásicas irregulares infiltrando estroma desmoplásico demonstram invasão e sustentam o diagnóstico de adenocarcinoma colorretal.",
+        "key_findings": [
+            "Glândulas atípicas irregulares",
+            "Invasão do estroma",
+            "Reação desmoplásica",
+        ],
+    },
+    "desafio-visual-095": {
+        "correct_option_id": "linfoma-hodgkin-classico",
+        "diagnosis": "Linfoma de Hodgkin clássico",
+        "explanation": "A célula gigante binucleada com nucléolos eosinofílicos proeminentes tem o aspecto de olhos de coruja da célula de Reed–Sternberg, marcador morfológico clássico do linfoma de Hodgkin.",
+        "key_findings": [
+            "Célula de Reed–Sternberg",
+            "Núcleos bilobados ou binucleados",
+            "Nucléolos grandes em fundo inflamatório",
+        ],
+    },
+    "desafio-visual-096": {
+        "correct_option_id": "escabiose",
+        "diagnosis": "Escabiose",
+        "explanation": "O sulco fino e sinuoso com pequena pápula na extremidade corresponde ao trajeto do Sarcoptes scabiei. Prurido noturno e acometimento de contatos próximos reforçam a suspeita.",
+        "key_findings": [
+            "Sulco cutâneo serpiginoso curto",
+            "Pápula na extremidade do trajeto",
+            "Escoriações por prurido",
+        ],
+    },
+    "desafio-visual-097": {
+        "correct_option_id": "herpes-zoster",
+        "diagnosis": "Herpes-zóster",
+        "explanation": "Vesículas agrupadas sobre base eritematosa, dolorosas e limitadas a uma faixa unilateral, caracterizam a reativação do vírus varicela-zóster em um dermátomo.",
+        "key_findings": [
+            "Vesículas agrupadas",
+            "Base eritematosa",
+            "Distribuição unilateral localizada",
+        ],
+    },
+    "desafio-visual-098": {
+        "correct_option_id": "doenca-graves",
+        "diagnosis": "Orbitopatia da doença de Graves",
+        "explanation": "Proptose bilateral e retração palpebral, com exposição da esclera, compõem o padrão clássico da orbitopatia associada à doença de Graves.",
+        "key_findings": [
+            "Proptose bilateral",
+            "Retração palpebral",
+            "Exposição escleral aumentada",
+        ],
+    },
+    "desafio-visual-099": {
+        "correct_option_id": "acantose-nigricans",
+        "diagnosis": "Acantose nigricans",
+        "explanation": "A placa hiperpigmentada, espessada e aveludada em área intertriginosa é acantose nigricans. Em pessoas jovens e com excesso de peso, é um marcador clínico frequente de hiperinsulinemia e resistência insulínica.",
+        "key_findings": [
+            "Hiperpigmentação em dobra",
+            "Espessamento aveludado",
+            "Localização axilar",
+        ],
+    },
+    "desafio-visual-100": {
+        "correct_option_id": "etilenoglicol",
+        "diagnosis": "Intoxicação por etilenoglicol",
+        "explanation": "Cristais urinários de oxalato de cálcio em forma de envelope, associados a acidose metabólica com hiato aniônico e lesão renal aguda, sugerem intoxicação por etilenoglicol.",
+        "key_findings": [
+            "Cristais de oxalato de cálcio",
+            "Formato de envelope",
+            "Associação com acidose e lesão renal",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1278,5 +1428,80 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Jeremias / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Bleeding_esophageal_varices.png",
+    ),
+    "desafio-visual-086": (
+        "Alma Jula et al. / Wikimedia Commons",
+        "Public domain",
+        "https://commons.wikimedia.org/wiki/File:Human_bocavirus_1_pneumonia.jpg",
+    ),
+    "desafio-visual-087": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Characteristic_rash_of_hand,_foot,_and_mouth_disease,_on_human_hands.jpg",
+    ),
+    "desafio-visual-088": (
+        "Cerevisae / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Ultrasound_of_target_sign_in_intussusception_of_the_right_bowel.png",
+    ),
+    "desafio-visual-089": (
+        "Laughlin Dawes / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:PyloricStenosisUS.jpg",
+    ),
+    "desafio-visual-090": (
+        "Ed Uthman, MD / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Iron-deficiency_Anemia,_Peripheral_Blood_Smear_(4422704616).jpg",
+    ),
+    "desafio-visual-091": (
+        "Viv Caruna / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Sickle-cell_disease.jpg",
+    ),
+    "desafio-visual-092": (
+        "Mikael Häggström, M.D. / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:Peripheral_blood_smear_of_acute_promyelocytic_leukemia,_hypogranular_variant,_source_image_(1).jpg",
+    ),
+    "desafio-visual-093": (
+        "Ed Uthman, MD / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Papillary_Thyroid_Carcinoma,_FNA,_Pap_stain_(10190009594).jpg",
+    ),
+    "desafio-visual-094": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Cecal_adenocarcinoma.jpg",
+    ),
+    "desafio-visual-095": (
+        "Ed Uthman, MD / Wikimedia Commons",
+        "CC BY-SA 2.0",
+        "https://commons.wikimedia.org/wiki/File:Hodgkin_Disease,_Reed-Sternberg_Cell.jpg",
+    ),
+    "desafio-visual-096": (
+        "Michael Geary / Wikimedia Commons",
+        "Public domain",
+        "https://commons.wikimedia.org/wiki/File:Scabies-burrow.jpg",
+    ),
+    "desafio-visual-097": (
+        "Masryyy / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Herps_zoster_new_photo.jpg",
+    ),
+    "desafio-visual-098": (
+        "Jonathan Trobe, M.D., University of Michigan Kellogg Eye Center / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Proptosis_and_lid_retraction_from_Graves%27_Disease.jpg",
+    ),
+    "desafio-visual-099": (
+        "Madhero88 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Acanthosis-nigricans4.jpg",
+    ),
+    "desafio-visual-100": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Calcium_oxalate_crystals_in_Urine_Microscopy.jpg",
     ),
 }
