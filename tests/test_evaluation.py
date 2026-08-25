@@ -59,9 +59,7 @@ def test_conduct_matching_accepts_clinical_language_variants_without_losing_safe
         ),
     )
 
-    score, _, context = evaluate_objective(
-        _case_seven(), submission, PILOT_RUBRICS[7]
-    )
+    score, _, context = evaluate_objective(_case_seven(), submission, PILOT_RUBRICS[7])
 
     assert score.conduta == 24
     assert context["seguranca_ausente"] == []
@@ -78,9 +76,7 @@ def test_negated_interventions_do_not_earn_conduct_or_safety_credit():
         ),
     )
 
-    score, _, context = evaluate_objective(
-        _case_seven(), submission, PILOT_RUBRICS[7]
-    )
+    score, _, context = evaluate_objective(_case_seven(), submission, PILOT_RUBRICS[7])
 
     assert score.conduta == 6
     assert len(context["seguranca_ausente"]) == 2
