@@ -35,9 +35,7 @@ router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 CURRENT_TERMS_VERSION = "2026-08-11"
 CURRENT_PRIVACY_VERSION = "2026-08-11"
 EMAIL_VERIFICATION_TTL_HOURS = int(os.getenv("EMAIL_VERIFICATION_TTL_HOURS", "24"))
-EMAIL_RESEND_COOLDOWN_SECONDS = int(
-    os.getenv("EMAIL_RESEND_COOLDOWN_SECONDS", "60")
-)
+EMAIL_RESEND_COOLDOWN_SECONDS = int(os.getenv("EMAIL_RESEND_COOLDOWN_SECONDS", "60"))
 GENERIC_RESEND_MESSAGE = (
     "Se houver uma conta pendente para este e-mail, enviaremos uma nova confirmação."
 )
