@@ -19,7 +19,7 @@ from evaluation import (
 )
 from models import AIUsageRecord, Progresso, SimulationRequest, User
 from routers.error_notebook import register_clinical_result
-from security import get_current_user
+from security import get_current_user, require_premium_content
 from services.activity import track_activity
 from services.clinical_content import get_published_case, serialize_case
 
@@ -101,6 +101,7 @@ def finalizar_simulacao(
     case_record = get_published_case(db, caso_id)
     if case_record is None:
         raise HTTPException(status_code=404, detail="Caso não encontrado.")
+    require_premium_content(current_user, is_premium=case_record.is_premium)
     if case_record.rubrica is None or case_record.rubrica.status != "revisada":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -305,6 +306,7 @@ def perguntar_sobre_resultado(
     case_record = get_published_case(db, progress.id_caso)
     if case_record is None or case_record.rubrica is None:
         raise HTTPException(status_code=404, detail="Caso ou rubrica não encontrado.")
+    require_premium_content(current_user, is_premium=case_record.is_premium)
     case = serialize_case(case_record)
     submission = {
         key: value

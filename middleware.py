@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import re
@@ -27,11 +28,25 @@ RATE_LIMIT_RULES = (
     RateLimitRule("register", "POST", re.compile(r"^/usuarios/registrar$"), 5, 300),
     RateLimitRule("login", "POST", re.compile(r"^/usuarios/login$"), 10, 60),
     RateLimitRule(
+        "resend-verification",
+        "POST",
+        re.compile(r"^/usuarios/reenviar-verificacao$"),
+        5,
+        300,
+    ),
+    RateLimitRule(
         "simulation",
         "POST",
         re.compile(r"^/simulacoes/\d+/finalizar$"),
+        6,
+        600,
+    ),
+    RateLimitRule(
+        "simulation-question",
+        "POST",
+        re.compile(r"^/simulacoes/resultados/\d+/perguntar$"),
         20,
-        60,
+        600,
     ),
     RateLimitRule(
         "transparent-payment",
@@ -40,7 +55,23 @@ RATE_LIMIT_RULES = (
         5,
         300,
     ),
+    RateLimitRule(
+        "hosted-checkout",
+        "POST",
+        re.compile(r"^/pagamentos/checkout$"),
+        5,
+        300,
+    ),
+    RateLimitRule(
+        "question-explanation",
+        "POST",
+        re.compile(r"^/questoes/\d+/explicacao$"),
+        10,
+        600,
+    ),
 )
+
+MAX_REQUEST_BODY_BYTES = 1_000_000
 
 
 class SecurityAndObservabilityMiddleware(BaseHTTPMiddleware):
@@ -49,6 +80,16 @@ class SecurityAndObservabilityMiddleware(BaseHTTPMiddleware):
         request: Request,
         call_next: RequestResponseEndpoint,
     ) -> Response:
+        content_length = request.headers.get("content-length")
+        if content_length and content_length.isdigit():
+            if int(content_length) > MAX_REQUEST_BODY_BYTES:
+                return JSONResponse(
+                    status_code=413,
+                    content={
+                        "detail": "Corpo da solicitação excede o limite permitido."
+                    },
+                )
+
         request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
         request.state.request_id = request_id
         started_at = time.perf_counter()
@@ -62,6 +103,18 @@ class SecurityAndObservabilityMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = (
             "camera=(), microphone=(), geolocation=()"
         )
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+        )
+        forwarded_proto = request.headers.get("x-forwarded-proto", "")
+        if request.url.scheme == "https" or forwarded_proto == "https":
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=63072000; includeSubDomains; preload"
+            )
+        if request.url.path.startswith(
+            ("/usuarios", "/admin", "/pagamentos", "/simulacoes")
+        ):
+            response.headers["Cache-Control"] = "no-store"
 
         logger.info(
             json.dumps(
@@ -89,9 +142,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     @staticmethod
     def _client_key(request: Request) -> str:
         forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-        if forwarded:
-            return forwarded
-        return request.client.host if request.client else "unknown"
+        client_ip = forwarded or (request.client.host if request.client else "unknown")
+        authorization = request.headers.get("authorization", "")
+        if authorization.lower().startswith("bearer "):
+            token_fingerprint = hashlib.sha256(
+                authorization.encode("utf-8")
+            ).hexdigest()[:16]
+            return f"{client_ip}:{token_fingerprint}"
+        return client_ip
 
     async def dispatch(
         self,

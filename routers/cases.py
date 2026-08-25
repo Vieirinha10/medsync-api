@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import User
 from schemas import CasoClinico, CasoClinicoDetalhes
-from security import get_current_user
+from security import get_current_user, require_premium_content
 from services.activity import track_activity
 from services.clinical_content import (
     get_published_case,
@@ -34,6 +34,7 @@ def obter_caso_clinico(
     case = get_published_case(db, caso_id)
     if case is None:
         raise HTTPException(status_code=404, detail="Caso não encontrado")
+    require_premium_content(current_user, is_premium=case.is_premium)
     track_activity(db, current_user.id, "visualizacao", "caso_clinico", caso_id)
     db.commit()
     return serialize_case(case)

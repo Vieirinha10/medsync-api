@@ -10,14 +10,17 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
+from settings import is_admin_email
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if ENVIRONMENT == "production" and not JWT_SECRET_KEY:
     raise RuntimeError("JWT_SECRET_KEY é obrigatória em produção.")
+if ENVIRONMENT == "production" and len(JWT_SECRET_KEY or "") < 32:
+    raise RuntimeError("JWT_SECRET_KEY deve ter pelo menos 32 caracteres em produção.")
 JWT_SECRET_KEY = JWT_SECRET_KEY or "medsync-local-development-only-32-chars"
 JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -63,3 +66,23 @@ def get_current_user(
     if user is None:
         raise unauthorized
     return user
+
+
+def has_active_premium(user: User) -> bool:
+    if is_admin_email(user.email):
+        return True
+    entitlement = user.entitlement
+    if entitlement is None or entitlement.status != "ativo":
+        return False
+    expiry = entitlement.valido_ate
+    if expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=UTC)
+    return expiry > datetime.now(UTC)
+
+
+def require_premium_content(user: User, *, is_premium: bool) -> None:
+    if is_premium and not has_active_premium(user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Este conteúdo requer uma assinatura Premium ativa.",
+        )
