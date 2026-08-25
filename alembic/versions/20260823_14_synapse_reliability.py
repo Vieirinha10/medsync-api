@@ -26,7 +26,9 @@ def upgrade() -> None:
     with op.batch_alter_table("users") as batch_op:
         if "email_verified_at" not in user_columns:
             batch_op.add_column(
-                sa.Column("email_verified_at", sa.DateTime(timezone=True), nullable=True)
+                sa.Column(
+                    "email_verified_at", sa.DateTime(timezone=True), nullable=True
+                )
             )
         if "email_verification_token_hash" not in user_columns:
             batch_op.add_column(
@@ -86,9 +88,7 @@ def upgrade() -> None:
             sa.Column("progresso_id", sa.Integer(), nullable=True),
             sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
             sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-            sa.ForeignKeyConstraint(
-                ["id_usuario"], ["users.id"], ondelete="CASCADE"
-            ),
+            sa.ForeignKeyConstraint(["id_usuario"], ["users.id"], ondelete="CASCADE"),
             sa.ForeignKeyConstraint(
                 ["progresso_id"], ["progressos.id"], ondelete="SET NULL"
             ),
@@ -123,9 +123,7 @@ def upgrade() -> None:
             sa.Column("custo_estimado_usd", sa.Float(), nullable=True),
             sa.Column("response_id", sa.String(length=120), nullable=True),
             sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-            sa.ForeignKeyConstraint(
-                ["id_usuario"], ["users.id"], ondelete="CASCADE"
-            ),
+            sa.ForeignKeyConstraint(["id_usuario"], ["users.id"], ondelete="CASCADE"),
             sa.ForeignKeyConstraint(
                 ["progresso_id"], ["progressos.id"], ondelete="SET NULL"
             ),

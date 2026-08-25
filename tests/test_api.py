@@ -51,7 +51,7 @@ client = TestClient(main.app)
 
 
 def test_builtin_visual_challenge_catalog_is_complete():
-    expected_ids = {f"desafio-visual-{index:03d}" for index in range(1, 26)}
+    expected_ids = {f"desafio-visual-{index:03d}" for index in range(1, 41)}
 
     assert set(BUILTIN_CHALLENGE_ANSWERS) == expected_ids
     assert set(BUILTIN_CHALLENGE_SOURCES) == expected_ids
@@ -1638,9 +1638,7 @@ def test_fourth_feedback_expansion_batch_is_structured_and_clinically_corrected(
 
     locked_in = client.get("/casos-clinicos/20", headers=headers)
     assert locked_in.status_code == 200
-    locked_exams = {
-        exam["id"]: exam for exam in locked_in.json()["exames_disponiveis"]
-    }
+    locked_exams = {exam["id"]: exam for exam in locked_in.json()["exames_disponiveis"]}
     assert locked_exams["angio_tc_basilar"]["correto"] is True
     assert locked_exams["puncao_lombar"]["correto"] is False
 
@@ -1660,9 +1658,7 @@ def test_fourth_feedback_expansion_batch_is_structured_and_clinically_corrected(
 
     status = client.get("/casos-clinicos/25", headers=headers)
     assert status.status_code == 200
-    status_exams = {
-        exam["id"]: exam for exam in status.json()["exames_disponiveis"]
-    }
+    status_exams = {exam["id"]: exam for exam in status.json()["exames_disponiveis"]}
     assert status_exams["glicemia_capilar"]["correto"] is True
     assert "sem atrasar" in status_exams["eeg"]["resultado"].lower()
 
@@ -1799,32 +1795,25 @@ def test_fifth_feedback_expansion_batch_is_structured_and_clinically_corrected()
             assert rubric.definicao["fontes_clinicas"]
 
     stroke = client.get("/casos-clinicos/26", headers=headers)
-    stroke_exams = {
-        exam["id"]: exam for exam in stroke.json()["exames_disponiveis"]
-    }
+    stroke_exams = {exam["id"]: exam for exam in stroke.json()["exames_disponiveis"]}
     assert stroke_exams["angio_tc"]["correto"] is True
     assert "sem hemorragia" in stroke_exams["tc_cranio"]["resultado"].lower()
 
     chagas = client.get("/casos-clinicos/27", headers=headers)
-    chagas_exams = {
-        exam["id"]: exam for exam in chagas.json()["exames_disponiveis"]
-    }
+    chagas_exams = {exam["id"]: exam for exam in chagas.json()["exames_disponiveis"]}
     assert chagas_exams["avaliacao_nutricional"]["correto"] is True
     assert "não diagnostica" in chagas_exams["albumina"]["resultado"].lower()
 
     celiac = client.get("/casos-clinicos/28", headers=headers)
-    celiac_exams = {
-        exam["id"]: exam for exam in celiac.json()["exames_disponiveis"]
-    }
+    celiac_exams = {exam["id"]: exam for exam in celiac.json()["exames_disponiveis"]}
     assert celiac_exams["iga_total"]["correto"] is True
-    assert "não dispensa biópsia" in celiac_exams["ema_segunda_amostra"][
-        "resultado"
-    ].lower()
+    assert (
+        "não dispensa biópsia"
+        in celiac_exams["ema_segunda_amostra"]["resultado"].lower()
+    )
 
     scarlet = client.get("/casos-clinicos/29", headers=headers)
-    scarlet_exams = {
-        exam["id"]: exam for exam in scarlet.json()["exames_disponiveis"]
-    }
+    scarlet_exams = {exam["id"]: exam for exam in scarlet.json()["exames_disponiveis"]}
     assert scarlet_exams["avaliacao_exantema"]["correto"] is True
     assert scarlet_exams["cultura_orofaringe"]["correto"] is False
 
@@ -1833,9 +1822,7 @@ def test_fifth_feedback_expansion_batch_is_structured_and_clinically_corrected()
         exam["id"]: exam for exam in rheumatic.json()["exames_disponiveis"]
     }
     assert rheumatic_exams["ecg"]["correto"] is True
-    assert "isoladamente não confirma" in rheumatic_exams["aslo"][
-        "resultado"
-    ].lower()
+    assert "isoladamente não confirma" in rheumatic_exams["aslo"]["resultado"].lower()
 
 
 def test_fifth_feedback_expansion_batch_generates_complete_safe_feedback():
@@ -1969,34 +1956,27 @@ def test_final_feedback_batch_is_structured_and_clinically_corrected():
             assert rubric.definicao["fontes_clinicas"]
 
     infant = client.get("/casos-clinicos/31", headers=headers)
-    infant_exams = {
-        exam["id"]: exam for exam in infant.json()["exames_disponiveis"]
-    }
+    infant_exams = {exam["id"]: exam for exam in infant.json()["exames_disponiveis"]}
     assert infant_exams["inventario_osseo"]["correto"] is True
-    assert "não determina isoladamente" in infant_exams["fundo_olho"][
-        "resultado"
-    ].lower()
+    assert (
+        "não determina isoladamente" in infant_exams["fundo_olho"]["resultado"].lower()
+    )
 
     autism = client.get("/casos-clinicos/32", headers=headers)
-    autism_exams = {
-        exam["id"]: exam for exam in autism.json()["exames_disponiveis"]
-    }
+    autism_exams = {exam["id"]: exam for exam in autism.json()["exames_disponiveis"]}
     assert autism_exams["avaliacao_auditiva"]["correto"] is True
-    assert "não equivale a diagnóstico" in autism_exams["mchat"][
-        "resultado"
-    ].lower()
+    assert "não equivale a diagnóstico" in autism_exams["mchat"]["resultado"].lower()
 
     tia = client.get("/casos-clinicos/34", headers=headers)
     tia_exams = {exam["id"]: exam for exam in tia.json()["exames_disponiveis"]}
     assert tia_exams["ecg_monitorizacao"]["correto"] is True
-    assert "não provam isoladamente" in tia_exams["eco_transesofagico"][
-        "resultado"
-    ].lower()
+    assert (
+        "não provam isoladamente"
+        in tia_exams["eco_transesofagico"]["resultado"].lower()
+    )
 
     abuse = client.get("/casos-clinicos/35", headers=headers)
-    abuse_exams = {
-        exam["id"]: exam for exam in abuse.json()["exames_disponiveis"]
-    }
+    abuse_exams = {exam["id"]: exam for exam in abuse.json()["exames_disponiveis"]}
     assert "série esquelética" in abuse_exams["rx_corpo"]["nome"].lower()
 
     emergency = client.get("/casos-clinicos/37", headers=headers)

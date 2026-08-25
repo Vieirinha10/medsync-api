@@ -73,22 +73,48 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             {
                 "nome": "Ativar protocolo de AVC e estabilizar",
                 "pontos": 8,
-                "termos": ["protocolo de avc", "código avc", "codigo avc", "via aérea", "via aerea", "glicemia"],
+                "termos": [
+                    "protocolo de avc",
+                    "código avc",
+                    "codigo avc",
+                    "via aérea",
+                    "via aerea",
+                    "glicemia",
+                ],
             },
             {
                 "nome": "Avaliar trombólise intravenosa",
                 "pontos": 7,
-                "termos": ["trombólise", "trombolise", "alteplase", "tenecteplase", "janela terapêutica", "janela terapeutica"],
+                "termos": [
+                    "trombólise",
+                    "trombolise",
+                    "alteplase",
+                    "tenecteplase",
+                    "janela terapêutica",
+                    "janela terapeutica",
+                ],
             },
             {
                 "nome": "Avaliar terapia endovascular",
                 "pontos": 7,
-                "termos": ["trombectomia", "tratamento endovascular", "neurorradiologia", "centro de avc"],
+                "termos": [
+                    "trombectomia",
+                    "tratamento endovascular",
+                    "neurorradiologia",
+                    "centro de avc",
+                ],
             },
             {
                 "nome": "Prevenir complicações e recorrência",
                 "pontos": 8,
-                "termos": ["avaliação da deglutição", "avaliacao da degluticao", "antiagregante", "estatina", "tratar convulsão", "tratar convulsao"],
+                "termos": [
+                    "avaliação da deglutição",
+                    "avaliacao da degluticao",
+                    "antiagregante",
+                    "estatina",
+                    "tratar convulsão",
+                    "tratar convulsao",
+                ],
             },
         ],
         "conduta_referencia": (
@@ -99,16 +125,32 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         "feedback_hipotese_parcial": "Você reconheceu AVC, mas faltou localizar a circulação posterior e separar o déficit vascular da crise epiléptica associada.",
         "feedback_hipotese_incorreta": "Déficit focal visual e sensitivo-motor persistente em paciente vascular deve ser tratado como AVC agudo, mesmo com convulsão na apresentação.",
         "feedback_seguranca": "Convulsão não exclui AVC. Não aguarde RM ou exames laboratoriais completos para discutir reperfusão após TC e angioTC.",
-        "objetivos_aprendizagem": ["Reconhecer AVC posterior", "Selecionar imagem de reperfusão", "Manejar convulsão sem perder a janela terapêutica"],
+        "objetivos_aprendizagem": [
+            "Reconhecer AVC posterior",
+            "Selecionar imagem de reperfusão",
+            "Manejar convulsão sem perder a janela terapêutica",
+        ],
         "criterios_seguranca": [
             {
                 "nome": "Não atrasar reperfusão",
-                "termos": ["trombólise", "trombolise", "trombectomia", "tratamento endovascular"],
+                "termos": [
+                    "trombólise",
+                    "trombolise",
+                    "trombectomia",
+                    "tratamento endovascular",
+                ],
                 "feedback_omissao": "Atraso reduz a chance de recuperação do tecido cerebral ainda viável.",
             },
             {
                 "nome": "Proteger via aérea e deglutição",
-                "termos": ["via aérea", "via aerea", "avaliação da deglutição", "avaliacao da degluticao", "aspiração", "aspiracao"],
+                "termos": [
+                    "via aérea",
+                    "via aerea",
+                    "avaliação da deglutição",
+                    "avaliacao da degluticao",
+                    "aspiração",
+                    "aspiracao",
+                ],
                 "feedback_omissao": "Convulsão e AVC aumentam o risco de broncoaspiração e insuficiência respiratória.",
             },
         ],
@@ -122,7 +164,11 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         ),
         "reacao_paciente_referencia": "Monitorar NIHSS, consciência, oxigenação, deglutição, pressão e recorrência de crises.",
         "desfecho_referencia": "O prognóstico depende da rapidez da reperfusão e da prevenção de complicações neurológicas e respiratórias.",
-        "temas_estudo": ["AVC de circulação posterior", "Trombólise e trombectomia", "Crise epiléptica no AVC"],
+        "temas_estudo": [
+            "AVC de circulação posterior",
+            "Trombólise e trombectomia",
+            "Crise epiléptica no AVC",
+        ],
         "fontes_clinicas": [STROKE_SOURCE],
     },
     27: {
@@ -135,8 +181,20 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "megaesôfago e megacólon chagásicos",
             "megaesofago e megacolon chagasicos",
         ],
-        "diagnostico_parcial": ["megaesôfago chagásico", "megaesofago chagasico", "megacólon chagásico", "megacolon chagasico", "desnutrição", "desnutricao"],
-        "exames_essenciais": ["avaliacao_nutricional", "esofagograma", "avaliacao_degluticao", "laboratorio_refeeding"],
+        "diagnostico_parcial": [
+            "megaesôfago chagásico",
+            "megaesofago chagasico",
+            "megacólon chagásico",
+            "megacolon chagasico",
+            "desnutrição",
+            "desnutricao",
+        ],
+        "exames_essenciais": [
+            "avaliacao_nutricional",
+            "esofagograma",
+            "avaliacao_degluticao",
+            "laboratorio_refeeding",
+        ],
         "exames_opcionais": ["endoscopia", "enema_opaco", "albumina"],
         "exames_desnecessarios": [],
         "justificativa_exames": {
@@ -152,22 +210,53 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             {
                 "nome": "Estabilizar desnutrição e risco de realimentação",
                 "pontos": 8,
-                "termos": ["realimentação", "realimentacao", "tiamina", "fósforo", "fosforo", "eletrólitos", "eletrolitos"],
+                "termos": [
+                    "realimentação",
+                    "realimentacao",
+                    "tiamina",
+                    "fósforo",
+                    "fosforo",
+                    "eletrólitos",
+                    "eletrolitos",
+                ],
             },
             {
                 "nome": "Adaptar alimentação e proteger de aspiração",
                 "pontos": 7,
-                "termos": ["consistência", "consistencia", "pequenas refeições", "pequenas refeicoes", "fonoaudiologia", "aspiração", "aspiracao"],
+                "termos": [
+                    "consistência",
+                    "consistencia",
+                    "pequenas refeições",
+                    "pequenas refeicoes",
+                    "fonoaudiologia",
+                    "aspiração",
+                    "aspiracao",
+                ],
             },
             {
                 "nome": "Tratar megaesôfago e megacólon",
                 "pontos": 8,
-                "termos": ["gastroenterologia", "dilatação", "dilatacao", "miotomia", "laxativo", "megacólon", "megacolon"],
+                "termos": [
+                    "gastroenterologia",
+                    "dilatação",
+                    "dilatacao",
+                    "miotomia",
+                    "laxativo",
+                    "megacólon",
+                    "megacolon",
+                ],
             },
             {
                 "nome": "Planejar suporte nutricional e seguimento",
                 "pontos": 7,
-                "termos": ["nutricionista", "suplementação", "suplementacao", "nutrição enteral", "nutricao enteral", "peso semanal"],
+                "termos": [
+                    "nutricionista",
+                    "suplementação",
+                    "suplementacao",
+                    "nutrição enteral",
+                    "nutricao enteral",
+                    "peso semanal",
+                ],
             },
         ],
         "conduta_referencia": (
@@ -178,16 +267,32 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         "feedback_hipotese_parcial": "Você reconheceu desnutrição ou um dos megas, mas faltou integrar disfagia, vômitos e constipação à forma digestiva chagásica combinada.",
         "feedback_hipotese_incorreta": "Na doença de Chagas crônica, disfagia e regurgitação sugerem megaesôfago, enquanto constipação e distensão sugerem megacólon; a perda ponderal indica complicação nutricional grave.",
         "feedback_seguranca": "Não use albumina como diagnóstico isolado de desnutrição. Reintrodução rápida de calorias em paciente caquético pode causar síndrome de realimentação.",
-        "objetivos_aprendizagem": ["Reconhecer a forma digestiva chagásica", "Avaliar desnutrição sem depender de albumina", "Prevenir aspiração e realimentação inadequada"],
+        "objetivos_aprendizagem": [
+            "Reconhecer a forma digestiva chagásica",
+            "Avaliar desnutrição sem depender de albumina",
+            "Prevenir aspiração e realimentação inadequada",
+        ],
         "criterios_seguranca": [
             {
                 "nome": "Prevenir síndrome de realimentação",
-                "termos": ["realimentação", "realimentacao", "tiamina", "fósforo", "fosforo"],
+                "termos": [
+                    "realimentação",
+                    "realimentacao",
+                    "tiamina",
+                    "fósforo",
+                    "fosforo",
+                ],
                 "feedback_omissao": "Realimentação rápida pode provocar hipofosfatemia, arritmia, insuficiência respiratória e morte.",
             },
             {
                 "nome": "Avaliar deglutição e aspiração",
-                "termos": ["fonoaudiologia", "aspiração", "aspiracao", "consistência", "consistencia"],
+                "termos": [
+                    "fonoaudiologia",
+                    "aspiração",
+                    "aspiracao",
+                    "consistência",
+                    "consistencia",
+                ],
                 "feedback_omissao": "Megaesôfago avançado aumenta risco de regurgitação, pneumonia aspirativa e impossibilidade de alimentação segura.",
             },
         ],
@@ -201,16 +306,40 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         ),
         "reacao_paciente_referencia": "Monitorar ingestão, peso, força, hidratação, fósforo, magnésio, potássio, evacuações e sinais de aspiração.",
         "desfecho_referencia": "Recuperação nutricional segura depende do tratamento conjunto do megaesôfago e do megacólon.",
-        "temas_estudo": ["Forma digestiva da doença de Chagas", "Avaliação nutricional", "Síndrome de realimentação"],
+        "temas_estudo": [
+            "Forma digestiva da doença de Chagas",
+            "Avaliação nutricional",
+            "Síndrome de realimentação",
+        ],
         "fontes_clinicas": [
-            _source("2nd Brazilian Consensus on Chagas Disease", "Brazilian Society of Tropical Medicine and Ministry of Health", 2016, "https://www.scielo.br/j/rsbmt/a/mNgRbrGjpwwc9dSF73PdMHt"),
-            _source("The Use of Visceral Proteins as Nutrition Markers", "American Society for Parenteral and Enteral Nutrition", 2021, "https://aspenjournals.onlinelibrary.wiley.com/doi/10.1002/ncp.10588"),
+            _source(
+                "2nd Brazilian Consensus on Chagas Disease",
+                "Brazilian Society of Tropical Medicine and Ministry of Health",
+                2016,
+                "https://www.scielo.br/j/rsbmt/a/mNgRbrGjpwwc9dSF73PdMHt",
+            ),
+            _source(
+                "The Use of Visceral Proteins as Nutrition Markers",
+                "American Society for Parenteral and Enteral Nutrition",
+                2021,
+                "https://aspenjournals.onlinelibrary.wiley.com/doi/10.1002/ncp.10588",
+            ),
         ],
     },
     28: {
         "diagnostico_referencia": "Doença celíaca pediátrica com repercussão nutricional e anemia provável por deficiência de ferro.",
-        "diagnostico_termos": ["doença celíaca", "doenca celiaca", "enteropatia por glúten", "enteropatia por gluten"],
-        "diagnostico_parcial": ["síndrome de má absorção", "sindrome de ma absorcao", "intolerância ao glúten", "intolerancia ao gluten"],
+        "diagnostico_termos": [
+            "doença celíaca",
+            "doenca celiaca",
+            "enteropatia por glúten",
+            "enteropatia por gluten",
+        ],
+        "diagnostico_parcial": [
+            "síndrome de má absorção",
+            "sindrome de ma absorcao",
+            "intolerância ao glúten",
+            "intolerancia ao gluten",
+        ],
         "exames_essenciais": ["anti_ttg", "iga_total", "hemo_ferritina"],
         "exames_opcionais": ["ema_segunda_amostra", "biopsia_duodeno"],
         "exames_desnecessarios": [],
@@ -222,10 +351,53 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "biopsia_duodeno": "Biópsias de bulbo e duodeno distal são necessárias quando tTG-IgA é menor que 10 vezes o limite, IgA é deficiente ou há discordância.",
         },
         "conduta_criterios": [
-            {"nome": "Manter glúten até confirmar diagnóstico", "pontos": 7, "termos": ["manter glúten", "manter gluten", "não retirar glúten", "nao retirar gluten", "antes da biópsia", "antes da biopsia"]},
-            {"nome": "Confirmar pelo algoritmo pediátrico", "pontos": 8, "termos": ["gastroenterologia pediátrica", "gastroenterologia pediatrica", "ema", "10 vezes", "biópsia duodenal", "biopsia duodenal"]},
-            {"nome": "Iniciar dieta sem glúten após confirmação", "pontos": 8, "termos": ["dieta sem glúten", "dieta sem gluten", "contaminação cruzada", "contaminacao cruzada", "nutricionista"]},
-            {"nome": "Corrigir deficiências e acompanhar crescimento", "pontos": 7, "termos": ["ferro", "ferritina", "crescimento", "peso", "vitamina d", "vacinação"]},
+            {
+                "nome": "Manter glúten até confirmar diagnóstico",
+                "pontos": 7,
+                "termos": [
+                    "manter glúten",
+                    "manter gluten",
+                    "não retirar glúten",
+                    "nao retirar gluten",
+                    "antes da biópsia",
+                    "antes da biopsia",
+                ],
+            },
+            {
+                "nome": "Confirmar pelo algoritmo pediátrico",
+                "pontos": 8,
+                "termos": [
+                    "gastroenterologia pediátrica",
+                    "gastroenterologia pediatrica",
+                    "ema",
+                    "10 vezes",
+                    "biópsia duodenal",
+                    "biopsia duodenal",
+                ],
+            },
+            {
+                "nome": "Iniciar dieta sem glúten após confirmação",
+                "pontos": 8,
+                "termos": [
+                    "dieta sem glúten",
+                    "dieta sem gluten",
+                    "contaminação cruzada",
+                    "contaminacao cruzada",
+                    "nutricionista",
+                ],
+            },
+            {
+                "nome": "Corrigir deficiências e acompanhar crescimento",
+                "pontos": 7,
+                "termos": [
+                    "ferro",
+                    "ferritina",
+                    "crescimento",
+                    "peso",
+                    "vitamina d",
+                    "vacinação",
+                ],
+            },
         ],
         "conduta_referencia": (
             "Manter dieta com glúten durante a investigação e encaminhar à gastroenterologia pediátrica. Interpretar tTG-IgA com IgA total; usar EMA em "
@@ -235,10 +407,27 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         "feedback_hipotese_parcial": "Você reconheceu má absorção, mas faltou ligar diarreia, baixo crescimento e anemia à doença celíaca e ao algoritmo sorológico pediátrico.",
         "feedback_hipotese_incorreta": "Diarreia crônica, dor abdominal, baixa estatura/peso e anemia em criança que consome glúten exigem investigação de doença celíaca.",
         "feedback_seguranca": "Não retire glúten antes de concluir a investigação: isso pode normalizar sorologia e mucosa e tornar o diagnóstico inconclusivo.",
-        "objetivos_aprendizagem": ["Solicitar tTG-IgA com IgA total", "Aplicar critérios com ou sem biópsia", "Planejar dieta e seguimento nutricional"],
+        "objetivos_aprendizagem": [
+            "Solicitar tTG-IgA com IgA total",
+            "Aplicar critérios com ou sem biópsia",
+            "Planejar dieta e seguimento nutricional",
+        ],
         "criterios_seguranca": [
-            {"nome": "Preservar validade diagnóstica", "termos": ["manter glúten", "manter gluten", "não retirar glúten", "nao retirar gluten"], "feedback_omissao": "Dieta sem glúten antes da confirmação pode gerar falso-negativo e exigir nova exposição prolongada."},
-            {"nome": "Tratar repercussão nutricional", "termos": ["ferro", "ferritina", "crescimento", "nutricionista"], "feedback_omissao": "Anemia e falha de crescimento precisam ser medidas e corrigidas, não apenas observar melhora da diarreia."},
+            {
+                "nome": "Preservar validade diagnóstica",
+                "termos": [
+                    "manter glúten",
+                    "manter gluten",
+                    "não retirar glúten",
+                    "nao retirar gluten",
+                ],
+                "feedback_omissao": "Dieta sem glúten antes da confirmação pode gerar falso-negativo e exigir nova exposição prolongada.",
+            },
+            {
+                "nome": "Tratar repercussão nutricional",
+                "termos": ["ferro", "ferritina", "crescimento", "nutricionista"],
+                "feedback_omissao": "Anemia e falha de crescimento precisam ser medidas e corrigidas, não apenas observar melhora da diarreia.",
+            },
         ],
         "desfechos_conduta": _outcomes(
             "A diarreia e a dor diminuem, o apetite melhora e o crescimento retoma após confirmação e dieta correta.",
@@ -250,9 +439,18 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         ),
         "reacao_paciente_referencia": "Acompanhar sintomas, peso, estatura, hemoglobina, ferritina e queda do tTG-IgA.",
         "desfecho_referencia": "Dieta estrita e acompanhamento especializado permitem recuperação clínica e do crescimento na maioria das crianças.",
-        "temas_estudo": ["Diagnóstico pediátrico da doença celíaca", "Dieta sem glúten", "Deficiências nutricionais"],
+        "temas_estudo": [
+            "Diagnóstico pediátrico da doença celíaca",
+            "Dieta sem glúten",
+            "Deficiências nutricionais",
+        ],
         "fontes_clinicas": [
-            _source("ESPGHAN Guidelines for Diagnosing Coeliac Disease", "European Society for Paediatric Gastroenterology, Hepatology and Nutrition", 2020, "https://www.espghan.org/knowledge-center/publications/Gastroenterology/2019_ESPGHAN_guidelines_for_diagnosing_coeliac_disease")
+            _source(
+                "ESPGHAN Guidelines for Diagnosing Coeliac Disease",
+                "European Society for Paediatric Gastroenterology, Hepatology and Nutrition",
+                2020,
+                "https://www.espghan.org/knowledge-center/publications/Gastroenterology/2019_ESPGHAN_guidelines_for_diagnosing_coeliac_disease",
+            )
         ],
     },
     29: {
@@ -260,9 +458,24 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "Escarlatina por Streptococcus do grupo A, condicionada à presença de exantema escarlatiniforme; "
             "dispneia, edema e taquicardia exigem exclusão imediata de complicação cardíaca ou renal."
         ),
-        "diagnostico_termos": ["escarlatina", "scarlatina", "faringite estreptocócica com exantema", "faringite estreptococica com exantema"],
-        "diagnostico_parcial": ["faringite estreptocócica", "faringite estreptococica", "estreptococo do grupo a", "febre reumática", "febre reumatica"],
-        "exames_essenciais": ["avaliacao_exantema", "teste_rapido_strepto", "avaliacao_cardio_renal"],
+        "diagnostico_termos": [
+            "escarlatina",
+            "scarlatina",
+            "faringite estreptocócica com exantema",
+            "faringite estreptococica com exantema",
+        ],
+        "diagnostico_parcial": [
+            "faringite estreptocócica",
+            "faringite estreptococica",
+            "estreptococo do grupo a",
+            "febre reumática",
+            "febre reumatica",
+        ],
+        "exames_essenciais": [
+            "avaliacao_exantema",
+            "teste_rapido_strepto",
+            "avaliacao_cardio_renal",
+        ],
         "exames_opcionais": ["cultura_orofaringe"],
         "exames_desnecessarios": [],
         "justificativa_exames": {
@@ -272,10 +485,54 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "cultura_orofaringe": "Cultura é indicada após teste rápido negativo em criança sintomática; não é necessária para confirmar um teste rápido positivo.",
         },
         "conduta_criterios": [
-            {"nome": "Avaliar e estabilizar sinais de alarme", "pontos": 8, "termos": ["oximetria", "dispneia", "edema", "insuficiência cardíaca", "insuficiencia cardiaca", "função renal", "funcao renal"]},
-            {"nome": "Tratar GAS com antibiótico adequado", "pontos": 8, "termos": ["penicilina", "amoxicilina", "antibiótico", "antibiotico", "10 dias"]},
-            {"nome": "Oferecer suporte sintomático seguro", "pontos": 6, "termos": ["hidratação", "hidratacao", "paracetamol", "antitérmico", "antitermico", "evitar aspirina"]},
-            {"nome": "Orientar transmissão e retorno", "pontos": 8, "termos": ["12 horas", "24 horas", "afebril", "higiene", "retorno", "escola"]},
+            {
+                "nome": "Avaliar e estabilizar sinais de alarme",
+                "pontos": 8,
+                "termos": [
+                    "oximetria",
+                    "dispneia",
+                    "edema",
+                    "insuficiência cardíaca",
+                    "insuficiencia cardiaca",
+                    "função renal",
+                    "funcao renal",
+                ],
+            },
+            {
+                "nome": "Tratar GAS com antibiótico adequado",
+                "pontos": 8,
+                "termos": [
+                    "penicilina",
+                    "amoxicilina",
+                    "antibiótico",
+                    "antibiotico",
+                    "10 dias",
+                ],
+            },
+            {
+                "nome": "Oferecer suporte sintomático seguro",
+                "pontos": 6,
+                "termos": [
+                    "hidratação",
+                    "hidratacao",
+                    "paracetamol",
+                    "antitérmico",
+                    "antitermico",
+                    "evitar aspirina",
+                ],
+            },
+            {
+                "nome": "Orientar transmissão e retorno",
+                "pontos": 8,
+                "termos": [
+                    "12 horas",
+                    "24 horas",
+                    "afebril",
+                    "higiene",
+                    "retorno",
+                    "escola",
+                ],
+            },
         ],
         "conduta_referencia": (
             "Confirmar o padrão de exantema e o teste para GAS, mas avaliar imediatamente dispneia, edema e taquicardia para cardite, insuficiência cardíaca "
@@ -285,10 +542,29 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         "feedback_hipotese_parcial": "Você reconheceu infecção estreptocócica, mas faltou documentar o exantema típico e explicar os sinais de alarme cardiorrenais.",
         "feedback_hipotese_incorreta": "Língua em framboesa sugere escarlatina apenas junto de faringite e exantema áspero típico; dispneia e edema não devem ser atribuídos automaticamente a um quadro simples.",
         "feedback_seguranca": "Dispneia, edema e taquicardia exigem avaliação urgente. Um teste rápido positivo confirma GAS, mas não explica sozinho possível insuficiência cardíaca ou renal.",
-        "objetivos_aprendizagem": ["Reconhecer o exantema da escarlatina", "Interpretar teste rápido e cultura", "Identificar complicações pós-estreptocócicas"],
+        "objetivos_aprendizagem": [
+            "Reconhecer o exantema da escarlatina",
+            "Interpretar teste rápido e cultura",
+            "Identificar complicações pós-estreptocócicas",
+        ],
         "criterios_seguranca": [
-            {"nome": "Investigar sinais cardiorrenais", "termos": ["oximetria", "insuficiência cardíaca", "insuficiencia cardiaca", "função renal", "funcao renal", "urina"], "feedback_omissao": "Edema e dispneia podem indicar complicação grave e não pertencem à evolução simples da escarlatina."},
-            {"nome": "Tratar infecção confirmada", "termos": ["penicilina", "amoxicilina", "antibiótico", "antibiotico"], "feedback_omissao": "Antibiótico reduz transmissão e complicações supurativas da infecção por GAS."},
+            {
+                "nome": "Investigar sinais cardiorrenais",
+                "termos": [
+                    "oximetria",
+                    "insuficiência cardíaca",
+                    "insuficiencia cardiaca",
+                    "função renal",
+                    "funcao renal",
+                    "urina",
+                ],
+                "feedback_omissao": "Edema e dispneia podem indicar complicação grave e não pertencem à evolução simples da escarlatina.",
+            },
+            {
+                "nome": "Tratar infecção confirmada",
+                "termos": ["penicilina", "amoxicilina", "antibiótico", "antibiotico"],
+                "feedback_omissao": "Antibiótico reduz transmissão e complicações supurativas da infecção por GAS.",
+            },
         ],
         "desfechos_conduta": _outcomes(
             "Febre, odinofagia e exantema regridem, enquanto sinais cardiorrenais são esclarecidos e tratados.",
@@ -300,9 +576,18 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         ),
         "reacao_paciente_referencia": "Monitorar febre, exantema, respiração, edema, diurese, pressão e tolerância oral.",
         "desfecho_referencia": "Escarlatina costuma responder rapidamente ao antibiótico, mas os sinais atípicos deste caso exigem investigação paralela.",
-        "temas_estudo": ["Escarlatina", "Diagnóstico de GAS", "Complicações pós-estreptocócicas"],
+        "temas_estudo": [
+            "Escarlatina",
+            "Diagnóstico de GAS",
+            "Complicações pós-estreptocócicas",
+        ],
         "fontes_clinicas": [
-            _source("Clinical Guidance for Scarlet Fever", "Centers for Disease Control and Prevention", 2026, "https://www.cdc.gov/group-a-strep/hcp/clinical-guidance/scarlet-fever.html")
+            _source(
+                "Clinical Guidance for Scarlet Fever",
+                "Centers for Disease Control and Prevention",
+                2026,
+                "https://www.cdc.gov/group-a-strep/hcp/clinical-guidance/scarlet-fever.html",
+            )
         ],
     },
     30: {
@@ -313,7 +598,14 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "cardite reumática com poliartrite",
             "cardite reumatica com poliartrite",
         ],
-        "diagnostico_parcial": ["febre reumática", "febre reumatica", "cardite reumática", "cardite reumatica", "doença cardíaca reumática", "doenca cardiaca reumatica"],
+        "diagnostico_parcial": [
+            "febre reumática",
+            "febre reumatica",
+            "cardite reumática",
+            "cardite reumatica",
+            "doença cardíaca reumática",
+            "doenca cardiaca reumatica",
+        ],
         "exames_essenciais": ["eco", "aslo_anti_dnase", "vhs_pcr", "ecg"],
         "exames_opcionais": ["raiox_bnp_funcao_renal"],
         "exames_desnecessarios": [],
@@ -325,10 +617,52 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
             "raiox_bnp_funcao_renal": "Radiografia, BNP e função renal ajudam a graduar congestão e orientar diurético quando há insuficiência cardíaca.",
         },
         "conduta_criterios": [
-            {"nome": "Internar e tratar insuficiência cardíaca", "pontos": 8, "termos": ["internação", "internacao", "diurético", "diuretico", "insuficiência cardíaca", "insuficiencia cardiaca", "cardiologia"]},
-            {"nome": "Erradicar GAS", "pontos": 7, "termos": ["penicilina benzatina", "penicilina", "erradicar estreptococo", "amoxicilina"]},
-            {"nome": "Controlar inflamação e artrite", "pontos": 7, "termos": ["naproxeno", "aspirina", "anti-inflamatório", "anti-inflamatorio", "corticosteroide"]},
-            {"nome": "Iniciar profilaxia secundária", "pontos": 8, "termos": ["profilaxia secundária", "profilaxia secundaria", "penicilina benzatina a cada", "longo prazo", "prevenir recorrência", "prevenir recorrencia"]},
+            {
+                "nome": "Internar e tratar insuficiência cardíaca",
+                "pontos": 8,
+                "termos": [
+                    "internação",
+                    "internacao",
+                    "diurético",
+                    "diuretico",
+                    "insuficiência cardíaca",
+                    "insuficiencia cardiaca",
+                    "cardiologia",
+                ],
+            },
+            {
+                "nome": "Erradicar GAS",
+                "pontos": 7,
+                "termos": [
+                    "penicilina benzatina",
+                    "penicilina",
+                    "erradicar estreptococo",
+                    "amoxicilina",
+                ],
+            },
+            {
+                "nome": "Controlar inflamação e artrite",
+                "pontos": 7,
+                "termos": [
+                    "naproxeno",
+                    "aspirina",
+                    "anti-inflamatório",
+                    "anti-inflamatorio",
+                    "corticosteroide",
+                ],
+            },
+            {
+                "nome": "Iniciar profilaxia secundária",
+                "pontos": 8,
+                "termos": [
+                    "profilaxia secundária",
+                    "profilaxia secundaria",
+                    "penicilina benzatina a cada",
+                    "longo prazo",
+                    "prevenir recorrência",
+                    "prevenir recorrencia",
+                ],
+            },
         ],
         "conduta_referencia": (
             "Internar pela cardite com sinais de congestão, realizar ecocardiograma/ECG e tratar insuficiência cardíaca com cardiologia. Erradicar GAS com "
@@ -338,10 +672,35 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         "feedback_hipotese_parcial": "Você reconheceu cardite ou febre reumática, mas faltou integrar poliartrite migratória, evidência estreptocócica e insuficiência multivalvar pelos critérios de Jones.",
         "feedback_hipotese_incorreta": "Poliartrite migratória e cardite após faringites estreptocócicas sustentam febre reumática aguda; o sopro multivalvar e a estase jugular indicam repercussão cardíaca importante.",
         "feedback_seguranca": "ASLO elevado isoladamente não fecha o diagnóstico. Estase jugular e múltiplas insuficiências valvares exigem internação e tratamento da insuficiência cardíaca.",
-        "objetivos_aprendizagem": ["Aplicar critérios de Jones", "Avaliar cardite com ecocardiograma", "Instituir erradicação e profilaxia secundária"],
+        "objetivos_aprendizagem": [
+            "Aplicar critérios de Jones",
+            "Avaliar cardite com ecocardiograma",
+            "Instituir erradicação e profilaxia secundária",
+        ],
         "criterios_seguranca": [
-            {"nome": "Tratar congestão cardíaca", "termos": ["diurético", "diuretico", "insuficiência cardíaca", "insuficiencia cardiaca", "internação", "internacao"], "feedback_omissao": "Cardite grave pode evoluir rapidamente com edema pulmonar, baixo débito e arritmia."},
-            {"nome": "Prevenir recorrência reumática", "termos": ["profilaxia secundária", "profilaxia secundaria", "penicilina benzatina a cada", "prevenir recorrência", "prevenir recorrencia"], "feedback_omissao": "Cada recorrência pode acrescentar dano valvar permanente."},
+            {
+                "nome": "Tratar congestão cardíaca",
+                "termos": [
+                    "diurético",
+                    "diuretico",
+                    "insuficiência cardíaca",
+                    "insuficiencia cardiaca",
+                    "internação",
+                    "internacao",
+                ],
+                "feedback_omissao": "Cardite grave pode evoluir rapidamente com edema pulmonar, baixo débito e arritmia.",
+            },
+            {
+                "nome": "Prevenir recorrência reumática",
+                "termos": [
+                    "profilaxia secundária",
+                    "profilaxia secundaria",
+                    "penicilina benzatina a cada",
+                    "prevenir recorrência",
+                    "prevenir recorrencia",
+                ],
+                "feedback_omissao": "Cada recorrência pode acrescentar dano valvar permanente.",
+            },
         ],
         "desfechos_conduta": _outcomes(
             "Congestão e artrite melhoram, a inflamação cai e não surgem novas lesões valvares.",
@@ -353,7 +712,11 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
         ),
         "reacao_paciente_referencia": "Monitorar dispneia, edema, pressão de pulso, frequência, diurese, inflamação e função valvar.",
         "desfecho_referencia": "Controle da cardite e profilaxia secundária consistente são decisivos para preservar a função valvar.",
-        "temas_estudo": ["Critérios de Jones", "Cardite reumática", "Profilaxia secundária"],
+        "temas_estudo": [
+            "Critérios de Jones",
+            "Cardite reumática",
+            "Profilaxia secundária",
+        ],
         "fontes_clinicas": [RHEUMATIC_FEVER_SOURCE],
     },
 }
@@ -361,42 +724,187 @@ FIFTH_FEEDBACK_BATCH_RUBRICS: dict[int, dict[str, Any]] = {
 
 FIFTH_FEEDBACK_BATCH_EXAM_UPDATES: dict[int, list[dict[str, Any]]] = {
     26: [
-        {"id": "tc_cranio", "nome": "TC de crânio sem contraste", "resultado": "Sem hemorragia; discreta hipodensidade occipital direita, sem obstrução arterial diretamente visível.", "correto": True},
-        {"id": "angio_tc", "nome": "AngioTC de crânio e pescoço", "resultado": "Oclusão da artéria cerebral posterior direita, orientando avaliação de reperfusão.", "correto": True},
-        {"id": "glicemia_abc", "nome": "Glicemia capilar e avaliação ABC", "resultado": "Glicemia normal; via aérea protegida após a crise, com oxigenação preservada.", "correto": True},
-        {"id": "nihss_tempo", "nome": "Último momento bem e NIHSS", "resultado": "Déficit focal persistente, com horário de início dentro da janela de reperfusão.", "correto": True},
-        {"id": "rm_difusao", "nome": "RM de encéfalo com difusão", "resultado": "Restrição à difusão em território occipital e temporal medial direito.", "correto": True},
-        {"id": "ecg_laboratorio_avc", "nome": "ECG e laboratório para AVC", "resultado": "Sem contraindicação laboratorial imediata; investigação etiológica cardiovascular iniciada.", "correto": True},
+        {
+            "id": "tc_cranio",
+            "nome": "TC de crânio sem contraste",
+            "resultado": "Sem hemorragia; discreta hipodensidade occipital direita, sem obstrução arterial diretamente visível.",
+            "correto": True,
+        },
+        {
+            "id": "angio_tc",
+            "nome": "AngioTC de crânio e pescoço",
+            "resultado": "Oclusão da artéria cerebral posterior direita, orientando avaliação de reperfusão.",
+            "correto": True,
+        },
+        {
+            "id": "glicemia_abc",
+            "nome": "Glicemia capilar e avaliação ABC",
+            "resultado": "Glicemia normal; via aérea protegida após a crise, com oxigenação preservada.",
+            "correto": True,
+        },
+        {
+            "id": "nihss_tempo",
+            "nome": "Último momento bem e NIHSS",
+            "resultado": "Déficit focal persistente, com horário de início dentro da janela de reperfusão.",
+            "correto": True,
+        },
+        {
+            "id": "rm_difusao",
+            "nome": "RM de encéfalo com difusão",
+            "resultado": "Restrição à difusão em território occipital e temporal medial direito.",
+            "correto": True,
+        },
+        {
+            "id": "ecg_laboratorio_avc",
+            "nome": "ECG e laboratório para AVC",
+            "resultado": "Sem contraindicação laboratorial imediata; investigação etiológica cardiovascular iniciada.",
+            "correto": True,
+        },
     ],
     27: [
-        {"id": "albumina", "nome": "Albumina sérica", "resultado": "Reduzida, refletindo risco clínico e possível inflamação; não diagnostica nem quantifica desnutrição isoladamente.", "correto": True},
-        {"id": "endoscopia", "nome": "Endoscopia digestiva alta", "resultado": "Esôfago dilatado com retenção alimentar, sem tumor ou estenose mecânica; exame não quantifica motilidade.", "correto": True},
-        {"id": "avaliacao_nutricional", "nome": "Avaliação nutricional clínica completa", "resultado": "Perda de 16% do peso em 6 meses, baixa ingestão e perda muscular importante, compatíveis com desnutrição grave.", "correto": True},
-        {"id": "esofagograma", "nome": "Esofagograma contrastado", "resultado": "Megaesôfago com dilatação, retenção e esvaziamento distal muito lento.", "correto": True},
-        {"id": "avaliacao_degluticao", "nome": "Avaliação clínica/instrumental da deglutição", "resultado": "Alto risco de regurgitação e aspiração com sólidos e grandes volumes.", "correto": True},
-        {"id": "laboratorio_refeeding", "nome": "Eletrólitos e risco de realimentação", "resultado": "Fósforo e magnésio limítrofes, exigindo reposição e monitorização durante realimentação.", "correto": True},
-        {"id": "enema_opaco", "nome": "Imagem contrastada do cólon", "resultado": "Dilatação importante de sigmoide e reto, compatível com megacólon chagásico.", "correto": True},
+        {
+            "id": "albumina",
+            "nome": "Albumina sérica",
+            "resultado": "Reduzida, refletindo risco clínico e possível inflamação; não diagnostica nem quantifica desnutrição isoladamente.",
+            "correto": True,
+        },
+        {
+            "id": "endoscopia",
+            "nome": "Endoscopia digestiva alta",
+            "resultado": "Esôfago dilatado com retenção alimentar, sem tumor ou estenose mecânica; exame não quantifica motilidade.",
+            "correto": True,
+        },
+        {
+            "id": "avaliacao_nutricional",
+            "nome": "Avaliação nutricional clínica completa",
+            "resultado": "Perda de 16% do peso em 6 meses, baixa ingestão e perda muscular importante, compatíveis com desnutrição grave.",
+            "correto": True,
+        },
+        {
+            "id": "esofagograma",
+            "nome": "Esofagograma contrastado",
+            "resultado": "Megaesôfago com dilatação, retenção e esvaziamento distal muito lento.",
+            "correto": True,
+        },
+        {
+            "id": "avaliacao_degluticao",
+            "nome": "Avaliação clínica/instrumental da deglutição",
+            "resultado": "Alto risco de regurgitação e aspiração com sólidos e grandes volumes.",
+            "correto": True,
+        },
+        {
+            "id": "laboratorio_refeeding",
+            "nome": "Eletrólitos e risco de realimentação",
+            "resultado": "Fósforo e magnésio limítrofes, exigindo reposição e monitorização durante realimentação.",
+            "correto": True,
+        },
+        {
+            "id": "enema_opaco",
+            "nome": "Imagem contrastada do cólon",
+            "resultado": "Dilatação importante de sigmoide e reto, compatível com megacólon chagásico.",
+            "correto": True,
+        },
     ],
     28: [
-        {"id": "anti_ttg", "nome": "Anti-transglutaminase tecidual IgA quantitativo", "resultado": "Positivo, 6 vezes o limite superior; requer interpretação com IgA total e confirmação histológica.", "correto": True},
-        {"id": "biopsia_duodeno", "nome": "Endoscopia com biópsias de bulbo e duodeno distal", "resultado": "Atrofia vilositária e hiperplasia de criptas compatíveis com doença celíaca.", "correto": True},
-        {"id": "hemo", "nome": "Hemograma", "resultado": "Anemia microcítica e hipocrômica, sugerindo deficiência de ferro.", "correto": True},
-        {"id": "iga_total", "nome": "IgA total", "resultado": "Normal para a idade, tornando o tTG-IgA interpretável.", "correto": True},
-        {"id": "hemo_ferritina", "nome": "Hemograma, ferritina e perfil de ferro", "resultado": "Anemia ferropriva com ferritina reduzida.", "correto": True},
-        {"id": "ema_segunda_amostra", "nome": "Antiendomísio IgA em segunda amostra", "resultado": "Positivo; como tTG-IgA é inferior a 10 vezes o limite, não dispensa biópsia.", "correto": True},
+        {
+            "id": "anti_ttg",
+            "nome": "Anti-transglutaminase tecidual IgA quantitativo",
+            "resultado": "Positivo, 6 vezes o limite superior; requer interpretação com IgA total e confirmação histológica.",
+            "correto": True,
+        },
+        {
+            "id": "biopsia_duodeno",
+            "nome": "Endoscopia com biópsias de bulbo e duodeno distal",
+            "resultado": "Atrofia vilositária e hiperplasia de criptas compatíveis com doença celíaca.",
+            "correto": True,
+        },
+        {
+            "id": "hemo",
+            "nome": "Hemograma",
+            "resultado": "Anemia microcítica e hipocrômica, sugerindo deficiência de ferro.",
+            "correto": True,
+        },
+        {
+            "id": "iga_total",
+            "nome": "IgA total",
+            "resultado": "Normal para a idade, tornando o tTG-IgA interpretável.",
+            "correto": True,
+        },
+        {
+            "id": "hemo_ferritina",
+            "nome": "Hemograma, ferritina e perfil de ferro",
+            "resultado": "Anemia ferropriva com ferritina reduzida.",
+            "correto": True,
+        },
+        {
+            "id": "ema_segunda_amostra",
+            "nome": "Antiendomísio IgA em segunda amostra",
+            "resultado": "Positivo; como tTG-IgA é inferior a 10 vezes o limite, não dispensa biópsia.",
+            "correto": True,
+        },
     ],
     29: [
-        {"id": "teste_rapido_strepto", "nome": "Teste rápido para Streptococcus do grupo A", "resultado": "Positivo, confirmando GAS no contexto clínico compatível.", "correto": True},
-        {"id": "cultura_orofaringe", "nome": "Cultura de orofaringe", "resultado": "Reservada para teste rápido negativo em criança sintomática; desnecessária após este teste positivo.", "correto": False},
-        {"id": "avaliacao_exantema", "nome": "Exame de pele e orofaringe", "resultado": "Exantema eritematoso áspero, linhas de Pastia e palidez perioral, além de língua em framboesa.", "correto": True},
-        {"id": "avaliacao_cardio_renal", "nome": "Avaliação cardiorrenal dos sinais de alarme", "resultado": "Taquicardia e edema exigem ECG/eco, oximetria, pressão, urina e função renal; sem choque na avaliação inicial.", "correto": True},
+        {
+            "id": "teste_rapido_strepto",
+            "nome": "Teste rápido para Streptococcus do grupo A",
+            "resultado": "Positivo, confirmando GAS no contexto clínico compatível.",
+            "correto": True,
+        },
+        {
+            "id": "cultura_orofaringe",
+            "nome": "Cultura de orofaringe",
+            "resultado": "Reservada para teste rápido negativo em criança sintomática; desnecessária após este teste positivo.",
+            "correto": False,
+        },
+        {
+            "id": "avaliacao_exantema",
+            "nome": "Exame de pele e orofaringe",
+            "resultado": "Exantema eritematoso áspero, linhas de Pastia e palidez perioral, além de língua em framboesa.",
+            "correto": True,
+        },
+        {
+            "id": "avaliacao_cardio_renal",
+            "nome": "Avaliação cardiorrenal dos sinais de alarme",
+            "resultado": "Taquicardia e edema exigem ECG/eco, oximetria, pressão, urina e função renal; sem choque na avaliação inicial.",
+            "correto": True,
+        },
     ],
     30: [
-        {"id": "aslo", "nome": "ASLO", "resultado": "Título elevado, evidenciando contato estreptocócico recente; isoladamente não confirma febre reumática.", "correto": True},
-        {"id": "eco", "nome": "Ecocardiograma com Doppler", "resultado": "Cardite com regurgitação mitral e aórtica, congestão e disfunção ventricular; estenose mitral sugere dano reumático prévio.", "correto": True},
-        {"id": "vhs_pcr", "nome": "VHS e PCR", "resultado": "Elevados, preenchendo critério inflamatório menor e permitindo seguimento.", "correto": True},
-        {"id": "aslo_anti_dnase", "nome": "ASLO e anti-DNase B", "resultado": "Títulos elevados e em ascensão, documentando infecção recente por GAS.", "correto": True},
-        {"id": "ecg", "nome": "Eletrocardiograma", "resultado": "Intervalo PR prolongado, sem arritmia sustentada.", "correto": True},
-        {"id": "raiox_bnp_funcao_renal", "nome": "Radiografia, BNP e função renal", "resultado": "Cardiomegalia e congestão pulmonar, BNP elevado e função renal preservada.", "correto": True},
+        {
+            "id": "aslo",
+            "nome": "ASLO",
+            "resultado": "Título elevado, evidenciando contato estreptocócico recente; isoladamente não confirma febre reumática.",
+            "correto": True,
+        },
+        {
+            "id": "eco",
+            "nome": "Ecocardiograma com Doppler",
+            "resultado": "Cardite com regurgitação mitral e aórtica, congestão e disfunção ventricular; estenose mitral sugere dano reumático prévio.",
+            "correto": True,
+        },
+        {
+            "id": "vhs_pcr",
+            "nome": "VHS e PCR",
+            "resultado": "Elevados, preenchendo critério inflamatório menor e permitindo seguimento.",
+            "correto": True,
+        },
+        {
+            "id": "aslo_anti_dnase",
+            "nome": "ASLO e anti-DNase B",
+            "resultado": "Títulos elevados e em ascensão, documentando infecção recente por GAS.",
+            "correto": True,
+        },
+        {
+            "id": "ecg",
+            "nome": "Eletrocardiograma",
+            "resultado": "Intervalo PR prolongado, sem arritmia sustentada.",
+            "correto": True,
+        },
+        {
+            "id": "raiox_bnp_funcao_renal",
+            "nome": "Radiografia, BNP e função renal",
+            "resultado": "Cardiomegalia e congestão pulmonar, BNP elevado e função renal preservada.",
+            "correto": True,
+        },
     ],
 }

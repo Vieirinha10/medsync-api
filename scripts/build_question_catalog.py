@@ -52,58 +52,110 @@ TOPIC_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "Trauma e emergência",
         (
-            "trauma", "politrauma", "ferimento", "arma de fogo", "arma branca",
-            "atls", "fast", "choque hemorrágico", "queimadura", "acidente",
+            "trauma",
+            "politrauma",
+            "ferimento",
+            "arma de fogo",
+            "arma branca",
+            "atls",
+            "fast",
+            "choque hemorrágico",
+            "queimadura",
+            "acidente",
         ),
     ),
     (
         "Ortopedia",
         (
-            "fratura", "luxação", "ortop", "osteomielite", "ligamento",
-            "menisco", "joelho", "quadril", "coluna", "membro inferior",
+            "fratura",
+            "luxação",
+            "ortop",
+            "osteomielite",
+            "ligamento",
+            "menisco",
+            "joelho",
+            "quadril",
+            "coluna",
+            "membro inferior",
         ),
     ),
     (
         "Urologia",
         (
-            "uretra", "bexiga", "próstata", "renal", "rim", "ureter",
-            "urolitíase", "testículo", "escroto", "hematúria", "urolog",
+            "uretra",
+            "bexiga",
+            "próstata",
+            "renal",
+            "rim",
+            "ureter",
+            "urolitíase",
+            "testículo",
+            "escroto",
+            "hematúria",
+            "urolog",
         ),
     ),
     (
         "Neurocirurgia",
         (
-            "traumatismo cran", "hematoma epidural", "hematoma subdural",
-            "hemorragia subarac", "hipertensão intracran", "herniação cerebral",
-            "neurocir", "lesão medular",
+            "traumatismo cran",
+            "hematoma epidural",
+            "hematoma subdural",
+            "hemorragia subarac",
+            "hipertensão intracran",
+            "herniação cerebral",
+            "neurocir",
+            "lesão medular",
         ),
     ),
     (
         "Cirurgia vascular",
         (
-            "aneurisma", "isquemia de membro", "trombose arterial", "carótida",
-            "aorta", "vascular", "varizes", "pé diabético",
+            "aneurisma",
+            "isquemia de membro",
+            "trombose arterial",
+            "carótida",
+            "aorta",
+            "vascular",
+            "varizes",
+            "pé diabético",
         ),
     ),
     (
         "Cirurgia torácica",
         (
-            "tórax", "torác", "pneumotórax", "hemotórax", "dreno de tórax",
-            "mediastino", "pulmão", "pleura",
+            "tórax",
+            "torác",
+            "pneumotórax",
+            "hemotórax",
+            "dreno de tórax",
+            "mediastino",
+            "pulmão",
+            "pleura",
         ),
     ),
     (
         "Cabeça e pescoço",
         (
-            "tireoide", "paratireoide", "pescoço", "glândula salivar", "laringe",
+            "tireoide",
+            "paratireoide",
+            "pescoço",
+            "glândula salivar",
+            "laringe",
             "traqueostomia",
         ),
     ),
     (
         "Cirurgia pediátrica",
         (
-            "recém-nascido", "lactente", "criança", "pediátr", "invaginação",
-            "onfalocele", "gastrosquise", "estenose hipertrófica",
+            "recém-nascido",
+            "lactente",
+            "criança",
+            "pediátr",
+            "invaginação",
+            "onfalocele",
+            "gastrosquise",
+            "estenose hipertrófica",
         ),
     ),
     (
@@ -113,16 +165,33 @@ TOPIC_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "Perioperatório",
         (
-            "pré-operatório", "pós-operatório", "perioperatório", "anestesia",
-            "risco cirúrgico", "profilaxia cirúrgica", "infecção de sítio",
+            "pré-operatório",
+            "pós-operatório",
+            "perioperatório",
+            "anestesia",
+            "risco cirúrgico",
+            "profilaxia cirúrgica",
+            "infecção de sítio",
         ),
     ),
     (
         "Aparelho digestivo",
         (
-            "abdome", "abdominal", "apendic", "colecist", "pâncreas", "hepát",
-            "fígado", "intestin", "cólon", "reto", "esôfago", "estômago",
-            "hérnia", "obstrução intestinal", "doença inflamatória intestinal",
+            "abdome",
+            "abdominal",
+            "apendic",
+            "colecist",
+            "pâncreas",
+            "hepát",
+            "fígado",
+            "intestin",
+            "cólon",
+            "reto",
+            "esôfago",
+            "estômago",
+            "hérnia",
+            "obstrução intestinal",
+            "doença inflamatória intestinal",
         ),
     ),
 )
@@ -130,7 +199,9 @@ TOPIC_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 def plain_text(value: str) -> str:
     value = re.sub(r"<br\s*/?>", "\n", value or "", flags=re.IGNORECASE)
-    value = re.sub(r"</?(p|div|ul|ol|li|tr|h[1-6])\b[^>]*>", "\n", value, flags=re.IGNORECASE)
+    value = re.sub(
+        r"</?(p|div|ul|ol|li|tr|h[1-6])\b[^>]*>", "\n", value, flags=re.IGNORECASE
+    )
     value = re.sub(r"<[^>]+>", " ", value)
     value = html.unescape(value).replace("\x00", "")
     lines = [re.sub(r"\s+", " ", line).strip() for line in value.splitlines()]
@@ -154,8 +225,7 @@ def classify_topic(statement: str, alternatives: list[dict[str, Any]]) -> str:
         f"{statement} {' '.join(str(item.get('texto', '')) for item in alternatives)}"
     )
     scores = [
-        (sum(term in content for term in terms), topic)
-        for topic, terms in TOPIC_RULES
+        (sum(term in content for term in terms), topic) for topic, terms in TOPIC_RULES
     ]
     score, topic = max(scores, key=lambda item: item[0])
     return topic if score else "Cirurgia geral"
@@ -229,7 +299,9 @@ def validated_records(questions: list[dict[str, Any]]) -> tuple[list[dict], dict
             rejected["marcacao_complexa"] += 1
             continue
 
-        answers_in_comment = ANSWER_PATTERN.findall(plain_text(question.get("comentario", "")))
+        answers_in_comment = ANSWER_PATTERN.findall(
+            plain_text(question.get("comentario", ""))
+        )
         marked_answer = str(correct[0]["letra"]).upper()
         if not answers_in_comment or answers_in_comment[-1].upper() != marked_answer:
             rejected["gabarito_inconsistente"] += 1
