@@ -1,6 +1,7 @@
 import unicodedata
 from datetime import datetime
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import (
     BaseModel,
@@ -20,6 +21,18 @@ def _normalized_spoiler_text(value: str) -> str:
             char for char in decomposed if unicodedata.category(char) != "Mn"
         ).split()
     )
+
+
+def _validated_public_url(value: str, *, allow_placeholder: bool = False) -> str:
+    normalized = value.strip()
+    if allow_placeholder and normalized == "#":
+        return normalized
+    if normalized.startswith("/") and not normalized.startswith("//"):
+        return normalized
+    parsed = urlsplit(normalized)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise ValueError("Use uma URL HTTPS ou um caminho interno iniciado por /.")
+    return normalized
 
 
 class UserCreate(BaseModel):
@@ -309,6 +322,16 @@ class AdminVisualChallengeUpsert(BaseModel):
     fonte_url: str = Field(default="#", max_length=1000)
     status: Literal["rascunho", "publicado", "arquivado"] = "rascunho"
 
+    @field_validator("imagem_url")
+    @classmethod
+    def validate_image_url(cls, value: str) -> str:
+        return _validated_public_url(value)
+
+    @field_validator("fonte_url")
+    @classmethod
+    def validate_source_url(cls, value: str) -> str:
+        return _validated_public_url(value, allow_placeholder=True)
+
     @model_validator(mode="after")
     def prevent_public_metadata_spoiler(self):
         diagnosis = _normalized_spoiler_text(self.diagnostico_correto)
@@ -338,6 +361,13 @@ class AnnouncementUpsert(BaseModel):
     ativo: bool = True
     inicia_em: datetime | None = None
     termina_em: datetime | None = None
+
+    @field_validator("link_url")
+    @classmethod
+    def validate_link_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _validated_public_url(value)
 
 
 class AnnouncementResponse(AnnouncementUpsert):

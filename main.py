@@ -18,7 +18,7 @@ from routers import (
     users,
 )
 from services.database_bootstrap import prepare_database
-from settings import cors_origins, rate_limit_enabled
+from settings import cors_origins, environment, rate_limit_enabled
 
 
 @asynccontextmanager
@@ -28,10 +28,14 @@ async def lifespan(_: FastAPI):
 
 
 def create_app() -> FastAPI:
+    production = environment() == "production"
     application = FastAPI(
         title="API MEDSYNC",
         version="0.5.0",
         lifespan=lifespan,
+        docs_url=None if production else "/docs",
+        redoc_url=None if production else "/redoc",
+        openapi_url=None if production else "/openapi.json",
     )
     origins = cors_origins()
     application.add_middleware(

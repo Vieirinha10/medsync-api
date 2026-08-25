@@ -75,6 +75,29 @@ SUSPENSION_EVENTS = {
 }
 
 
+def _sanitized_webhook_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    sanitized: dict[str, Any] = {
+        "id": payload.get("id"),
+        "event": payload.get("event"),
+    }
+    for section_name in ("checkout", "payment"):
+        section = payload.get(section_name)
+        if not isinstance(section, dict):
+            continue
+        sanitized[section_name] = {
+            key: section.get(key)
+            for key in (
+                "id",
+                "status",
+                "externalReference",
+                "subscription",
+                "billingType",
+            )
+            if section.get(key) is not None
+        }
+    return sanitized
+
+
 def _utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
 
@@ -448,7 +471,11 @@ async def receive_asaas_webhook(
     if duplicate_event and event_type != "CHECKOUT_PAID":
         return {"received": True, "duplicate": True}
     if duplicate_event is None:
-        event = AsaasWebhookEvent(id=event_id, tipo=event_type, payload=payload)
+        event = AsaasWebhookEvent(
+            id=event_id,
+            tipo=event_type,
+            payload=_sanitized_webhook_payload(payload),
+        )
         db.add(event)
 
     checkout = payload.get("checkout") or {}

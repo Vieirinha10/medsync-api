@@ -5,8 +5,10 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import pytest
 from alembic.config import Config
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from sqlalchemy import func, select
 
 from alembic import command
@@ -39,7 +41,11 @@ from models import (
     User,
     UserEntitlement,
 )
-from schemas import QuestionExplanation
+from schemas import (
+    AdminVisualChallengeUpsert,
+    AnnouncementUpsert,
+    QuestionExplanation,
+)
 from services.clinical_content import seed_clinical_content
 from services.question_content import seed_question_content
 
@@ -109,6 +115,58 @@ def test_health_check():
     ready = client.get("/ready")
     assert ready.status_code == 200
     assert ready.json() == {"status": "ready", "database": "ok"}
+
+
+def test_production_disables_interactive_api_documentation():
+    previous_environment = os.environ.get("ENVIRONMENT")
+    os.environ["ENVIRONMENT"] = "production"
+    try:
+        production_client = TestClient(main.create_app())
+        assert production_client.get("/docs").status_code == 404
+        assert production_client.get("/openapi.json").status_code == 404
+    finally:
+        if previous_environment is None:
+            os.environ.pop("ENVIRONMENT", None)
+        else:
+            os.environ["ENVIRONMENT"] = previous_environment
+
+
+def test_security_headers_and_request_body_limit():
+    response = client.get("/health", headers={"x-forwarded-proto": "https"})
+    assert response.headers["strict-transport-security"].startswith("max-age=")
+    assert response.headers["content-security-policy"].startswith("default-src 'none'")
+
+    oversized = client.post(
+        "/usuarios/login",
+        content=b"x" * 1_000_001,
+        headers={"content-type": "application/json"},
+    )
+    assert oversized.status_code == 413
+
+
+def test_admin_urls_reject_unsafe_protocols():
+    with pytest.raises(ValidationError):
+        AnnouncementUpsert(
+            titulo="Aviso seguro",
+            mensagem="Mensagem de exemplo",
+            link_url="javascript:alert(1)",
+        )
+
+    with pytest.raises(ValidationError):
+        AdminVisualChallengeUpsert(
+            id="desafio-seguro",
+            titulo="Desafio seguro",
+            especialidade="Cardiologia",
+            dificuldade="Fácil",
+            modalidade="ECG",
+            pergunta="Qual é o diagnóstico mais provável?",
+            imagem_url="http://example.com/image.png",
+            imagem_alt="Traçado eletrocardiográfico",
+            alternativas=["A", "B", "C", "D"],
+            alternativa_correta=0,
+            diagnostico_correto="Diagnóstico",
+            explicacao="Explicação clínica suficientemente detalhada.",
+        )
 
 
 def test_public_stats_counts_students_without_exposing_admins():
@@ -195,6 +253,46 @@ def test_primary_care_collection_has_revised_rubrics_and_is_easy():
 
     for case_id in range(41, 56):
         ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case_id])
+
+
+def test_premium_case_is_enforced_by_the_api():
+    email = f"premium-gate-{uuid.uuid4().hex}@example.com"
+    token = _register_and_login(email)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    with SessionLocal() as db:
+        case = db.get(ClinicalCase, 8)
+        case.is_premium = True
+        db.commit()
+
+    try:
+        blocked = client.get("/casos-clinicos/8", headers=headers)
+        assert blocked.status_code == 403
+        assert "Premium" in blocked.json()["detail"]
+
+        with SessionLocal() as db:
+            user = db.scalar(select(User).where(User.email == email))
+            db.add(
+                UserEntitlement(
+                    id_usuario=user.id,
+                    plano_id="avulso",
+                    status="ativo",
+                    valido_ate=datetime.now(UTC) + timedelta(days=30),
+                )
+            )
+            db.commit()
+
+        allowed = client.get("/casos-clinicos/8", headers=headers)
+        assert allowed.status_code == 200
+    finally:
+        with SessionLocal() as db:
+            case = db.get(ClinicalCase, 8)
+            case.is_premium = False
+            user = db.scalar(select(User).where(User.email == email))
+            entitlement = db.get(UserEntitlement, user.id)
+            if entitlement:
+                db.delete(entitlement)
+            db.commit()
 
 
 def test_seed_adds_catalog_expansions_to_an_existing_database():
