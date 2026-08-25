@@ -94,9 +94,7 @@ def _usage_record(
 def finalizar_simulacao(
     caso_id: int,
     submission: SimulationSubmission,
-    idempotency_key: Annotated[
-        str | None, Header(alias="X-Idempotency-Key")
-    ] = None,
+    idempotency_key: Annotated[str | None, Header(alias="X-Idempotency-Key")] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -201,9 +199,7 @@ def finalizar_simulacao(
             "objetivos_aprendizagem": case_record.rubrica.definicao.get(
                 "objetivos_aprendizagem", []
             ),
-            "fontes_clinicas": case_record.rubrica.definicao.get(
-                "fontes_clinicas", []
-            ),
+            "fontes_clinicas": case_record.rubrica.definicao.get("fontes_clinicas", []),
             "nivel_conduta": context.get("nivel_conduta", "parcial"),
             "consequencias": consequences.model_dump(),
             "versao_rubrica": case_record.rubrica.versao,
