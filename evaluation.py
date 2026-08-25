@@ -69,7 +69,9 @@ def _price_rates(model: str) -> tuple[float, float, float] | None:
     return default
 
 
-def _usage_metrics(response: Any, model: str, started_at: float) -> AIUsageMetrics | None:
+def _usage_metrics(
+    response: Any, model: str, started_at: float
+) -> AIUsageMetrics | None:
     usage = getattr(response, "usage", None)
     if usage is None:
         return None
@@ -444,9 +446,7 @@ def evaluate_objective(
     accepted = selected_essential | (selected & optional)
 
     essential_points = (
-        36
-        if not essential
-        else round(36 * len(selected_essential) / len(essential))
+        36 if not essential else round(36 * len(selected_essential) / len(essential))
     )
     unnecessary_penalty = 4 * len(selected_unnecessary)
     exam_score = max(0, min(40, essential_points + 4 - unnecessary_penalty))
@@ -849,8 +849,11 @@ def enhance_narrative_with_ai(
             text_format=ClinicalNarrative,
         )
         if response.output_parsed is None:
-            return fallback, "agente_regras", None, _usage_metrics(
-                response, model, started_at
+            return (
+                fallback,
+                "agente_regras",
+                None,
+                _usage_metrics(response, model, started_at),
             )
         return (
             response.output_parsed,
@@ -919,9 +922,7 @@ def answer_simulation_question(
             fonte_feedback="agente_regras",
         )
 
-    model = os.getenv("OPENAI_QUESTION_MODEL") or os.getenv(
-        "OPENAI_MODEL", "gpt-5.6"
-    )
+    model = os.getenv("OPENAI_QUESTION_MODEL") or os.getenv("OPENAI_MODEL", "gpt-5.6")
     try:
         payload = {
             "pergunta": question,
