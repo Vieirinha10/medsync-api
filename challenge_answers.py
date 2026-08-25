@@ -401,6 +401,156 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Fluxos expiratórios reduzidos ao longo da curva",
         ],
     },
+    "desafio-visual-041": {
+        "correct_option_id": "hematoma-epidural",
+        "diagnosis": "Hematoma epidural agudo",
+        "explanation": "A coleção extra-axial hiperdensa tem formato lentiforme ou biconvexo, pois o sangue se acumula entre o crânio e a dura-máter e costuma ser limitado pelas suturas. Em contexto traumático, esse padrão é clássico de hematoma epidural.",
+        "key_findings": [
+            "Coleção extra-axial hiperdensa",
+            "Formato biconvexo ou lentiforme",
+            "Efeito de massa sobre o hemisfério adjacente",
+        ],
+    },
+    "desafio-visual-042": {
+        "correct_option_id": "hematoma-subdural",
+        "diagnosis": "Hematoma subdural agudo",
+        "explanation": "A coleção hiperdensa acompanha a convexidade cerebral em formato de crescente. Esse padrão corresponde a sangue entre a dura-máter e a aracnoide, frequentemente relacionado à ruptura traumática de veias de ligação.",
+        "key_findings": [
+            "Coleção extra-axial em crescente",
+            "Distribuição ao longo da convexidade cerebral",
+            "Hiperdensidade compatível com sangue agudo",
+        ],
+    },
+    "desafio-visual-043": {
+        "correct_option_id": "avc-isquemico-acm",
+        "diagnosis": "Infarto isquêmico no território da artéria cerebral média",
+        "explanation": "A extensa hipodensidade córtico-subcortical respeita um território vascular da artéria cerebral média e produz apagamento de sulcos e efeito de massa. O conjunto é compatível com infarto isquêmico estabelecido.",
+        "key_findings": [
+            "Hipodensidade em território da cerebral média",
+            "Perda da diferenciação entre substâncias cinzenta e branca",
+            "Apagamento de sulcos e efeito de massa",
+        ],
+    },
+    "desafio-visual-044": {
+        "correct_option_id": "lesao-axonal-difusa",
+        "diagnosis": "Lesão axonal difusa",
+        "explanation": "A sequência SWI evidencia múltiplos focos puntiformes de suscetibilidade, correspondentes a micro-hemorragias traumáticas. Em trauma de alta energia, sua distribuição na junção entre substâncias cinzenta e branca e em estruturas profundas favorece lesão axonal difusa.",
+        "key_findings": [
+            "Múltiplos focos hemorrágicos puntiformes",
+            "Marcada suscetibilidade magnética na sequência SWI",
+            "Distribuição traumática multifocal",
+        ],
+    },
+    "desafio-visual-045": {
+        "correct_option_id": "escafoide",
+        "diagnosis": "Fratura da cintura do escafoide",
+        "explanation": "A linha radiolucente atravessa a cintura do escafoide, o osso alongado da fileira proximal do carpo no lado radial. Esse local é o mais comum das fraturas do escafoide e exige seguimento pelo risco de não consolidação e necrose do polo proximal.",
+        "key_findings": [
+            "Linha de fratura na cintura do escafoide",
+            "Localização radial na fileira proximal do carpo",
+            "Descontinuidade cortical no osso indicado",
+        ],
+    },
+    "desafio-visual-046": {
+        "correct_option_id": "luxacao-anterior-ombro",
+        "diagnosis": "Luxação anterior do ombro",
+        "explanation": "Antes da redução, a cabeça do úmero está deslocada para uma posição anteroinferior em relação à glenoide. Essa é a direção mais frequente da luxação glenoumeral traumática.",
+        "key_findings": [
+            "Perda da congruência glenoumeral",
+            "Cabeça umeral deslocada anteroinferiormente",
+            "Restauração do alinhamento no painel após redução",
+        ],
+    },
+    "desafio-visual-047": {
+        "correct_option_id": "fratura-colo-femur",
+        "diagnosis": "Fratura do colo do fêmur direito",
+        "explanation": "A radiografia mostra descontinuidade óssea no colo femoral direito, entre a cabeça e a região trocantérica. A localização intracapsular diferencia essa lesão de uma fratura intertrocantérica.",
+        "key_findings": [
+            "Descontinuidade do colo femoral direito",
+            "Traço de fratura intracapsular",
+            "Alteração do alinhamento entre cabeça e diáfise femoral",
+        ],
+    },
+    "desafio-visual-048": {
+        "correct_option_id": "lesao-lisfranc",
+        "diagnosis": "Lesão de Lisfranc",
+        "explanation": "O desalinhamento entre a base do segundo metatarso e o cuneiforme intermédio, associado a fraturas nas bases metatarsais, caracteriza lesão do complexo tarsometatarsal de Lisfranc. O reconhecimento é importante porque a lesão pode ser instável mesmo quando sutil.",
+        "key_findings": [
+            "Desalinhamento tarsometatarsal",
+            "Diástase na região entre primeiro e segundo metatarsos",
+            "Fraturas associadas nas bases metatarsais",
+        ],
+    },
+    "desafio-visual-049": {
+        "correct_option_id": "sinal-battle",
+        "diagnosis": "Sinal de Battle",
+        "explanation": "A equimose sobre a região mastoidea, atrás da orelha, é denominada sinal de Battle. Após trauma craniano, esse achado deve aumentar a suspeita de fratura da base do crânio.",
+        "key_findings": [
+            "Equimose retroauricular",
+            "Localização sobre a região mastoidea",
+            "Associação clínica com trauma de base do crânio",
+        ],
+    },
+    "desafio-visual-050": {
+        "correct_option_id": "nervo-ulnar",
+        "diagnosis": "Deformidade em garra ulnar",
+        "explanation": "A hiperextensão das articulações metacarpofalângicas e a flexão das interfalângicas do quarto e quinto dedos refletem perda da ação dos músculos interósseos e lumbricais ulnares. Esse padrão aponta para comprometimento do nervo ulnar.",
+        "key_findings": [
+            "Garra predominante no quarto e quinto dedos",
+            "Hiperextensão metacarpofalângica",
+            "Flexão das articulações interfalângicas",
+        ],
+    },
+    "desafio-visual-051": {
+        "correct_option_id": "liquido-livre-morrison",
+        "diagnosis": "FAST positivo no recesso hepatorrenal",
+        "explanation": "A faixa anecoica entre o fígado e o rim representa líquido livre no recesso de Morrison. Em paciente com trauma abdominal fechado e instabilidade, esse achado é considerado hemoperitônio até avaliação definitiva.",
+        "key_findings": [
+            "Faixa anecoica entre fígado e rim",
+            "Líquido no recesso hepatorrenal",
+            "Janela abdominal do FAST positiva",
+        ],
+    },
+    "desafio-visual-052": {
+        "correct_option_id": "sinal-praia",
+        "diagnosis": "Sinal da praia com deslizamento pleural preservado",
+        "explanation": "No modo M, as estruturas superficiais imóveis formam linhas horizontais e o pulmão em movimento gera aspecto granular abaixo da pleura, produzindo o sinal da praia. O achado demonstra deslizamento pleural e torna pneumotórax improvável apenas no ponto examinado.",
+        "key_findings": [
+            "Linhas horizontais acima da linha pleural",
+            "Padrão granular abaixo da pleura",
+            "Deslizamento pleural preservado no local",
+        ],
+    },
+    "desafio-visual-053": {
+        "correct_option_id": "papiledema",
+        "diagnosis": "Papiledema",
+        "explanation": "O disco óptico está elevado e hiperemiado, com margens apagadas e congestão vascular. Quando bilateral e no contexto adequado, esse edema do disco é chamado papiledema e sugere aumento da pressão intracraniana.",
+        "key_findings": [
+            "Apagamento das margens do disco óptico",
+            "Elevação e hiperemia do disco",
+            "Congestão dos vasos peripapilares",
+        ],
+    },
+    "desafio-visual-054": {
+        "correct_option_id": "terceiro-nervo",
+        "diagnosis": "Paralisia do nervo oculomotor",
+        "explanation": "A ptose associada à limitação da adução, elevação e depressão do olho caracteriza comprometimento do terceiro nervo craniano. A posição relativa para fora e para baixo resulta da ação preservada do reto lateral e do oblíquo superior.",
+        "key_findings": [
+            "Ptose palpebral",
+            "Limitação da adução e da elevação",
+            "Desvio ocular relativo para fora e para baixo",
+        ],
+    },
+    "desafio-visual-055": {
+        "correct_option_id": "espessura-parcial-superficial",
+        "diagnosis": "Queimadura de espessura parcial superficial",
+        "explanation": "A presença de eritema intenso e bolha de parede fina indica lesão da epiderme com comprometimento superficial da derme. Esse padrão corresponde à queimadura de espessura parcial superficial, tradicionalmente chamada de segundo grau superficial.",
+        "key_findings": [
+            "Bolha de parede fina",
+            "Eritema ao redor da lesão",
+            "Comprometimento parcial da espessura cutânea",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -603,5 +753,80 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Evgenios Metaxas, MD, MSc / Wikimedia Commons",
         "CC BY-SA 3.0",
         "https://commons.wikimedia.org/wiki/File:COPD.png",
+    ),
+    "desafio-visual-041": (
+        "Jpogi / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Traumatic_acute_epidual_hematoma.jpg",
+    ),
+    "desafio-visual-042": (
+        "Lucien Monfils / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Ct-scan_of_the_brain_with_an_subdural_hematoma.jpg",
+    ),
+    "desafio-visual-043": (
+        "Lucien Monfils / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:INFARCT.jpg",
+    ),
+    "desafio-visual-044": (
+        "SBarnes, Karen Tong e Mikael Häggström / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Susceptibility_weighted_imaging_(SWI)_in_diffuse_axonal_injury.jpg",
+    ),
+    "desafio-visual-045": (
+        "Gilo1969 / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:X-ray_of_scaphoid_fracture.png",
+    ),
+    "desafio-visual-046": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Dislocated_shoulder_X-ray_10.png",
+    ),
+    "desafio-visual-047": (
+        "Drvaram / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Neck_of_Femur_fracture_Right_side_in_a_80_years_old_female_patient.png",
+    ),
+    "desafio-visual-048": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Lisfranc_fracture.jpg",
+    ),
+    "desafio-visual-049": (
+        "Hariadhi / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Battle_sign_hariadhi.svg",
+    ),
+    "desafio-visual-050": (
+        "Mcstrother / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Ulnar_claw_hand.JPG",
+    ),
+    "desafio-visual-051": (
+        "Nevit Dilmen / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Ultrasound_Scan_ND_0110145312_1505060.png",
+    ),
+    "desafio-visual-052": (
+        "Tinss / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Sea_shore_sign_on_a_lung_ultrasound.jpg",
+    ),
+    "desafio-visual-053": (
+        "Jonathan Trobe, MD — University of Michigan Kellogg Eye Center / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Papilledema.jpg",
+    ),
+    "desafio-visual-054": (
+        "Wang Y et al. / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Oculomotor_nerve_palsy.png",
+    ),
+    "desafio-visual-055": (
+        "Themidget17 / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Second_degree_burn_after_2_days.JPG",
     ),
 }
