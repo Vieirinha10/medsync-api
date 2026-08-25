@@ -90,9 +90,7 @@ def question_answer_distribution(
                 QuestionAttempt.id == latest_attempts.c.attempt_id,
             )
             .where(
-                QuestionAttempt.alternativa_selecionada_id.in_(
-                    valid_alternative_ids
-                )
+                QuestionAttempt.alternativa_selecionada_id.in_(valid_alternative_ids)
             )
             .group_by(QuestionAttempt.alternativa_selecionada_id)
         ).all()
@@ -177,7 +175,9 @@ def list_questions(
 ):
     premium = is_premium(current_user) or is_admin_email(current_user.email)
     if not premium:
-        quantidade = min(quantidade, max(0, FREE_DAILY_LIMIT - answered_today(db, current_user.id)))
+        quantidade = min(
+            quantidade, max(0, FREE_DAILY_LIMIT - answered_today(db, current_user.id))
+        )
     if quantidade == 0:
         return []
 
@@ -203,9 +203,7 @@ def list_questions(
     return [serialize_question(item) for item in db.scalars(statement).all()]
 
 
-@router.post(
-    "/questoes/{question_id}/responder", response_model=QuestionAnswerResponse
-)
+@router.post("/questoes/{question_id}/responder", response_model=QuestionAnswerResponse)
 def answer_question(
     question_id: int,
     payload: QuestionAnswerRequest,
@@ -221,11 +219,13 @@ def answer_question(
         raise HTTPException(status_code=422, detail="Alternativa inválida.")
 
     already_answered_today = db.scalar(
-        select(QuestionAttempt.id).where(
+        select(QuestionAttempt.id)
+        .where(
             QuestionAttempt.id_usuario == current_user.id,
             QuestionAttempt.id_questao == question.id,
             QuestionAttempt.created_at >= start_of_local_day(),
-        ).limit(1)
+        )
+        .limit(1)
     )
     premium = is_premium(current_user) or is_admin_email(current_user.email)
     used = answered_today(db, current_user.id)
@@ -290,10 +290,12 @@ def retry_question_explanation(
     if question is None or question.status != "publicada":
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
     attempted = db.scalar(
-        select(QuestionAttempt.id).where(
+        select(QuestionAttempt.id)
+        .where(
             QuestionAttempt.id_usuario == current_user.id,
             QuestionAttempt.id_questao == question.id,
-        ).limit(1)
+        )
+        .limit(1)
     )
     if attempted is None:
         raise HTTPException(
@@ -361,7 +363,9 @@ def question_performance(
         "respondidas": attempts,
         "acertos": correct,
         "percentual": round((correct / attempts) * 100, 1) if attempts else 0,
-        "tempo_medio_segundos": round(average_time) if average_time is not None else None,
+        "tempo_medio_segundos": round(average_time)
+        if average_time is not None
+        else None,
         "assuntos": [
             {
                 "assunto": topic,
@@ -374,9 +378,7 @@ def question_performance(
     }
 
 
-@router.post(
-    "/questoes/{question_id}/reportar", response_model=MessageWithIdResponse
-)
+@router.post("/questoes/{question_id}/reportar", response_model=MessageWithIdResponse)
 def report_question(
     question_id: int,
     payload: QuestionReportCreate,
@@ -431,7 +433,9 @@ def admin_questions(
         select(
             QuestionAttempt.id_questao.label("question_id"),
             func.count(QuestionAttempt.id).label("attempts"),
-            func.sum(case((QuestionAttempt.correta.is_(True), 1), else_=0)).label("hits"),
+            func.sum(case((QuestionAttempt.correta.is_(True), 1), else_=0)).label(
+                "hits"
+            ),
         )
         .group_by(QuestionAttempt.id_questao)
         .subquery()
@@ -467,9 +471,7 @@ def admin_questions(
             search_conditions.append(ExamQuestion.id == int(term))
         question_statement = question_statement.where(or_(*search_conditions))
     if situacao:
-        question_statement = question_statement.where(
-            ExamQuestion.status == situacao
-        )
+        question_statement = question_statement.where(ExamQuestion.status == situacao)
     if assunto:
         question_statement = question_statement.where(ExamQuestion.assunto == assunto)
     rows = db.execute(
@@ -534,7 +536,9 @@ def admin_questions(
                 "explicacao_status": item.explicacao_status,
                 "status": item.status,
                 "tentativas": attempts,
-                "percentual_acerto": round((hits / attempts) * 100, 1) if attempts else 0,
+                "percentual_acerto": round((hits / attempts) * 100, 1)
+                if attempts
+                else 0,
                 "relatos_abertos": open_reports,
             }
             for item, attempts, hits, open_reports in rows
@@ -572,9 +576,7 @@ def update_admin_question(
     return {"message": "Questão atualizada."}
 
 
-@router.patch(
-    "/admin/questoes/relatos/{report_id}", response_model=MessageResponse
-)
+@router.patch("/admin/questoes/relatos/{report_id}", response_model=MessageResponse)
 def update_question_report(
     report_id: int,
     payload: AdminQuestionReportUpdate,
