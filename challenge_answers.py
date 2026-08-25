@@ -551,6 +551,156 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Comprometimento parcial da espessura cutânea",
         ],
     },
+    "desafio-visual-056": {
+        "correct_option_id": "acne-vulgar",
+        "diagnosis": "Acne vulgar",
+        "explanation": "A coexistência de comedões abertos e fechados com pápulas e pústulas inflamatórias em área rica em unidades pilossebáceas caracteriza acne vulgar. A presença de comedões ajuda a diferenciá-la de rosácea e foliculite.",
+        "key_findings": [
+            "Comedões abertos e fechados",
+            "Pápulas e pústulas inflamatórias",
+            "Distribuição facial em unidades pilossebáceas",
+        ],
+    },
+    "desafio-visual-057": {
+        "correct_option_id": "dermatite-atopica",
+        "diagnosis": "Dermatite atópica",
+        "explanation": "As placas eritematosas, eczematosas e mal delimitadas em região flexural são típicas da dermatite atópica. Em quadros crônicos, prurido e escoriações podem acompanhar liquenificação da pele.",
+        "key_findings": [
+            "Placas eczematosas eritematosas",
+            "Predomínio em área flexural",
+            "Escoriações e sinais de prurido crônico",
+        ],
+    },
+    "desafio-visual-058": {
+        "correct_option_id": "carcinoma-basocelular",
+        "diagnosis": "Carcinoma basocelular",
+        "explanation": "A lâmina demonstra múltiplos ninhos dérmicos de células basaloides, com organização periférica em paliçada e separação focal do estroma. Esse padrão histológico sustenta carcinoma basocelular.",
+        "key_findings": [
+            "Ninhos dérmicos de células basaloides",
+            "Paliçada nuclear periférica",
+            "Fendas de retração entre tumor e estroma",
+        ],
+    },
+    "desafio-visual-059": {
+        "correct_option_id": "stevens-johnson",
+        "diagnosis": "Síndrome de Stevens-Johnson",
+        "explanation": "Erosões extensas e crostas hemorrágicas, especialmente com comprometimento de mucosas e lesões cutâneas disseminadas, sugerem síndrome de Stevens-Johnson. Trata-se de emergência dermatológica frequentemente relacionada a medicamentos e que exige suspensão do agente suspeito e suporte hospitalar.",
+        "key_findings": [
+            "Erosões mucocutâneas extensas",
+            "Crostas hemorrágicas em lábios e face",
+            "Descolamento epidérmico em reação sistêmica grave",
+        ],
+    },
+    "desafio-visual-060": {
+        "correct_option_id": "pitiriase-rosea",
+        "diagnosis": "Pitiríase rósea",
+        "explanation": "A placa oval eritematosa com descamação fina voltada para o centro, formando colarete, corresponde à placa-mãe da pitiríase rósea. Dias depois, lesões menores costumam surgir no tronco acompanhando as linhas de clivagem da pele.",
+        "key_findings": [
+            "Placa oval eritematosa",
+            "Descamação fina em colarete",
+            "Aspecto compatível com placa-mãe",
+        ],
+    },
+    "desafio-visual-061": {
+        "correct_option_id": "cristalino-catarata",
+        "diagnosis": "Catarata",
+        "explanation": "A biomicroscopia mostra opacificação esbranquiçada situada atrás da pupila, no cristalino. Essa perda de transparência caracteriza catarata e pode causar redução progressiva e indolor da acuidade visual.",
+        "key_findings": [
+            "Opacidade localizada no cristalino",
+            "Perda da transparência atrás da pupila",
+            "Córnea relativamente transparente à frente da opacidade",
+        ],
+    },
+    "desafio-visual-062": {
+        "correct_option_id": "glaucoma",
+        "diagnosis": "Neuropatia óptica glaucomatosa",
+        "explanation": "O disco óptico apresenta escavação aumentada e afinamento importante do anel neurorretiniano. Esse padrão reflete perda de fibras do nervo óptico e é característico de dano glaucomatoso avançado.",
+        "key_findings": [
+            "Relação escavação-disco aumentada",
+            "Afinamento do anel neurorretiniano",
+            "Deslocamento dos vasos sobre a borda da escavação",
+        ],
+    },
+    "desafio-visual-063": {
+        "correct_option_id": "oclusao-arteria-central-retina",
+        "diagnosis": "Oclusão da artéria central da retina",
+        "explanation": "A isquemia aguda torna a retina difusamente pálida e edemaciada, enquanto a fóvea permanece vermelho-cereja pela visualização da coroide subjacente. O achado é clássico da oclusão da artéria central da retina e representa emergência oftalmológica.",
+        "key_findings": [
+            "Palidez difusa da retina",
+            "Mácula em vermelho-cereja",
+            "Atenuação da circulação arterial retiniana",
+        ],
+    },
+    "desafio-visual-064": {
+        "correct_option_id": "colesteatoma",
+        "diagnosis": "Colesteatoma adquirido",
+        "explanation": "A bolsa de retração na região atical contém detritos queratínicos esbranquiçados. Esse acúmulo de epitélio escamoso queratinizado caracteriza colesteatoma, lesão capaz de erodir estruturas da orelha média.",
+        "key_findings": [
+            "Bolsa de retração atical",
+            "Detritos queratínicos esbranquiçados",
+            "Alteração focal da membrana timpânica superior",
+        ],
+    },
+    "desafio-visual-065": {
+        "correct_option_id": "polipo-nasal",
+        "diagnosis": "Pólipo nasal",
+        "explanation": "A formação lisa, pálida, translúcida e pouco vascularizada no interior da fossa nasal tem o aspecto típico de pólipo inflamatório. Cornetos hipertrofiados costumam ser mais avermelhados e sensíveis ao toque.",
+        "key_findings": [
+            "Massa nasal lisa e translúcida",
+            "Coloração pálida acinzentada",
+            "Aspecto polipoide pouco vascularizado",
+        ],
+    },
+    "desafio-visual-066": {
+        "correct_option_id": "candidiase-oral",
+        "diagnosis": "Candidíase oral pseudomembranosa",
+        "explanation": "As placas brancas multifocais sobre mucosa eritematosa são típicas da candidíase pseudomembranosa. Em geral, podem ser removidas por raspagem, deixando uma base eritematosa ou discretamente sangrante.",
+        "key_findings": [
+            "Placas brancas multifocais",
+            "Mucosa eritematosa subjacente",
+            "Distribuição em palato e orofaringe",
+        ],
+    },
+    "desafio-visual-067": {
+        "correct_option_id": "afta-menor",
+        "diagnosis": "Úlcera aftosa menor",
+        "explanation": "A lesão é pequena, arredondada, rasa e apresenta centro fibrinoso claro com halo eritematoso na mucosa labial não queratinizada. Esse é o padrão típico da úlcera aftosa menor.",
+        "key_findings": [
+            "Úlcera pequena e arredondada",
+            "Centro fibrinoso claro",
+            "Halo eritematoso em mucosa não queratinizada",
+        ],
+    },
+    "desafio-visual-068": {
+        "correct_option_id": "staphylococcus",
+        "diagnosis": "Cocos Gram-positivos compatíveis com Staphylococcus spp.",
+        "explanation": "A coloração demonstra cocos roxos, portanto Gram-positivos, agrupados irregularmente em cachos. Essa disposição resulta da divisão em múltiplos planos e é característica do gênero Staphylococcus.",
+        "key_findings": [
+            "Cocos corados em roxo",
+            "Agrupamento em cachos",
+            "Morfologia compatível com Staphylococcus spp.",
+        ],
+    },
+    "desafio-visual-069": {
+        "correct_option_id": "mycobacterium-tuberculosis",
+        "diagnosis": "Bacilos álcool-ácido resistentes compatíveis com Mycobacterium tuberculosis",
+        "explanation": "Na coloração de Ziehl-Neelsen, bacilos finos avermelhados permanecem corados sobre o fundo azul por serem álcool-ácido resistentes. Em amostra de escarro, esse achado sustenta investigação microbiológica para tuberculose.",
+        "key_findings": [
+            "Bacilos finos avermelhados",
+            "Fundo contrastado em azul",
+            "Álcool-ácido resistência na baciloscopia",
+        ],
+    },
+    "desafio-visual-070": {
+        "correct_option_id": "plasmodium-falciparum",
+        "diagnosis": "Plasmodium falciparum",
+        "explanation": "O gametócito alongado em forma de crescente ou banana é característico do Plasmodium falciparum. Essa morfologia permite diferenciá-lo das formas arredondadas observadas nas demais espécies humanas mais comuns.",
+        "key_findings": [
+            "Gametócito em forma de crescente",
+            "Pigmento malárico no interior do parasito",
+            "Morfologia típica de Plasmodium falciparum",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -828,5 +978,80 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Themidget17 / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Second_degree_burn_after_2_days.JPG",
+    ),
+    "desafio-visual-056": (
+        "George Henry Fox / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:Acne_vulgaris_2.jpg",
+    ),
+    "desafio-visual-057": (
+        "Eisfelder / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Atopic_dermatitis_child.JPG",
+    ),
+    "desafio-visual-058": (
+        "Ed Uthman, MD / Wikimedia Commons",
+        "CC BY-SA 2.0",
+        "https://commons.wikimedia.org/wiki/File:Basal_Cell_Carcinoma.jpg",
+    ),
+    "desafio-visual-059": (
+        "Thomas Habif, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Stevens-johnson-syndrome.jpg",
+    ),
+    "desafio-visual-060": (
+        "Aceofhearts1968 / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:Pityriasis_rosea-1.jpg",
+    ),
+    "desafio-visual-061": (
+        "Rakesh Ahuja, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Slit_lamp_view_of_Cataract_in_Human_Eye.png",
+    ),
+    "desafio-visual-062": (
+        "Snoop / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Glaukompapille2.jpg",
+    ),
+    "desafio-visual-063": (
+        "Gopal Bisht, MD / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Cherry_red_spot_in_patient_with_central_retinal_artery_occlusion_(CRAO).jpg",
+    ),
+    "desafio-visual-064": (
+        "Michael Hawke, MD / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Attic_Cholesteatoma.jpg",
+    ),
+    "desafio-visual-065": (
+        "MathieuMD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Polype_nasal.jpg",
+    ),
+    "desafio-visual-066": (
+        "CDC e Sol Silverman Jr., DDS / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:CandidiasisFromCDCinJPEG03-18-06.JPG",
+    ),
+    "desafio-visual-067": (
+        "Farhan 9909 / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Aphthous_stomatitis_on_the_labial_mucosa.jpg",
+    ),
+    "desafio-visual-068": (
+        "Graham Beards, MD / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Staphylococcus_aureus_Gram_stain.jpg",
+    ),
+    "desafio-visual-069": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC0",
+        "https://commons.wikimedia.org/wiki/File:Acid_fast_bacilli_(AFB)_positive_smear_of_sputum.jpg",
+    ),
+    "desafio-visual-070": (
+        "Microrao / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Plasmodium_falciparum_gametocyte.jpg",
     ),
 }
