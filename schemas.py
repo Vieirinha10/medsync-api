@@ -101,6 +101,20 @@ class EmailVerificationResend(BaseModel):
         return str(value).strip().lower()
 
 
+class PasswordRecoveryRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        return str(value).strip().lower()
+
+
+class PasswordResetRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=200)
+    password: str = Field(min_length=8, max_length=72)
+
+
 class MessageResponse(BaseModel):
     message: str
 

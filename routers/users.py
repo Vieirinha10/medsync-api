@@ -15,6 +15,8 @@ from schemas import (
     EmailVerificationRequest,
     EmailVerificationResend,
     MessageResponse,
+    PasswordRecoveryRequest,
+    PasswordResetRequest,
     Token,
     UserCreate,
     UserLogin,
@@ -27,7 +29,7 @@ from security import (
     verify_password,
 )
 from services.activity import track_activity
-from services.email import send_verification_email
+from services.email import send_password_reset_email, send_verification_email
 from settings import is_admin_email
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])
@@ -38,6 +40,13 @@ EMAIL_VERIFICATION_TTL_HOURS = int(os.getenv("EMAIL_VERIFICATION_TTL_HOURS", "24
 EMAIL_RESEND_COOLDOWN_SECONDS = int(os.getenv("EMAIL_RESEND_COOLDOWN_SECONDS", "60"))
 GENERIC_RESEND_MESSAGE = (
     "Se houver uma conta pendente para este e-mail, enviaremos uma nova confirmação."
+)
+PASSWORD_RESET_TTL_MINUTES = int(os.getenv("PASSWORD_RESET_TTL_MINUTES", "30"))
+PASSWORD_RESET_COOLDOWN_SECONDS = int(
+    os.getenv("PASSWORD_RESET_COOLDOWN_SECONDS", "60")
+)
+GENERIC_PASSWORD_RECOVERY_MESSAGE = (
+    "Se houver uma conta para este e-mail, enviaremos as instruções de recuperação."
 )
 logger = logging.getLogger(__name__)
 
@@ -152,7 +161,10 @@ def login_usuario(form_data: UserLogin, db: Session = Depends(get_db)):
     user.last_login_at = datetime.now(UTC)
     track_activity(db, user.id, "login")
     db.commit()
-    return {"access_token": create_access_token(user.id), "token_type": "bearer"}
+    return {
+        "access_token": create_access_token(user.id, user.auth_version),
+        "token_type": "bearer",
+    }
 
 
 @router.get("/me", response_model=UserResponse)
@@ -222,3 +234,73 @@ def reenviar_verificacao(
         logger.exception("Falha ao reenviar confirmação de e-mail.")
 
     return {"message": GENERIC_RESEND_MESSAGE}
+
+
+@router.post(
+    "/recuperar-senha",
+    response_model=MessageResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def recuperar_senha(
+    payload: PasswordRecoveryRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(select(User).where(User.email == str(payload.email)))
+    if user is None or user.email_verified_at is None:
+        return {"message": GENERIC_PASSWORD_RECOVERY_MESSAGE}
+
+    now = datetime.now(UTC)
+    if user.password_reset_sent_at is not None:
+        sent_at = _as_utc(user.password_reset_sent_at)
+        if (now - sent_at).total_seconds() < PASSWORD_RESET_COOLDOWN_SECONDS:
+            return {"message": GENERIC_PASSWORD_RECOVERY_MESSAGE}
+
+    raw_token = secrets.token_urlsafe(32)
+    user.password_reset_token_hash = _token_hash(raw_token)
+    user.password_reset_expires_at = now + timedelta(minutes=PASSWORD_RESET_TTL_MINUTES)
+    user.password_reset_sent_at = now
+    try:
+        send_password_reset_email(
+            email=user.email,
+            nome=user.nome,
+            raw_token=raw_token,
+            expires_minutes=PASSWORD_RESET_TTL_MINUTES,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.exception("Falha ao enviar recuperação de senha.")
+
+    return {"message": GENERIC_PASSWORD_RECOVERY_MESSAGE}
+
+
+@router.post("/redefinir-senha", response_model=MessageResponse)
+def redefinir_senha(
+    payload: PasswordResetRequest,
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(UTC)
+    user = db.scalar(
+        select(User).where(User.password_reset_token_hash == _token_hash(payload.token))
+    )
+    if (
+        user is None
+        or user.password_reset_expires_at is None
+        or _as_utc(user.password_reset_expires_at) <= now
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O link de recuperação é inválido ou expirou.",
+        )
+
+    user.password_hash = hash_password(payload.password)
+    user.password_reset_token_hash = None
+    user.password_reset_expires_at = None
+    user.password_reset_sent_at = None
+    user.auth_version += 1
+    db.commit()
+    return {
+        "message": (
+            "Senha redefinida com segurança. Entre novamente com sua nova senha."
+        )
+    }

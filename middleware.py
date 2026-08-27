@@ -35,6 +35,20 @@ RATE_LIMIT_RULES = (
         300,
     ),
     RateLimitRule(
+        "password-recovery",
+        "POST",
+        re.compile(r"^/usuarios/recuperar-senha$"),
+        5,
+        300,
+    ),
+    RateLimitRule(
+        "password-reset",
+        "POST",
+        re.compile(r"^/usuarios/redefinir-senha$"),
+        10,
+        300,
+    ),
+    RateLimitRule(
         "simulation",
         "POST",
         re.compile(r"^/simulacoes/\d+/finalizar$"),

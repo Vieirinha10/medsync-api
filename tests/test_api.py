@@ -474,6 +474,103 @@ def test_email_verification_can_be_resent_without_account_enumeration(monkeypatc
     assert len(sent_tokens) == 2
 
 
+def test_password_recovery_is_private_one_time_and_revokes_old_sessions(monkeypatch):
+    email = f"recuperacao-{uuid.uuid4().hex}@example.com"
+    old_token = _register_and_login(email)
+    captured = {}
+
+    def fake_send_password_reset_email(**payload):
+        captured.update(payload)
+
+    monkeypatch.setattr(
+        "routers.users.send_password_reset_email",
+        fake_send_password_reset_email,
+    )
+
+    recovery = client.post("/usuarios/recuperar-senha", json={"email": email})
+    unknown = client.post(
+        "/usuarios/recuperar-senha",
+        json={"email": f"desconhecido-{uuid.uuid4().hex}@example.com"},
+    )
+    assert recovery.status_code == 202
+    assert unknown.status_code == 202
+    assert recovery.json() == unknown.json()
+    assert captured["email"] == email
+    assert captured["expires_minutes"] == 30
+
+    raw_token = captured["raw_token"]
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        assert user.password_reset_token_hash
+        assert user.password_reset_token_hash != raw_token
+        assert len(user.password_reset_token_hash) == 64
+
+    captured.clear()
+    cooldown = client.post("/usuarios/recuperar-senha", json={"email": email})
+    assert cooldown.status_code == 202
+    assert captured == {}
+
+    reset = client.post(
+        "/usuarios/redefinir-senha",
+        json={"token": raw_token, "password": "nova-senha-segura"},
+    )
+    assert reset.status_code == 200
+
+    assert (
+        client.get(
+            "/usuarios/me", headers={"Authorization": f"Bearer {old_token}"}
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/usuarios/login",
+            json={"email": email, "password": "senha-segura"},
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/usuarios/login",
+            json={"email": email, "password": "nova-senha-segura"},
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/usuarios/redefinir-senha",
+            json={"token": raw_token, "password": "outra-senha-segura"},
+        ).status_code
+        == 400
+    )
+
+
+def test_expired_password_reset_link_is_rejected(monkeypatch):
+    email = f"recuperacao-expirada-{uuid.uuid4().hex}@example.com"
+    _register_and_login(email)
+    captured = {}
+    monkeypatch.setattr(
+        "routers.users.send_password_reset_email",
+        lambda **payload: captured.update(payload),
+    )
+    assert (
+        client.post("/usuarios/recuperar-senha", json={"email": email}).status_code
+        == 202
+    )
+
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        user.password_reset_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+        db.commit()
+
+    response = client.post(
+        "/usuarios/redefinir-senha",
+        json={"token": captured["raw_token"], "password": "nova-senha-segura"},
+    )
+    assert response.status_code == 400
+    assert "inválido ou expirou" in response.json()["detail"]
+
+
 def test_registration_requires_valid_academic_profile():
     payload = {
         "nome": "Aluno sem perfil",
