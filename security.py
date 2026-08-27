@@ -32,10 +32,11 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, auth_version: int = 0) -> str:
     now = datetime.now(UTC)
     payload = {
         "sub": str(user_id),
+        "ver": auth_version,
         "iat": now,
         "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
@@ -59,11 +60,12 @@ def get_current_user(
             credentials.credentials, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM]
         )
         user_id = int(payload["sub"])
+        token_auth_version = int(payload.get("ver", 0))
     except (InvalidTokenError, KeyError, TypeError, ValueError):
         raise unauthorized from None
 
     user = db.get(User, user_id)
-    if user is None:
+    if user is None or token_auth_version != user.auth_version:
         raise unauthorized
     return user
 

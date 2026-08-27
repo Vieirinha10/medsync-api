@@ -52,6 +52,16 @@ class User(Base):
     email_verification_sent_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    password_reset_token_hash: Mapped[str | None] = mapped_column(
+        String(64), unique=True, nullable=True, index=True
+    )
+    password_reset_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    password_reset_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    auth_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     progressos: Mapped[list["Progresso"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
