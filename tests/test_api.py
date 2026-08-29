@@ -13,8 +13,10 @@ from sqlalchemy import func, select
 
 from alembic import command
 
-TEST_DB = Path("/tmp") / f"medsync-{uuid.uuid4().hex}.db"
-os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB}"
+import tempfile
+
+TEST_DB = Path(tempfile.gettempdir()) / f"medsync-{uuid.uuid4().hex}.db"
+os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB.as_posix()}"
 os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
