@@ -18,7 +18,7 @@ implementação interna evolui por domínios.
 ## Conteúdo clínico
 
 Casos, exames e rubricas agora possuem tabelas próprias. O catálogo em Python é
-mantido temporariamente somente como fonte de carga inicial dos 40 casos. Depois
+mantido temporariamente somente como fonte de carga inicial dos 60 casos. Depois
 da carga, a API consulta o banco como fonte principal.
 
 Cada caso possui estado e versão de conteúdo. Cada rubrica possui versão, estado

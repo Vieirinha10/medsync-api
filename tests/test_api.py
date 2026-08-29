@@ -1,6 +1,7 @@
 import importlib
 import os
 import sys
+import tempfile
 import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -12,8 +13,6 @@ from pydantic import ValidationError
 from sqlalchemy import func, select
 
 from alembic import command
-
-import tempfile
 
 TEST_DB = Path(tempfile.gettempdir()) / f"medsync-{uuid.uuid4().hex}.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB.as_posix()}"
@@ -222,11 +221,11 @@ def test_login_rate_limit_can_be_enabled():
 
 def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
     with SessionLocal() as db:
-        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 55
-        assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 55
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 60
+        assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 60
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 5
+        assert rubric.versao == 6
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
 
@@ -255,6 +254,69 @@ def test_primary_care_collection_has_revised_rubrics_and_is_easy():
 
     for case_id in range(41, 56):
         ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case_id])
+
+
+def test_first_expansion_batch_is_complete_rich_and_revised():
+    batch_ids = set(range(56, 61))
+
+    with SessionLocal() as db:
+        cases = list(
+            db.scalars(
+                select(ClinicalCase)
+                .where(ClinicalCase.id.in_(batch_ids))
+                .order_by(ClinicalCase.id)
+            ).all()
+        )
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+
+        assert [case.id for case in cases] == list(range(56, 61))
+        assert all(case.nivel_dificuldade == "Difícil" for case in cases)
+        assert all(case.status == "publicado" for case in cases)
+        assert all(len(case.exames) == 10 for case in cases)
+        assert len(rubrics) == 5
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        assert all(rubric.versao == 6 for rubric in rubrics)
+
+        for case in cases:
+            rubric = ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case.id])
+            exam_ids = {exam.codigo for exam in case.exames}
+            classified_ids = set(
+                rubric.exames_essenciais
+                + rubric.exames_opcionais
+                + rubric.exames_desnecessarios
+            )
+
+            assert classified_ids == exam_ids
+            assert set(rubric.justificativa_exames) == exam_ids
+            assert rubric.fontes_clinicas
+            assert rubric.desfechos_conduta is not None
+            assert len(rubric.desfechos_conduta.adequada.reavaliacao) >= 4
+            assert len(rubric.desfechos_conduta.parcial.reavaliacao) >= 4
+            assert len(rubric.desfechos_conduta.insegura.reavaliacao) >= 4
+
+
+def test_first_expansion_batch_exposes_multiple_vital_signs_without_diagnosis_in_title():
+    token = _register_and_login("lote-expansao-um@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    for case_id in range(56, 61):
+        response = client.get(f"/casos-clinicos/{case_id}", headers=headers)
+        assert response.status_code == 200
+        body = response.json()
+        documented_vitals = [
+            item for item in body["sinais_vitais"] if item["valor"] is not None
+        ]
+
+        assert len(documented_vitals) == 5
+        assert body["avaliacao_2_disponivel"] is True
+        assert body["titulo"].startswith(f"Caso #{case_id:03d} – ")
+        assert "infarto" not in body["titulo"].lower()
+        assert "dissec" not in body["titulo"].lower()
+        assert "tampon" not in body["titulo"].lower()
 
 
 def test_premium_case_is_enforced_by_the_api():
@@ -303,7 +365,7 @@ def test_seed_adds_catalog_expansions_to_an_existing_database():
         assert case is not None
         db.delete(case)
         db.commit()
-        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 54
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 59
 
         assert seed_clinical_content(db) is False
         restored = db.get(ClinicalCase, 55)
@@ -348,7 +410,7 @@ def test_existing_pilot_rubric_is_safely_upgraded():
         assert seed_clinical_content(db) is False
         db.refresh(rubric)
 
-        assert rubric.versao == 5
+        assert rubric.versao == 6
         assert rubric.definicao["feedback_seguranca"]
 
 
@@ -1018,7 +1080,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
 
     case_catalog = client.get("/admin/casos", headers=headers)
     assert case_catalog.status_code == 200
-    assert len(case_catalog.json()) == 55
+    assert len(case_catalog.json()) == 60
     assert {item["nivel_dificuldade"] for item in case_catalog.json()} >= {
         "Intermediário",
         "Crítico",
@@ -1359,7 +1421,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
         case["id"]: case["avaliacao_2_disponivel"] for case in response.json()
     }
     assert all(availability[case_id] for case_id in {6, 7, 8, 11, 12})
-    assert all(availability[case_id] for case_id in range(1, 56))
+    assert all(availability[case_id] for case_id in range(1, 61))
 
     with SessionLocal() as db:
         for case_id in {6, 7, 8, 11, 12}:
@@ -1367,7 +1429,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
                 select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
             )
             assert rubric is not None
-            assert rubric.versao == 5
+            assert rubric.versao == 6
             assert rubric.definicao["objetivos_aprendizagem"]
             assert rubric.definicao["criterios_seguranca"]
             assert rubric.definicao["fontes_clinicas"]
@@ -1393,7 +1455,7 @@ def test_first_feedback_expansion_batch_is_structured_and_clinically_corrected()
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 5 for rubric in rubrics)
+        assert all(rubric.versao == 6 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["criterios_seguranca"]
@@ -1518,7 +1580,7 @@ def test_second_feedback_expansion_batch_is_structured_and_clinically_corrected(
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 5 for rubric in rubrics)
+        assert all(rubric.versao == 6 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["objetivos_aprendizagem"]
@@ -1818,7 +1880,7 @@ def test_fourth_feedback_expansion_batch_is_structured_and_clinically_corrected(
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 5 for rubric in rubrics)
+        assert all(rubric.versao == 6 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["objetivos_aprendizagem"]
@@ -2768,8 +2830,8 @@ def test_all_cases_are_available_after_final_rubric_review():
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    official_cases = [case for case in response.json() if case["id"] <= 55]
-    assert len(official_cases) == 55
+    official_cases = [case for case in response.json() if case["id"] <= 60]
+    assert len(official_cases) == 60
     assert all(case["avaliacao_2_disponivel"] for case in official_cases)
 
 
