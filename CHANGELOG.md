@@ -6,6 +6,10 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Adicionado
 
+- Área de Psiquiatria e Saúde Mental com 15 novos casos clínicos, elevando o
+  catálogo de 65 para 80 casos e a meta final do projeto de 100 para 115 casos.
+- Casos distribuídos igualmente entre os níveis fácil, intermediário e difícil,
+  com escalas psicológicas e psiquiátricas integradas às opções de avaliação.
 - Segundo lote da expansão, elevando o catálogo de 60 para 65 casos com
   pneumonia comunitária, colecistite aguda, cetoacidose diabética, gravidez
   ectópica e crise aguda de fechamento angular.
@@ -26,8 +30,10 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Alterado
 
+- Versão editorial das rubricas elevada de 7 para 8 para sincronizar o lote de
+  Psiquiatria e Saúde Mental em bancos existentes.
 - Versão editorial das rubricas elevada de 6 para 7 para sincronizar o segundo
   lote em bancos existentes.
 - Versão editorial das rubricas elevada de 5 para 6 para sincronizar o novo
   conteúdo em bancos existentes.
-- Testes e documentação atualizados para o catálogo de 65 casos.
+- Testes e documentação atualizados para o catálogo de 80 casos.

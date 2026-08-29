@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")
 from challenge_answers import BUILTIN_CHALLENGE_ANSWERS, BUILTIN_CHALLENGE_SOURCES
 from clinical_cases_batch_two import EXPANSION_BATCH_TWO_CASES
+from clinical_cases_psychiatry import PSYCHIATRY_CASES
 from clinical_rubric_catalog import CLINICAL_RUBRICS
 from database import SessionLocal
 from evaluation import (
@@ -222,11 +223,11 @@ def test_login_rate_limit_can_be_enabled():
 
 def test_clinical_catalog_is_seeded_once_with_versioned_rubric():
     with SessionLocal() as db:
-        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 65
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 80
         assert db.scalar(select(func.count()).select_from(ClinicalExam)) > 65
         rubric = db.scalar(select(ClinicalRubric).where(ClinicalRubric.id_caso == 8))
         assert rubric is not None
-        assert rubric.versao == 7
+        assert rubric.versao == 8
         assert rubric.status == "revisada"
         assert seed_clinical_content(db) is False
 
@@ -280,7 +281,7 @@ def test_first_expansion_batch_is_complete_rich_and_revised():
         assert all(len(case.exames) == 10 for case in cases)
         assert len(rubrics) == 5
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 7 for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
 
         for case in cases:
             rubric = ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case.id])
@@ -342,7 +343,7 @@ def test_second_expansion_batch_is_intermediate_and_uses_six_exams_per_case():
         assert all(len(case.exames) == 6 for case in cases)
         assert len(rubrics) == 5
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 7 for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
 
         for case in cases:
             rubric = ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case.id])
@@ -373,6 +374,82 @@ def test_second_expansion_batch_accepts_short_diagnostic_answers():
             exames_solicitados=rubric["exames_essenciais"],
             hipotese_diagnostica=answer,
             conduta_proposta="Monitorizar, estabilizar e realizar tratamento indicado.",
+        )
+        score, _, context = evaluate_objective(cases[case_id], submission, rubric)
+
+        assert score.hipotese == 30
+        assert context["classificacao_hipotese"] == "correta"
+
+
+def test_psychiatry_batch_has_balanced_difficulty_and_complete_rubrics():
+    batch_ids = set(range(66, 81))
+
+    with SessionLocal() as db:
+        cases = list(
+            db.scalars(
+                select(ClinicalCase)
+                .where(ClinicalCase.id.in_(batch_ids))
+                .order_by(ClinicalCase.id)
+            ).all()
+        )
+        rubrics = list(
+            db.scalars(
+                select(ClinicalRubric).where(ClinicalRubric.id_caso.in_(batch_ids))
+            ).all()
+        )
+
+        assert [case.id for case in cases] == list(range(66, 81))
+        assert all(case.especialidade == "Psiquiatria e Saúde Mental" for case in cases)
+        assert [case.nivel_dificuldade for case in cases].count("Fácil") == 5
+        assert [case.nivel_dificuldade for case in cases].count("Intermediário") == 5
+        assert [case.nivel_dificuldade for case in cases].count("Difícil") == 5
+        assert all(len(case.exames) == 6 for case in cases)
+        assert len(rubrics) == 15
+        assert all(rubric.status == "revisada" for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
+
+        for case in cases:
+            rubric = ClinicalRubricDefinition.model_validate(CLINICAL_RUBRICS[case.id])
+            exam_ids = {exam.codigo for exam in case.exames}
+            classified_ids = set(
+                rubric.exames_essenciais
+                + rubric.exames_opcionais
+                + rubric.exames_desnecessarios
+            )
+            assert exam_ids == classified_ids
+            assert set(rubric.justificativa_exames) == exam_ids
+            assert rubric.fontes_clinicas
+            assert len(rubric.desfechos_conduta.adequada.reavaliacao) >= 4
+            assert len(rubric.desfechos_conduta.parcial.reavaliacao) >= 4
+            assert len(rubric.desfechos_conduta.insegura.reavaliacao) >= 4
+
+
+def test_psychiatry_batch_accepts_short_diagnostic_answers():
+    short_answers = {
+        66: "Depressão maior",
+        67: "Ansiedade generalizada",
+        68: "Transtorno do pânico",
+        69: "Ansiedade social",
+        70: "TDAH",
+        71: "TOC",
+        72: "TEPT",
+        73: "Mania",
+        74: "Abstinência alcoólica",
+        75: "Anorexia nervosa",
+        76: "Esquizofrenia",
+        77: "Psicose pós-parto",
+        78: "Catatonia",
+        79: "Borderline",
+        80: "Delirium",
+    }
+    cases = {case["id"]: case for case in PSYCHIATRY_CASES}
+
+    for case_id, answer in short_answers.items():
+        rubric = CLINICAL_RUBRICS[case_id]
+        submission = SimulationSubmission(
+            exames_solicitados=rubric["exames_essenciais"],
+            hipotese_diagnostica=answer,
+            conduta_proposta="Proteger, monitorar, tratar e organizar seguimento.",
         )
         score, _, context = evaluate_objective(cases[case_id], submission, rubric)
 
@@ -426,7 +503,7 @@ def test_seed_adds_catalog_expansions_to_an_existing_database():
         assert case is not None
         db.delete(case)
         db.commit()
-        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 64
+        assert db.scalar(select(func.count()).select_from(ClinicalCase)) == 79
 
         assert seed_clinical_content(db) is False
         restored = db.get(ClinicalCase, 55)
@@ -471,7 +548,7 @@ def test_existing_pilot_rubric_is_safely_upgraded():
         assert seed_clinical_content(db) is False
         db.refresh(rubric)
 
-        assert rubric.versao == 7
+        assert rubric.versao == 8
         assert rubric.definicao["feedback_seguranca"]
 
 
@@ -1141,7 +1218,7 @@ def test_admin_operations_manage_content_metrics_announcements_and_export():
 
     case_catalog = client.get("/admin/casos", headers=headers)
     assert case_catalog.status_code == 200
-    assert len(case_catalog.json()) == 65
+    assert len(case_catalog.json()) == 80
     assert {item["nivel_dificuldade"] for item in case_catalog.json()} >= {
         "Intermediário",
         "Crítico",
@@ -1490,7 +1567,7 @@ def test_first_rubric_v2_batch_is_available_and_has_clinical_sources():
                 select(ClinicalRubric).where(ClinicalRubric.id_caso == case_id)
             )
             assert rubric is not None
-            assert rubric.versao == 7
+            assert rubric.versao == 8
             assert rubric.definicao["objetivos_aprendizagem"]
             assert rubric.definicao["criterios_seguranca"]
             assert rubric.definicao["fontes_clinicas"]
@@ -1516,7 +1593,7 @@ def test_first_feedback_expansion_batch_is_structured_and_clinically_corrected()
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 7 for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["criterios_seguranca"]
@@ -1641,7 +1718,7 @@ def test_second_feedback_expansion_batch_is_structured_and_clinically_corrected(
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 7 for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["objetivos_aprendizagem"]
@@ -1941,7 +2018,7 @@ def test_fourth_feedback_expansion_batch_is_structured_and_clinically_corrected(
         )
         assert len(rubrics) == len(batch_ids)
         assert all(rubric.status == "revisada" for rubric in rubrics)
-        assert all(rubric.versao == 7 for rubric in rubrics)
+        assert all(rubric.versao == 8 for rubric in rubrics)
         for rubric in rubrics:
             ClinicalRubricDefinition.model_validate(rubric.definicao)
             assert rubric.definicao["objetivos_aprendizagem"]
@@ -2891,8 +2968,8 @@ def test_all_cases_are_available_after_final_rubric_review():
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
-    official_cases = [case for case in response.json() if case["id"] <= 65]
-    assert len(official_cases) == 65
+    official_cases = [case for case in response.json() if case["id"] <= 80]
+    assert len(official_cases) == 80
     assert all(case["avaliacao_2_disponivel"] for case in official_cases)
 
 

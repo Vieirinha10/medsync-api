@@ -4,6 +4,7 @@ from typing import Any
 
 from clinical_cases_batch_one import EXPANSION_BATCH_ONE_RUBRICS
 from clinical_cases_batch_two import EXPANSION_BATCH_TWO_RUBRICS
+from clinical_cases_psychiatry import PSYCHIATRY_RUBRICS
 from clinical_feedback_batch_final import (
     FINAL_FEEDBACK_BATCH_EXAM_UPDATES,
     FINAL_FEEDBACK_BATCH_RUBRICS,
@@ -30,7 +31,7 @@ from clinical_feedback_batch_two import (
 )
 from primary_care_catalog import PRIMARY_CARE_RUBRICS
 
-CLINICAL_RUBRIC_VERSION = 7
+CLINICAL_RUBRIC_VERSION = 8
 
 
 def _source(title: str, organization: str, year: int, url: str) -> dict[str, Any]:
@@ -790,6 +791,7 @@ CLINICAL_RUBRICS.update(FINAL_FEEDBACK_BATCH_RUBRICS)
 CLINICAL_RUBRICS.update(PRIMARY_CARE_RUBRICS)
 CLINICAL_RUBRICS.update(EXPANSION_BATCH_ONE_RUBRICS)
 CLINICAL_RUBRICS.update(EXPANSION_BATCH_TWO_RUBRICS)
+CLINICAL_RUBRICS.update(PSYCHIATRY_RUBRICS)
 
 
 # Segunda leva em preparação editorial. A presença neste catálogo não libera a
