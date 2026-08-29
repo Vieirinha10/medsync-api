@@ -53,7 +53,7 @@ O esquema é versionado pelo Alembic. Para aplicar todas as migrações:
 alembic upgrade head
 ```
 
-O catálogo em código com os 60 casos é usado somente como carga inicial idempotente:
+O catálogo em código com os 65 casos é usado somente como carga inicial idempotente:
 
 ```bash
 python -m scripts.seed_clinical_content

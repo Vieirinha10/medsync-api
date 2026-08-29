@@ -1,6 +1,7 @@
 """Chamadas públicas neutras dos casos clínicos, sem revelar o diagnóstico."""
 
 from clinical_cases_batch_one import EXPANSION_BATCH_ONE_TITLES
+from clinical_cases_batch_two import EXPANSION_BATCH_TWO_TITLES
 from primary_care_catalog import PRIMARY_CARE_TITLES
 
 PUBLIC_CASE_TITLES = {
@@ -48,6 +49,7 @@ PUBLIC_CASE_TITLES = {
 
 PUBLIC_CASE_TITLES.update(PRIMARY_CARE_TITLES)
 PUBLIC_CASE_TITLES.update(EXPANSION_BATCH_ONE_TITLES)
+PUBLIC_CASE_TITLES.update(EXPANSION_BATCH_TWO_TITLES)
 
 
 def formatted_public_title(case_id: int, public_title: str) -> str:

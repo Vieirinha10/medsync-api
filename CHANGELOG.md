@@ -6,6 +6,11 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Adicionado
 
+- Segundo lote da expansão, elevando o catálogo de 60 para 65 casos com
+  pneumonia comunitária, colecistite aguda, cetoacidose diabética, gravidez
+  ectópica e crise aguda de fechamento angular.
+- Casos intermediários com seis exames cada e aceitação de respostas
+  diagnósticas curtas, sem exigir a descrição completa das complicações.
 - Primeiro lote da expansão para 100 casos clínicos, elevando o catálogo de 55
   para 60 casos.
 - Cinco simulações cardiovasculares de nível difícil: infarto inferior com
@@ -21,6 +26,8 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Alterado
 
+- Versão editorial das rubricas elevada de 6 para 7 para sincronizar o segundo
+  lote em bancos existentes.
 - Versão editorial das rubricas elevada de 5 para 6 para sincronizar o novo
   conteúdo em bancos existentes.
-- Testes e documentação atualizados para o catálogo de 60 casos.
+- Testes e documentação atualizados para o catálogo de 65 casos.
