@@ -30,6 +30,13 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Alterado
 
+- Tom de voz da Synapse reformulado para funcionar como uma preceptora clínica
+  atenta: reconhecimento específico, explicação clínica e próximo passo prático,
+  sem perder firmeza em alertas de segurança.
+- Avaliador por regras e respostas pós-simulação alinhados ao mesmo contrato de
+  voz usado pela IA, com menos repetição literal das respostas do estudante.
+- Plano pessoal de melhoria tornado contextual, priorizando segurança, hipótese,
+  exames e conduta conforme as lacunas realmente identificadas.
 - Versão editorial das rubricas elevada de 7 para 8 para sincronizar o lote de
   Psiquiatria e Saúde Mental em bancos existentes.
 - Versão editorial das rubricas elevada de 6 para 7 para sincronizar o segundo

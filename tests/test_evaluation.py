@@ -4,9 +4,12 @@ import pytest
 
 from evaluation import (
     PILOT_RUBRICS,
+    SYNAPSE_FEEDBACK_INSTRUCTIONS,
+    SYNAPSE_QUESTION_INSTRUCTIONS,
     SimulationSubmission,
     _contains_any,
     _usage_metrics,
+    build_rule_based_narrative,
     evaluate_objective,
 )
 
@@ -88,3 +91,59 @@ def test_negated_diagnosis_does_not_match_reference_term():
         "O quadro não é anemia ferropriva.",
         ["anemia ferropriva"],
     )
+
+
+def test_rule_based_feedback_recognizes_reasoning_before_the_next_step():
+    submission = SimulationSubmission(
+        exames_solicitados=["hemo"],
+        hipotese_diagnostica=(
+            "Anemia ferropriva após bypass gástrico — anotação livre do estudante"
+        ),
+        conduta_proposta=("Iniciar ferro intravenoso — anotação livre do estudante"),
+    )
+
+    score, exams, context = evaluate_objective(
+        _case_seven(), submission, PILOT_RUBRICS[7]
+    )
+    narrative = build_rule_based_narrative(submission, score, exams, context)
+
+    assert narrative.sintese_raciocinio.startswith(
+        "Você reconheceu corretamente o eixo central do caso"
+    )
+    assert "ponto mais importante" in narrative.sintese_raciocinio
+    assert "anotação livre do estudante" not in narrative.model_dump_json()
+
+
+def test_rule_based_feedback_keeps_patient_safety_explicit_and_firm():
+    submission = SimulationSubmission(
+        exames_solicitados=["vit_b12"],
+        hipotese_diagnostica="Ansiedade com sintomas somáticos",
+        conduta_proposta=(
+            "Alta com multivitamínico; não há necessidade de avaliação urgente."
+        ),
+    )
+
+    score, exams, context = evaluate_objective(
+        _case_seven(), submission, PILOT_RUBRICS[7]
+    )
+    narrative = build_rule_based_narrative(submission, score, exams, context)
+
+    assert context["nivel_conduta"] == "insegura"
+    assert narrative.feedback_seguranca.startswith(
+        "Há um ponto importante de segurança para revisar antes de prosseguir."
+    )
+    assert "avaliação urgente" in narrative.feedback_seguranca
+    assert narrative.plano_pessoal_melhoria[0].startswith(
+        "Antes de finalizar a conduta"
+    )
+
+
+def test_synapse_ai_prompts_share_the_same_educational_voice_contract():
+    for instructions in (
+        SYNAPSE_FEEDBACK_INSTRUCTIONS,
+        SYNAPSE_QUESTION_INSTRUCTIONS,
+    ):
+        assert "preceptora clínica atenta" in instructions
+        assert "próximo passo" in instructions
+        assert "elogios genéricos" in instructions
+        assert "risco ao paciente" in instructions
