@@ -20,6 +20,47 @@ MODEL_PRICING_USD_PER_MILLION = {
     "gpt-5.6-luna": (0.2, 0.02, 1.2),
 }
 
+SYNAPSE_VOICE_GUIDE = (
+    "Adote a voz de uma preceptora clínica atenta: acolhedora, clara e "
+    "profissional. Reconheça primeiro uma decisão concreta e correta quando "
+    "houver, explique seu significado clínico e apresente a correção como um "
+    "próximo passo prático. Incentive sem elogios genéricos, infantilização ou "
+    "entusiasmo artificial. Diante de risco ao paciente, seja calma, explícita "
+    "e firme, sem suavizar a gravidade. Seja concisa e não repita a mesma "
+    "informação em campos diferentes."
+)
+
+SYNAPSE_FEEDBACK_INSTRUCTIONS = (
+    "Você é o Agente Avaliador Clínico da MedSync. Produza feedback em português "
+    "brasileiro. "
+    + SYNAPSE_VOICE_GUIDE
+    + " Use somente o caso, o gabarito e a pontuação fornecidos. Não altere "
+    "notas, não invente dados e não revele raciocínio interno. Diferencie erro, "
+    "omissão e alternativa clinicamente aceitável. Na síntese, siga a sequência "
+    "reconhecimento específico, significado clínico e próximo passo. Não copie "
+    "integralmente as respostas do estudante nem o gabarito. Personalize "
+    "reacao_paciente e desfecho_clinico comparando a conduta enviada "
+    "exclusivamente com as referências fornecidas; não invente evolução, "
+    "tratamento ou prognóstico. Se a resposta estiver fora do tema, explique "
+    "isso diretamente. Avalie as justificativas dos exames somente contra "
+    "justificativa_exames da rubrica; preserve como nao_justificada quando "
+    "ausente. Organize obrigatoriamente síntese, acertos, omissões, exames de "
+    "baixo valor, hipótese, conduta, segurança, reação, desfecho e plano pessoal "
+    "de melhoria."
+)
+
+SYNAPSE_QUESTION_INSTRUCTIONS = (
+    "Você é a Synapse, tutora educacional da MedSync. Responda em português "
+    "brasileiro. "
+    + SYNAPSE_VOICE_GUIDE
+    + " Responda primeiro à dúvida, explique brevemente o motivo clínico e "
+    "finalize com um próximo passo aplicável ao estudo deste caso. Use "
+    "exclusivamente o caso, a rubrica e o resultado fornecidos. Não invente "
+    "sinais vitais, evolução, diagnósticos, condutas ou prognósticos. Não dê "
+    "orientação para pacientes reais. Se algo não estiver informado, diga 'não "
+    "informado'."
+)
+
 
 class AIUsageMetrics(BaseModel):
     input_tokens: int = Field(ge=0)
@@ -542,9 +583,14 @@ def build_exam_rationale_feedback(
                 justificativa_estudante=student_text,
                 compreensao="parcial" if student_text else "nao_justificada",
                 feedback=(
-                    f"Sua justificativa foi registrada. Compare com a referência: {reference}"
+                    "Você registrou o motivo do pedido. Para deixá-lo mais "
+                    f"clínico e verificável, compare-o com esta utilidade: {reference}"
                     if student_text
-                    else f"Justificativa opcional não informada. Utilidade de referência: {reference}"
+                    else (
+                        "A justificativa era opcional e não foi informada. No próximo "
+                        "caso, experimente registrar o que o resultado mudaria na sua "
+                        f"decisão. Utilidade neste caso: {reference}"
+                    )
                 ),
             )
         )
@@ -614,67 +660,90 @@ def build_rule_based_narrative(
     context: dict[str, Any],
 ) -> ClinicalNarrative:
     rubric = context["rubrica"]
-    strengths = []
-    improvements = []
+    hypothesis_level = context["classificacao_hipotese"]
+    conduct_level = context.get("nivel_conduta", "parcial")
+    diagnosis = rubric["diagnostico_referencia"].strip().rstrip(".")
+    matched_conduct = context["condutas_identificadas"]
+    missing_conduct = context["condutas_ausentes"]
+    missing_safety = context.get("seguranca_ausente", [])
+    strengths: list[str] = []
+    improvements: list[str] = []
 
     if exams.adequados:
         strengths.append(
-            "Você selecionou exames que contribuem diretamente para confirmar "
-            "o diagnóstico e avaliar a gravidade."
+            "Você selecionou exames pertinentes para confirmar a hipótese e avaliar "
+            "a gravidade: " + ", ".join(exams.adequados) + "."
         )
-    if context["classificacao_hipotese"] == "correta":
-        strengths.append("A hipótese principal está alinhada ao diagnóstico do caso.")
-    elif context["classificacao_hipotese"] == "parcial":
-        improvements.append(
-            rubric.get(
-                "feedback_hipotese_parcial",
-                "A hipótese reconheceu parte do quadro, mas precisa ser mais específica.",
-            )
+    if hypothesis_level == "correta":
+        strengths.append(
+            "Você reconheceu corretamente o eixo diagnóstico central do caso."
+        )
+        hypothesis_feedback = (
+            f"Você identificou corretamente {diagnosis}. Isso mostra que os achados "
+            "centrais foram integrados de forma coerente. Mantenha essa lógica ao "
+            "comparar as hipóteses diferenciais."
+        )
+    elif hypothesis_level == "parcial":
+        rubric_hypothesis_feedback = rubric.get(
+            "feedback_hipotese_parcial",
+            "A hipótese reconheceu parte do quadro, mas precisa ser mais específica.",
+        )
+        improvements.append(rubric_hypothesis_feedback)
+        hypothesis_feedback = (
+            "Você identificou parte importante do padrão clínico. "
+            f"{rubric_hypothesis_feedback} A formulação de referência é {diagnosis}. "
+            "Para avançar, reúna os achados em uma hipótese mais específica."
         )
     else:
-        improvements.append(
-            rubric.get(
-                "feedback_hipotese_incorreta",
-                "A hipótese informada não corresponde ao diagnóstico de referência.",
-            )
+        rubric_hypothesis_feedback = rubric.get(
+            "feedback_hipotese_incorreta",
+            "A hipótese informada não corresponde ao diagnóstico de referência.",
+        )
+        improvements.append(rubric_hypothesis_feedback)
+        hypothesis_feedback = (
+            "A hipótese escolhida não explicou o eixo principal deste caso. "
+            f"{rubric_hypothesis_feedback} A referência é {diagnosis}. No próximo "
+            "caso, destaque primeiro os achados que mais aumentam ou reduzem a "
+            "probabilidade de cada hipótese."
         )
 
-    if context["condutas_identificadas"]:
+    if matched_conduct:
         strengths.append(
-            "A conduta contemplou: "
-            + ", ".join(context["condutas_identificadas"])
+            "Você levou o raciocínio para ações clinicamente relevantes: "
+            + ", ".join(matched_conduct)
             + "."
         )
 
     if exams.essenciais_ausentes:
         improvements.append(
-            "Revise a indicação dos exames essenciais que não foram solicitados."
+            "Inclua os exames essenciais que poderiam mudar a confirmação, a "
+            "gravidade ou a segurança da conduta: "
+            + ", ".join(exams.essenciais_ausentes)
+            + "."
         )
     if exams.desnecessarios:
         improvements.append(
-            "Evite exames de baixo valor quando a probabilidade clínica já é alta "
-            "e o resultado não mudará a necessidade de investigação definitiva."
+            "Antes de solicitar "
+            + ", ".join(exams.desnecessarios)
+            + ", confirme se o resultado realmente mudaria sua decisão neste caso."
         )
-    if context["condutas_ausentes"]:
+    if missing_conduct:
         improvements.append(
-            "A conduta precisa contemplar: "
-            + ", ".join(context["condutas_ausentes"])
-            + "."
+            "Complete a conduta com: " + ", ".join(missing_conduct) + "."
         )
-    for safety_item in context.get("seguranca_ausente", []):
+    for safety_item in missing_safety:
         improvements.append(safety_item["feedback"])
 
     if not strengths:
         strengths.append(
-            "Você concluiu todas as etapas do caso e apresentou um raciocínio "
-            "que pode ser aperfeiçoado com a revisão abaixo."
+            "Sua resposta permite localizar com clareza os pontos que precisam de "
+            "revisão antes do próximo caso."
         )
 
     outcome_matrix = rubric.get("desfechos_conduta")
-    outcome_level = context.get("nivel_conduta", "parcial")
 
     if outcome_matrix:
-        selected_outcome = outcome_matrix[outcome_level]
+        selected_outcome = outcome_matrix[conduct_level]
         patient_reaction = selected_outcome["reacao"]
         clinical_outcome = selected_outcome["desfecho"]
     elif score.conduta >= 24:
@@ -723,13 +792,114 @@ def build_rule_based_narrative(
             "O paciente deve ser reavaliado.",
         )
 
-    safety_feedback = rubric.get(
+    rubric_safety_feedback = rubric.get(
         "feedback_seguranca",
         "Revise os sinais de gravidade e as medidas iniciais de segurança deste caso.",
     )
-    if context.get("seguranca_ausente"):
-        safety_feedback += " Omissões identificadas: " + " ".join(
-            item["feedback"] for item in context["seguranca_ausente"]
+    if missing_safety:
+        safety_feedback = (
+            "Há um ponto importante de segurança para revisar antes de prosseguir. "
+            + " ".join(item["feedback"] for item in missing_safety)
+            + " Orientação da rubrica: "
+            + rubric_safety_feedback
+        )
+    elif rubric.get("criterios_seguranca"):
+        safety_feedback = (
+            "Você contemplou os critérios de segurança rastreados neste caso. "
+            + rubric_safety_feedback
+        )
+    else:
+        safety_feedback = (
+            "Mantenha como referência de segurança: " + rubric_safety_feedback
+        )
+
+    if conduct_level == "adequada":
+        conduct_feedback = (
+            "Você estruturou uma conduta consistente ao contemplar "
+            + ", ".join(matched_conduct)
+            + ". Esses são os principais pilares previstos para o caso."
+        )
+        if missing_conduct:
+            conduct_feedback += (
+                " Para refinar o plano, incorpore também "
+                + ", ".join(missing_conduct)
+                + "."
+            )
+        else:
+            conduct_feedback += " Mantenha-os organizados por prioridade e reavaliação."
+    elif matched_conduct:
+        conduct_feedback = (
+            "Você iniciou a condução por medidas pertinentes, incluindo "
+            + ", ".join(matched_conduct)
+            + ". Para tornar o plano mais completo, acrescente "
+            + ", ".join(missing_conduct)
+            + ". Referência do caso: "
+            + rubric["conduta_referencia"]
+        )
+    else:
+        conduct_feedback = (
+            "A conduta ainda não contemplou os pilares centrais da rubrica. Comece "
+            "organizando as prioridades em "
+            + ", ".join(missing_conduct)
+            + ". Referência do caso: "
+            + rubric["conduta_referencia"]
+        )
+
+    if hypothesis_level == "correta" and conduct_level == "adequada":
+        summary = (
+            "Seu raciocínio foi consistente e conectou diagnóstico, investigação e "
+            "conduta de forma segura."
+        )
+        reasoning_summary = (
+            f"Você reconheceu corretamente o eixo central do caso: {diagnosis}. "
+            "Também transformou esse reconhecimento em uma conduta alinhada aos "
+            "principais critérios clínicos e de segurança. Use a análise a seguir "
+            "para consolidar o que sustentou esse bom resultado."
+        )
+    elif hypothesis_level == "correta" and conduct_level == "insegura":
+        summary = (
+            "O diagnóstico foi bem reconhecido, mas há uma prioridade de segurança "
+            "que precisa ser corrigida antes de prosseguir."
+        )
+        reasoning_summary = (
+            f"Você reconheceu corretamente o eixo central do caso: {diagnosis}. "
+            "Seu raciocínio diagnóstico foi bem direcionado. Agora, o ponto mais "
+            "importante é transformar esse reconhecimento em um plano seguro, "
+            "corrigindo primeiro a omissão destacada no alerta de segurança."
+        )
+    elif hypothesis_level == "correta":
+        summary = (
+            "Você reconheceu o problema central; o próximo ganho está em completar e "
+            "priorizar a conduta."
+        )
+        reasoning_summary = (
+            f"Você reconheceu corretamente o eixo central do caso: {diagnosis}. "
+            "Seu raciocínio diagnóstico foi bem direcionado. O próximo passo é "
+            "transformar esse reconhecimento em um plano mais específico, completo "
+            "e seguro. Você já identificou o problema principal; agora vamos "
+            "aprimorar como conduzi-lo."
+        )
+    elif hypothesis_level == "parcial":
+        summary = (
+            "Você construiu uma base clínica útil; o próximo passo é tornar a hipótese "
+            "mais específica e conectá-la à conduta."
+        )
+        reasoning_summary = (
+            "Você identificou parte importante do quadro e já tem uma base para "
+            f"avançar. A referência deste caso é {diagnosis}. Reorganize os achados "
+            "que melhor diferenciam essa hipótese e, em seguida, transforme-os em "
+            "prioridades objetivas de investigação e conduta."
+        )
+    else:
+        summary = (
+            "O resultado mostra com clareza onde concentrar sua próxima revisão: "
+            "reconhecer o padrão clínico antes de definir a conduta."
+        )
+        reasoning_summary = (
+            "Sua hipótese ainda não reuniu os achados centrais do caso, mas o feedback "
+            f"indica um caminho objetivo de revisão. A referência é {diagnosis}. "
+            "Retome os dados de maior valor diagnóstico e use-os para justificar, em "
+            "ordem, a investigação e a conduta."
         )
 
     rationales = build_exam_rationale_feedback(submission, context)
@@ -744,34 +914,47 @@ def build_rule_based_narrative(
             + ", ".join(context["condutas_ausentes"])
             + "."
         )
-    omissions.extend(item["feedback"] for item in context.get("seguranca_ausente", []))
-    improvement_plan = [
-        "Revisar a relação entre os achados do caso e o diagnóstico de referência.",
-        "Treinar a seleção de exames perguntando se cada resultado mudaria a conduta.",
-        "Reescrever a conduta em ordem de prioridade, incluindo segurança e reavaliação.",
-    ]
+    omissions.extend(item["feedback"] for item in missing_safety)
+
+    improvement_plan = []
+    if missing_safety:
+        improvement_plan.append(
+            "Antes de finalizar a conduta, faça uma checagem explícita de riscos, "
+            "estabilização e reavaliação."
+        )
+    if hypothesis_level != "correta":
+        improvement_plan.append(
+            "Selecione os três achados que mais mudam a probabilidade diagnóstica e "
+            "use-os para formular uma hipótese específica."
+        )
+    if exams.essenciais_ausentes or exams.desnecessarios:
+        improvement_plan.append(
+            "Justifique cada exame com uma pergunta simples: o resultado confirmará "
+            "a hipótese, medirá gravidade ou mudará a conduta?"
+        )
+    if missing_conduct:
+        improvement_plan.append(
+            "Reescreva a conduta em ordem de prioridade, incluindo tratamento, "
+            "segurança e critério de reavaliação."
+        )
+    if not improvement_plan:
+        improvement_plan = [
+            "Consolide este raciocínio explicando, em uma frase, por que cada exame "
+            "escolhido poderia mudar a conduta.",
+            "Treine a mesma sequência em um novo caso: reconhecer, priorizar, agir e "
+            "reavaliar.",
+        ]
+    improvement_plan = improvement_plan[:3]
 
     return ClinicalNarrative(
-        resumo=(
-            "Seu desempenho foi analisado pela Synapse com base "
-            "no gabarito estruturado deste caso."
-        ),
-        sintese_raciocinio=(
-            f"Você formulou a hipótese “{submission.hipotese_diagnostica.strip()}” e propôs "
-            "uma conduta que foi comparada aos critérios clínicos e de segurança da rubrica."
-        ),
+        resumo=summary,
+        sintese_raciocinio=reasoning_summary,
         acertos=strengths,
         omissoes=omissions,
         exames_baixo_valor=exams.desnecessarios,
         pontos_melhoria=improvements,
-        feedback_hipotese=(
-            f"Diagnóstico de referência: {rubric['diagnostico_referencia']} "
-            f"Sua resposta foi: {submission.hipotese_diagnostica.strip()}"
-        ),
-        feedback_conduta=(
-            f"Conduta de referência: {rubric['conduta_referencia']} "
-            f"Sua resposta foi: {submission.conduta_proposta.strip()}"
-        ),
+        feedback_hipotese=hypothesis_feedback,
+        feedback_conduta=conduct_feedback,
         feedback_seguranca=safety_feedback,
         reacao_paciente=patient_reaction,
         desfecho_clinico=clinical_outcome,
@@ -823,23 +1006,7 @@ def enhance_narrative_with_ai(
             input=[
                 {
                     "role": "developer",
-                    "content": (
-                        "Você é o Agente Avaliador Clínico da MedSync. Produza "
-                        "feedback educacional, objetivo, respeitoso e em português "
-                        "brasileiro. Use somente o caso, o gabarito e a pontuação "
-                        "fornecidos. Não altere notas, não invente dados e não revele "
-                        "raciocínio interno. Diferencie erro, omissão e alternativa "
-                        "clinicamente aceitável. Personalize reacao_paciente e "
-                        "desfecho_clinico comparando a conduta enviada exclusivamente "
-                        "com as referências fornecidas; não invente evolução, tratamento "
-                        "ou prognóstico. Se a resposta do estudante estiver "
-                        "fora do tema, explique isso diretamente. Avalie as "
-                        "justificativas dos exames somente contra justificativa_exames "
-                        "da rubrica; preserve como nao_justificada quando ausente. "
-                        "Organize obrigatoriamente síntese, acertos, omissões, exames "
-                        "de baixo valor, hipótese, conduta, segurança, reação, desfecho "
-                        "e plano pessoal de melhoria."
-                    ),
+                    "content": SYNAPSE_FEEDBACK_INSTRUCTIONS,
                 },
                 {
                     "role": "user",
@@ -890,23 +1057,35 @@ def answer_simulation_question(
             for exam_id in submission.get("exames_solicitados", []):
                 if names.get(exam_id) in low_value:
                     details.append(references.get(exam_id, names[exam_id]))
-            fallback_answer = " ".join(details) or exam_feedback.get("comentario", "")
+            explanation = " ".join(details) or exam_feedback.get("comentario", "")
+            fallback_answer = (
+                "Vamos tornar essa escolha mais intencional. "
+                + explanation
+                + " No próximo caso, pergunte se o resultado mudaria a hipótese, a "
+                "avaliação de gravidade ou a conduta."
+            )
         else:
-            fallback_answer = "Você não solicitou exames classificados como de baixo valor nesta rubrica."
+            fallback_answer = (
+                "Neste caso, sua seleção não incluiu exames classificados como de "
+                "baixo valor. Isso mostra uma investigação focada; mantenha o hábito "
+                "de justificar o que cada resultado mudaria na decisão."
+            )
     elif "instavel" in normalized or "instabilidade" in normalized:
         fallback_answer = (
-            "Em uma deterioração simulada, priorize os critérios de segurança da rubrica: "
+            "Aqui, a prioridade é a segurança do paciente. Em uma deterioração "
+            "simulada, siga primeiro estes critérios da rubrica: "
             + rubric.get(
                 "feedback_seguranca", "reconhecer gravidade, estabilizar e reavaliar."
             )
-            + " Conduta de referência: "
+            + " Depois, compare sua sequência com a conduta de referência: "
             + rubric.get("conduta_referencia", "não informada")
         )
     elif "diferenc" in normalized or "diagnostico" in normalized:
         fallback_answer = (
-            f"O diagnóstico de referência é {rubric['diagnostico_referencia']} "
-            "Diferencie-o relacionando história, exame físico e resultados que realmente mudam a probabilidade diagnóstica. "
-            + narrative.get("feedback_hipotese", "")
+            f"A referência deste caso é {rubric['diagnostico_referencia']} Para "
+            "diferenciá-la, reúna história, exame físico e resultados que realmente "
+            "mudam a probabilidade diagnóstica. Como próximo passo, escolha os três "
+            "achados mais discriminativos e explique como cada um sustenta a hipótese."
         )
     else:
         fallback_answer = (
@@ -939,13 +1118,7 @@ def answer_simulation_question(
         response = _openai_client(api_key).responses.create(
             model=model,
             store=False,
-            instructions=(
-                "Você é a Synapse, tutora educacional da MedSync. Responda em português "
-                "brasileiro, de modo direto e didático, usando exclusivamente o caso, a "
-                "rubrica e o resultado fornecidos. Não invente sinais vitais, evolução, "
-                "diagnósticos, condutas ou prognósticos. Não dê orientação para pacientes "
-                "reais. Se algo não estiver informado, diga 'não informado'."
-            ),
+            instructions=SYNAPSE_QUESTION_INSTRUCTIONS,
             input=json.dumps(payload, ensure_ascii=False),
         )
         answer = (response.output_text or "").strip()

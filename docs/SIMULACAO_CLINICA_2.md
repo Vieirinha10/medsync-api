@@ -20,6 +20,16 @@ personalizada ao finalizar o caso.
 6. O feedback é educacional e não substitui supervisão ou decisão médica real.
 7. Casos sem gabarito revisado não podem ser habilitados na versão 2.0.
 
+## Tom de voz da Synapse
+
+A explicação segue a sequência reconhecimento específico, significado clínico e
+próximo passo. O texto deve ser acolhedor, claro e profissional, sem elogios
+genéricos, infantilização ou repetição. Alertas de segurança permanecem diretos
+e prioritários.
+
+O contrato completo e os critérios de regressão estão em
+[`SYNAPSE_VOICE.md`](SYNAPSE_VOICE.md).
+
 ## Distribuição da pontuação
 
 - Exames: 40 pontos

@@ -2603,7 +2603,9 @@ def test_clinical_simulation_v2_scores_and_persists_structured_feedback():
     assert result["diagnostico_referencia"].startswith("Tromboembolismo pulmonar agudo")
     assert result["exames"]["essenciais_ausentes"] == []
     assert result["exames"]["desnecessarios"] == []
-    assert result["feedback"]["feedback_seguranca"]
+    assert result["feedback"]["feedback_seguranca"].startswith(
+        "Você contemplou os critérios de segurança rastreados neste caso."
+    )
     assert "hipoxemia" in result["feedback"]["reacao_paciente"].lower()
     assert "monitor" in result["feedback"]["desfecho_clinico"].lower()
     assert result["feedback"]["sintese_raciocinio"]
@@ -2957,7 +2959,10 @@ def test_rule_based_feedback_is_driven_by_the_reviewed_rubric():
     narrative = build_rule_based_narrative(submission, score, exams, context)
 
     assert rubric["feedback_hipotese_incorreta"] in narrative.pontos_melhoria
-    assert narrative.feedback_seguranca == rubric["feedback_seguranca"]
+    assert rubric["feedback_seguranca"] in narrative.feedback_seguranca
+    assert narrative.feedback_seguranca.startswith(
+        "Mantenha como referência de segurança:"
+    )
     assert "tromboembolismo" not in narrative.model_dump_json().lower()
 
 
