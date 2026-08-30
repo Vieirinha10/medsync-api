@@ -31,6 +31,7 @@ from evaluation import (
     evaluate_objective,
 )
 from models import (
+    AIUsageRecord,
     ClinicalCase,
     ClinicalExam,
     ClinicalRubric,
@@ -1436,6 +1437,97 @@ def test_admin_financial_center_consolidates_orders_revenue_and_subscriptions():
         item["assinatura_asaas_id"] == "sub_financeiro_ativo"
         for item in data["assinaturas"]
     )
+
+
+def test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(monkeypatch):
+    admin_email = f"synapse-admin-{uuid.uuid4().hex}@example.com"
+    student_email = f"synapse-aluno-{uuid.uuid4().hex}@example.com"
+    monkeypatch.setenv("ADMIN_EMAILS", admin_email)
+    monkeypatch.setenv("OPENAI_ROUTINE_MODEL", "gpt-5.6-luna")
+    monkeypatch.setenv("OPENAI_ADVANCED_MODEL", "gpt-5.6-terra")
+    admin_token = _register_and_login(admin_email)
+    regular_token = _register_and_login(student_email)
+    now = datetime.now(UTC)
+
+    with SessionLocal() as db:
+        student = db.scalar(select(User).where(User.email == student_email))
+        db.add_all(
+            [
+                AIUsageRecord(
+                    id_usuario=student.id,
+                    operacao="avaliacao_simulacao",
+                    modelo="gpt-5.6-luna",
+                    input_tokens=1000,
+                    cached_input_tokens=200,
+                    output_tokens=220,
+                    reasoning_tokens=0,
+                    total_tokens=1220,
+                    duracao_ms=800,
+                    custo_estimado_usd=0.0003,
+                    response_id=f"resp-{uuid.uuid4().hex}",
+                    created_at=now - timedelta(days=1),
+                ),
+                AIUsageRecord(
+                    id_usuario=student.id,
+                    operacao="pergunta_pos_simulacao",
+                    modelo="gpt-5.6-luna",
+                    input_tokens=400,
+                    cached_input_tokens=0,
+                    output_tokens=100,
+                    reasoning_tokens=0,
+                    total_tokens=500,
+                    duracao_ms=400,
+                    custo_estimado_usd=0.0001,
+                    response_id=f"resp-{uuid.uuid4().hex}",
+                    created_at=now,
+                ),
+                AIUsageRecord(
+                    id_usuario=student.id,
+                    operacao="avaliacao_simulacao",
+                    modelo="gpt-5.6-terra",
+                    input_tokens=1600,
+                    cached_input_tokens=400,
+                    output_tokens=300,
+                    reasoning_tokens=50,
+                    total_tokens=1900,
+                    duracao_ms=1200,
+                    custo_estimado_usd=0.003,
+                    response_id=f"resp-{uuid.uuid4().hex}",
+                    created_at=now,
+                ),
+            ]
+        )
+        db.commit()
+
+    forbidden = client.get(
+        "/admin/synapse/consumo?dias=7",
+        headers={"Authorization": f"Bearer {regular_token}"},
+    )
+    response = client.get(
+        "/admin/synapse/consumo?dias=7",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert forbidden.status_code == 403
+    assert response.status_code == 200
+    data = response.json()
+    assert data["periodo_dias"] == 7
+    assert data["resumo"]["chamadas"] == 3
+    assert data["resumo"]["usuarios_ativos"] == 1
+    assert data["resumo"]["input_tokens"] == 3000
+    assert data["resumo"]["cached_input_tokens"] == 600
+    assert data["resumo"]["output_tokens"] == 620
+    assert data["resumo"]["total_tokens"] == 3620
+    assert data["resumo"]["taxa_cache_percentual"] == 20
+    assert data["resumo"]["duracao_media_ms"] == 800
+    assert data["resumo"]["custo_estimado_usd"] == pytest.approx(0.0034)
+    assert {item["chave"] for item in data["por_modelo"]} == {
+        "gpt-5.6-luna",
+        "gpt-5.6-terra",
+    }
+    assert data["usuarios_mais_ativos"][0]["email"] == student_email
+    assert data["configuracao"]["modelo_rotina"] == "gpt-5.6-luna"
+    assert "franquia" not in response.text.lower()
 
 
 def test_protected_routes_require_a_valid_token():

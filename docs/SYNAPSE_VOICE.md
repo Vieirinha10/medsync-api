@@ -62,6 +62,11 @@ O contrato de voz está centralizado em `evaluation.py`:
 Ao alterar qualquer um desses pontos, preserve a equivalência entre IA e agente
 de regras e execute a suíte completa de testes.
 
+A camada gerativa curta, o contexto compacto, os tetos de saída e o roteamento
+de modelos estão documentados separadamente em `docs/SYNAPSE_EFFICIENCY.md`.
+Essas otimizações não mudam este contrato de voz nem a prioridade dos alertas de
+segurança.
+
 ## Critérios de regressão
 
 - um acerto diagnóstico recebe reconhecimento específico;

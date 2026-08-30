@@ -28,8 +28,24 @@ A API inicia em `http://127.0.0.1:8000` e a documentação interativa fica em
   é `true` em produção e `false` no desenvolvimento.
 - `ADMIN_EMAILS`: lista separada por vírgulas dos e-mails autorizados a acessar
   os indicadores acadêmicos agregados.
-- `OPENAI_QUESTION_MODEL`: modelo opcional usado apenas nas explicações próprias
-  das questões; quando vazio, utiliza `OPENAI_MODEL`.
+- `OPENAI_ROUTINE_MODEL`: modelo econômico usado nos feedbacks e perguntas
+  comuns; padrão `gpt-5.6-luna`.
+- `OPENAI_ADVANCED_MODEL`: modelo reservado a ambiguidade, complexidade e risco
+  clínico; padrão `gpt-5.6-terra`. `OPENAI_MODEL` permanece como fallback legado.
+- `OPENAI_QUESTION_MODEL`: modelo opcional das explicações próprias do banco de
+  questões; quando vazio, utiliza `OPENAI_MODEL`.
+- `OPENAI_SIMULATION_QUESTION_MODEL`: substituição opcional das perguntas
+  pós-simulação. Quando vazio, elas são roteadas automaticamente entre rotina e
+  avançado.
+- `OPENAI_REASONING_EFFORT`: esforço de raciocínio das chamadas interativas;
+  padrão `low`, pois a avaliação clínica objetiva já foi calculada pelo sistema.
+- `OPENAI_FEEDBACK_MAX_OUTPUT_TOKENS` e `OPENAI_QUESTION_MAX_OUTPUT_TOKENS`:
+  tetos de saída, limitados em código a 400–1600 e 200–800, respectivamente.
+
+O painel administrativo consulta `GET /admin/synapse/consumo?dias=30` para
+acompanhar chamadas, tokens, cache, custo estimado, latência, modelos, operações
+e usuários com maior consumo. Esta versão não cria franquia nem bloqueio de
+perguntas por usuário.
 
 Em produção, configure um PostgreSQL persistente. O SQLite padrão é destinado
 somente ao desenvolvimento local.

@@ -20,6 +20,23 @@ MODEL_PRICING_USD_PER_MILLION = {
     "gpt-5.6-luna": (0.2, 0.02, 1.2),
 }
 
+DEFAULT_ROUTINE_MODEL = "gpt-5.6-luna"
+DEFAULT_ADVANCED_MODEL = "gpt-5.6-terra"
+DEFAULT_FEEDBACK_MAX_OUTPUT_TOKENS = 900
+DEFAULT_QUESTION_MAX_OUTPUT_TOKENS = 450
+DEFAULT_REASONING_EFFORT = "low"
+SUPPORTED_REASONING_EFFORTS = {"none", "low", "medium", "high", "xhigh", "max"}
+
+_SAFETY_QUESTION_TERMS = (
+    "contraindic",
+    "deterior",
+    "emergenc",
+    "instabil",
+    "risco",
+    "seguranca",
+    "urgenc",
+)
+
 SYNAPSE_VOICE_GUIDE = (
     "Adote a voz de uma preceptora clínica atenta: acolhedora, clara e "
     "profissional. Reconheça primeiro uma decisão concreta e correta quando "
@@ -31,22 +48,20 @@ SYNAPSE_VOICE_GUIDE = (
 )
 
 SYNAPSE_FEEDBACK_INSTRUCTIONS = (
-    "Você é o Agente Avaliador Clínico da MedSync. Produza feedback em português "
+    "Você é a camada de tutoria da Synapse na MedSync. A pontuação, os acertos, "
+    "as omissões, a segurança e o impacto clínico já foram calculados pelo "
+    "sistema e não devem ser refeitos. Produza apenas a síntese educacional, o "
+    "feedback da hipótese e da conduta e até três próximos passos, em português "
     "brasileiro. "
     + SYNAPSE_VOICE_GUIDE
     + " Use somente o caso, o gabarito e a pontuação fornecidos. Não altere "
     "notas, não invente dados e não revele raciocínio interno. Diferencie erro, "
     "omissão e alternativa clinicamente aceitável. Na síntese, siga a sequência "
     "reconhecimento específico, significado clínico e próximo passo. Não copie "
-    "integralmente as respostas do estudante nem o gabarito. Personalize "
-    "reacao_paciente e desfecho_clinico comparando a conduta enviada "
-    "exclusivamente com as referências fornecidas; não invente evolução, "
-    "tratamento ou prognóstico. Se a resposta estiver fora do tema, explique "
-    "isso diretamente. Avalie as justificativas dos exames somente contra "
-    "justificativa_exames da rubrica; preserve como nao_justificada quando "
-    "ausente. Organize obrigatoriamente síntese, acertos, omissões, exames de "
-    "baixo valor, hipótese, conduta, segurança, reação, desfecho e plano pessoal "
-    "de melhoria."
+    "integralmente as respostas do estudante nem o gabarito. Não invente "
+    "evolução, tratamento ou prognóstico. Se a resposta estiver fora do tema, "
+    "explique isso diretamente. Diante de uma omissão de segurança, mantenha a "
+    "prioridade indicada pelo sistema e não a suavize."
 )
 
 SYNAPSE_QUESTION_INSTRUCTIONS = (
@@ -96,6 +111,61 @@ def _nested_value(value: Any, *names: str, default: Any = None) -> Any:
         else:
             current = getattr(current, name, None)
     return default if current is None else current
+
+
+def _bounded_env_int(
+    name: str,
+    default: int,
+    *,
+    minimum: int,
+    maximum: int,
+) -> int:
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        logger.warning("Valor inválido em %s; usando %s.", name, default)
+        return default
+    return min(maximum, max(minimum, value))
+
+
+def synapse_runtime_config() -> dict[str, Any]:
+    """Expõe somente a configuração operacional segura para telemetria/admin."""
+
+    routine_model = (os.getenv("OPENAI_ROUTINE_MODEL") or DEFAULT_ROUTINE_MODEL).strip()
+    advanced_model = (
+        os.getenv("OPENAI_ADVANCED_MODEL")
+        or os.getenv("OPENAI_MODEL")
+        or DEFAULT_ADVANCED_MODEL
+    ).strip()
+    question_override = os.getenv("OPENAI_SIMULATION_QUESTION_MODEL", "").strip()
+    reasoning_effort = (
+        os.getenv("OPENAI_REASONING_EFFORT", DEFAULT_REASONING_EFFORT).strip().lower()
+    )
+    if reasoning_effort not in SUPPORTED_REASONING_EFFORTS:
+        logger.warning(
+            "Valor inválido em OPENAI_REASONING_EFFORT; usando %s.",
+            DEFAULT_REASONING_EFFORT,
+        )
+        reasoning_effort = DEFAULT_REASONING_EFFORT
+    return {
+        "modelo_rotina": routine_model,
+        "modelo_avancado": advanced_model,
+        "modelo_perguntas": question_override or routine_model,
+        "perguntas_com_roteamento_automatico": not bool(question_override),
+        "esforco_raciocinio": reasoning_effort,
+        "limite_saida_feedback": _bounded_env_int(
+            "OPENAI_FEEDBACK_MAX_OUTPUT_TOKENS",
+            DEFAULT_FEEDBACK_MAX_OUTPUT_TOKENS,
+            minimum=400,
+            maximum=1600,
+        ),
+        "limite_saida_pergunta": _bounded_env_int(
+            "OPENAI_QUESTION_MAX_OUTPUT_TOKENS",
+            DEFAULT_QUESTION_MAX_OUTPUT_TOKENS,
+            minimum=200,
+            maximum=800,
+        ),
+    }
 
 
 def _price_rates(model: str) -> tuple[float, float, float] | None:
@@ -279,6 +349,22 @@ class ClinicalNarrative(BaseModel):
     justificativas_exames: list[ExamRationaleFeedback] = Field(default_factory=list)
     plano_pessoal_melhoria: list[str] = Field(default_factory=list)
     recomendacoes_estudo: list[str]
+
+
+class SynapseNarrativeEnhancement(BaseModel):
+    """Pequena camada gerativa aplicada sobre o feedback determinístico."""
+
+    resumo: str = Field(min_length=10, max_length=420)
+    sintese_raciocinio: str = Field(min_length=20, max_length=850)
+    feedback_hipotese: str = Field(min_length=10, max_length=650)
+    feedback_conduta: str = Field(min_length=10, max_length=700)
+    plano_pessoal_melhoria: list[str] = Field(min_length=1, max_length=3)
+
+    @model_validator(mode="after")
+    def keep_improvement_steps_compact(self):
+        if any(len(item) > 320 for item in self.plano_pessoal_melhoria):
+            raise ValueError("Cada próximo passo deve ter no máximo 320 caracteres.")
+        return self
 
 
 class SimulationEvaluation(BaseModel):
@@ -964,6 +1050,193 @@ def build_rule_based_narrative(
     )
 
 
+def _compact_text(value: Any, max_chars: int) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 1].rstrip() + "…"
+
+
+def _compact_case_payload(case: dict[str, Any]) -> dict[str, str]:
+    return {
+        "titulo": _compact_text(case.get("titulo"), 240),
+        "dificuldade": _compact_text(case.get("nivel_dificuldade"), 40),
+        "historia_clinica": _compact_text(case.get("historia_clinica"), 1800),
+        "exame_fisico": _compact_text(case.get("exame_fisico"), 1200),
+    }
+
+
+def build_compact_feedback_payload(
+    case: dict[str, Any],
+    submission: SimulationSubmission,
+    score: ScoreBreakdown,
+    exams: ExamFeedback,
+    context: dict[str, Any],
+) -> dict[str, Any]:
+    """Envia à IA apenas os dados necessários para a camada de tutoria."""
+
+    rubric = context["rubrica"]
+    selected_exams = []
+    for exam_id in context["exames_selecionados"]:
+        rationale = submission.justificativas_exames.get(exam_id)
+        selected_exams.append(
+            {
+                "nome": context["nomes_exames"].get(exam_id, exam_id),
+                "justificativa": (
+                    _compact_text(rationale, 360) if rationale else "não informada"
+                ),
+            }
+        )
+
+    return {
+        "caso": _compact_case_payload(case),
+        "decisoes_estudante": {
+            "exames": selected_exams,
+            "hipotese": _compact_text(submission.hipotese_diagnostica, 900),
+            "conduta": _compact_text(submission.conduta_proposta, 1800),
+        },
+        "avaliacao_objetiva": {
+            "pontuacao": score.model_dump(),
+            "classificacao_hipotese": context["classificacao_hipotese"],
+            "nivel_conduta": context["nivel_conduta"],
+            "exames_adequados": exams.adequados,
+            "exames_essenciais_ausentes": exams.essenciais_ausentes,
+            "exames_baixo_valor": exams.desnecessarios,
+            "condutas_identificadas": context["condutas_identificadas"],
+            "condutas_ausentes": context["condutas_ausentes"],
+            "omissoes_seguranca": [
+                {
+                    "nome": item["nome"],
+                    "feedback": _compact_text(item["feedback"], 500),
+                }
+                for item in context.get("seguranca_ausente", [])
+            ],
+        },
+        "referencia_clinica": {
+            "diagnostico": _compact_text(rubric["diagnostico_referencia"], 500),
+            "conduta": _compact_text(rubric["conduta_referencia"], 1400),
+            "feedback_hipotese_parcial": _compact_text(
+                rubric.get("feedback_hipotese_parcial"), 500
+            ),
+            "feedback_hipotese_incorreta": _compact_text(
+                rubric.get("feedback_hipotese_incorreta"), 500
+            ),
+            "feedback_seguranca": _compact_text(rubric.get("feedback_seguranca"), 650),
+        },
+    }
+
+
+def build_compact_question_payload(
+    *,
+    question: str,
+    case: dict[str, Any],
+    submission: dict[str, Any],
+    evaluation: dict[str, Any],
+    rubric: dict[str, Any],
+) -> dict[str, Any]:
+    """Resume um resultado persistido sem reenviar a avaliação inteira."""
+
+    exam_by_id = {exam["id"]: exam for exam in case.get("exames_disponiveis", [])}
+    selected_ids = submission.get("exames_solicitados", [])
+    selected_exams = [
+        {
+            "nome": exam_by_id.get(exam_id, {}).get("nome", exam_id),
+            "resultado": _compact_text(
+                exam_by_id.get(exam_id, {}).get("resultado", "não informado"), 500
+            ),
+        }
+        for exam_id in selected_ids
+    ]
+    relevant_exam_ids = dict.fromkeys(
+        [
+            *selected_ids,
+            *rubric.get("exames_essenciais", []),
+            *rubric.get("exames_desnecessarios", []),
+        ]
+    )
+    exam_reasons = {
+        exam_by_id.get(exam_id, {}).get("nome", exam_id): _compact_text(reason, 500)
+        for exam_id in relevant_exam_ids
+        if (reason := rubric.get("justificativa_exames", {}).get(exam_id))
+    }
+    narrative = evaluation.get("feedback", {})
+    outcome_matrix = rubric.get("desfechos_conduta") or {}
+    current_outcome = outcome_matrix.get(evaluation.get("nivel_conduta", "parcial"), {})
+
+    return {
+        "pergunta": _compact_text(question, 500),
+        "caso": _compact_case_payload(case),
+        "decisoes_estudante": {
+            "exames": selected_exams,
+            "hipotese": _compact_text(submission.get("hipotese_diagnostica"), 900),
+            "conduta": _compact_text(submission.get("conduta_proposta"), 1800),
+        },
+        "resultado_objetivo": {
+            "pontuacao_total": evaluation.get("pontuacao_total"),
+            "pontuacao": evaluation.get("pontuacao", {}),
+            "nivel_conduta": evaluation.get("nivel_conduta"),
+            "exames": evaluation.get("exames", {}),
+            "resumo": _compact_text(narrative.get("resumo"), 420),
+            "sintese": _compact_text(narrative.get("sintese_raciocinio"), 850),
+            "feedback_hipotese": _compact_text(narrative.get("feedback_hipotese"), 650),
+            "feedback_conduta": _compact_text(narrative.get("feedback_conduta"), 700),
+            "feedback_seguranca": _compact_text(
+                narrative.get("feedback_seguranca"), 700
+            ),
+            "proximos_passos": narrative.get("plano_pessoal_melhoria", [])[:3],
+        },
+        "referencia_clinica": {
+            "diagnostico": _compact_text(rubric["diagnostico_referencia"], 500),
+            "conduta": _compact_text(rubric["conduta_referencia"], 1400),
+            "seguranca": _compact_text(rubric.get("feedback_seguranca"), 650),
+            "utilidade_exames_relevantes": exam_reasons,
+            "impacto_simulado_atual": current_outcome,
+        },
+    }
+
+
+def select_feedback_model(
+    case: dict[str, Any],
+    score: ScoreBreakdown,
+    context: dict[str, Any],
+) -> str:
+    config = synapse_runtime_config()
+    if context.get("nivel_conduta") == "insegura":
+        return config["modelo_avancado"]
+    if context.get("classificacao_hipotese") == "parcial":
+        return config["modelo_avancado"]
+
+    difficulty = _normalize(str(case.get("nivel_dificuldade", "")))
+    incomplete_complex_case = difficulty in {"dificil", "critico"} and (
+        context.get("classificacao_hipotese") != "correta"
+        or context.get("nivel_conduta") != "adequada"
+        or score.exames < 28
+    )
+    return (
+        config["modelo_avancado"]
+        if incomplete_complex_case
+        else config["modelo_rotina"]
+    )
+
+
+def select_question_model(question: str, evaluation: dict[str, Any]) -> str:
+    config = synapse_runtime_config()
+    if not config["perguntas_com_roteamento_automatico"]:
+        return config["modelo_perguntas"]
+
+    normalized = _normalize(question)
+    needs_advanced_model = (
+        evaluation.get("nivel_conduta") == "insegura"
+        or len(question) > 260
+        or any(term in normalized for term in _SAFETY_QUESTION_TERMS)
+        or "diagnostico diferencial" in normalized
+        or "alternativa aceitavel" in normalized
+    )
+    return (
+        config["modelo_avancado"] if needs_advanced_model else config["modelo_rotina"]
+    )
+
+
 def enhance_narrative_with_ai(
     case: dict[str, Any],
     submission: SimulationSubmission,
@@ -986,23 +1259,24 @@ def enhance_narrative_with_ai(
     if not api_key:
         return fallback, "agente_regras", None, None
 
-    model = os.getenv("OPENAI_MODEL", "gpt-5.6")
+    config = synapse_runtime_config()
+    model = select_feedback_model(case, score, context)
     try:
         client = _openai_client(api_key)
-        payload = {
-            "caso": {
-                "titulo": case["titulo"],
-                "historia_clinica": case["historia_clinica"],
-                "exame_fisico": case["exame_fisico"],
-            },
-            "respostas_do_estudante": submission.model_dump(),
-            "pontuacao_objetiva": score.model_dump(),
-            "avaliacao_de_exames": exams.model_dump(),
-            "gabarito_clinico": context["rubrica"],
-        }
+        payload = build_compact_feedback_payload(
+            case,
+            submission,
+            score,
+            exams,
+            context,
+        )
         started_at = time.perf_counter()
         response = client.responses.parse(
             model=model,
+            store=False,
+            max_output_tokens=config["limite_saida_feedback"],
+            reasoning={"effort": config["esforco_raciocinio"]},
+            verbosity="low",
             input=[
                 {
                     "role": "developer",
@@ -1013,20 +1287,24 @@ def enhance_narrative_with_ai(
                     "content": json.dumps(payload, ensure_ascii=False),
                 },
             ],
-            text_format=ClinicalNarrative,
+            text_format=SynapseNarrativeEnhancement,
         )
+        usage = _usage_metrics(response, model, started_at)
         if response.output_parsed is None:
             return (
                 fallback,
                 "agente_regras",
-                None,
-                _usage_metrics(response, model, started_at),
+                model,
+                usage,
             )
+        enhanced = fallback.model_copy(
+            update=response.output_parsed.model_dump(),
+        )
         return (
-            response.output_parsed,
+            enhanced,
             "openai",
             model,
-            _usage_metrics(response, model, started_at),
+            usage,
         )
     except Exception:
         logger.exception(
@@ -1101,34 +1379,40 @@ def answer_simulation_question(
             fonte_feedback="agente_regras",
         )
 
-    model = os.getenv("OPENAI_QUESTION_MODEL") or os.getenv("OPENAI_MODEL", "gpt-5.6")
+    config = synapse_runtime_config()
+    model = select_question_model(question, evaluation)
     try:
-        payload = {
-            "pergunta": question,
-            "caso": {
-                "titulo": case["titulo"],
-                "historia_clinica": case["historia_clinica"],
-                "exame_fisico": case["exame_fisico"],
-            },
-            "respostas_estudante": submission,
-            "resultado": evaluation,
-            "rubrica_revisada": rubric,
-        }
+        payload = build_compact_question_payload(
+            question=question,
+            case=case,
+            submission=submission,
+            evaluation=evaluation,
+            rubric=rubric,
+        )
         started_at = time.perf_counter()
         response = _openai_client(api_key).responses.create(
             model=model,
             store=False,
+            max_output_tokens=config["limite_saida_pergunta"],
+            reasoning={"effort": config["esforco_raciocinio"]},
+            text={"verbosity": "low"},
             instructions=SYNAPSE_QUESTION_INSTRUCTIONS,
             input=json.dumps(payload, ensure_ascii=False),
         )
+        usage = _usage_metrics(response, model, started_at)
         answer = (response.output_text or "").strip()
         if not answer:
-            raise ValueError("Resposta vazia da Synapse.")
+            return SimulationQuestionResponse(
+                resposta=fallback_answer,
+                fonte_feedback="agente_regras",
+                modelo_ia=model,
+                uso_ia=usage,
+            )
         return SimulationQuestionResponse(
             resposta=answer,
             fonte_feedback="openai",
             modelo_ia=model,
-            uso_ia=_usage_metrics(response, model, started_at),
+            uso_ia=usage,
         )
     except Exception:
         logger.exception(
