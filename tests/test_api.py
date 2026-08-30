@@ -1453,6 +1453,13 @@ def test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(monkeypat
         student = db.scalar(select(User).where(User.email == student_email))
         db.add_all(
             [
+                UserEntitlement(
+                    id_usuario=student.id,
+                    plano_id="recorrente",
+                    status="ativo",
+                    valido_ate=now + timedelta(days=30),
+                    renovacao_automatica=True,
+                ),
                 AIUsageRecord(
                     id_usuario=student.id,
                     operacao="avaliacao_simulacao",
@@ -1498,6 +1505,14 @@ def test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(monkeypat
             ]
         )
         db.commit()
+        active_subscriber_count = db.scalar(
+            select(func.count())
+            .select_from(UserEntitlement)
+            .where(
+                UserEntitlement.status == "ativo",
+                UserEntitlement.valido_ate > now,
+            )
+        )
 
     forbidden = client.get(
         "/admin/synapse/consumo?dias=7",
@@ -1514,6 +1529,12 @@ def test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(monkeypat
     assert data["periodo_dias"] == 7
     assert data["resumo"]["chamadas"] == 3
     assert data["resumo"]["usuarios_ativos"] == 1
+    assert data["resumo"]["casos_avaliados"] == 2
+    assert data["resumo"]["assinantes_ativos"] == active_subscriber_count
+    assert data["resumo"]["chamadas_assinantes"] == 3
+    assert data["resumo"]["chamadas_por_assinante"] == round(
+        3 / active_subscriber_count, 2
+    )
     assert data["resumo"]["input_tokens"] == 3000
     assert data["resumo"]["cached_input_tokens"] == 600
     assert data["resumo"]["output_tokens"] == 620
@@ -1521,6 +1542,8 @@ def test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(monkeypat
     assert data["resumo"]["taxa_cache_percentual"] == 20
     assert data["resumo"]["duracao_media_ms"] == 800
     assert data["resumo"]["custo_estimado_usd"] == pytest.approx(0.0034)
+    assert data["resumo"]["custo_medio_por_caso_usd"] == pytest.approx(0.00165)
+    assert data["resumo"]["custo_medio_por_usuario_usd"] == pytest.approx(0.0034)
     assert {item["chave"] for item in data["por_modelo"]} == {
         "gpt-5.6-luna",
         "gpt-5.6-terra",

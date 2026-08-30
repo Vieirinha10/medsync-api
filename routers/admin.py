@@ -416,8 +416,34 @@ def synapse_usage(
         .order_by(AIUsageRecord.created_at.desc())
     ).all()
     records = [record for record, _user in rows]
+    active_subscriber_ids = set(
+        db.scalars(
+            select(UserEntitlement.id_usuario).where(
+                UserEntitlement.status == "ativo",
+                UserEntitlement.valido_ate > now,
+            )
+        ).all()
+    )
     input_tokens = sum(record.input_tokens for record in records)
     cached_tokens = sum(record.cached_input_tokens for record in records)
+    total_cost = sum(record.custo_estimado_usd or 0 for record in records)
+    evaluation_records = [
+        record for record in records if record.operacao == "avaliacao_simulacao"
+    ]
+    evaluated_progress_ids = {
+        record.progresso_id
+        for record in evaluation_records
+        if record.progresso_id is not None
+    }
+    cases_evaluated = len(evaluated_progress_ids) + sum(
+        record.progresso_id is None for record in evaluation_records
+    )
+    evaluation_cost = sum(
+        record.custo_estimado_usd or 0 for record in evaluation_records
+    )
+    subscriber_calls = sum(
+        record.id_usuario in active_subscriber_ids for record in records
+    )
     durations = sorted(record.duracao_ms for record in records)
     p95_index = min(len(durations) - 1, int((len(durations) - 1) * 0.95))
 
@@ -490,8 +516,23 @@ def synapse_usage(
             "cached_input_tokens": cached_tokens,
             "output_tokens": sum(record.output_tokens for record in records),
             "total_tokens": sum(record.total_tokens for record in records),
-            "custo_estimado_usd": round(
-                sum(record.custo_estimado_usd or 0 for record in records), 8
+            "custo_estimado_usd": round(total_cost, 8),
+            "custo_medio_por_caso_usd": round(
+                evaluation_cost / cases_evaluated if cases_evaluated else 0,
+                8,
+            ),
+            "custo_medio_por_usuario_usd": round(
+                total_cost / len(users) if users else 0,
+                8,
+            ),
+            "casos_avaliados": cases_evaluated,
+            "assinantes_ativos": len(active_subscriber_ids),
+            "chamadas_assinantes": subscriber_calls,
+            "chamadas_por_assinante": round(
+                subscriber_calls / len(active_subscriber_ids)
+                if active_subscriber_ids
+                else 0,
+                2,
             ),
             "custo_completo": all(
                 record.custo_estimado_usd is not None for record in records

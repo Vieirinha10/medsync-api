@@ -92,6 +92,8 @@ GET /admin/synapse/consumo?dias=30
 O parâmetro aceita 1–180 dias. A resposta contém:
 
 - chamadas e usuários ativos;
+- custo médio por caso e por usuário;
+- média de chamadas por assinante Premium ativo;
 - tokens de entrada, cache, saída e total;
 - custo estimado e indicação de cobertura da precificação;
 - latência média e p95;
@@ -100,7 +102,8 @@ O parâmetro aceita 1–180 dias. A resposta contém:
 - dez usuários com maior consumo;
 - configuração operacional sem segredos.
 
-O frontend apresenta os períodos de 7, 30 e 90 dias. A lista por usuário serve
+O frontend apresenta esses dados em `Administração → Financeiro → Synapse`, com
+períodos de 7, 30 e 90 dias. A lista por usuário serve
 somente para monitoramento de padrões e anomalias. Não há bloqueio, franquia ou
 contador visível ao estudante.
 
@@ -151,7 +154,7 @@ No frontend:
 2. Configurar ou confirmar as variáveis dos modelos e dos tetos.
 3. Confirmar `/health` e `/ready`.
 4. Publicar o frontend.
-5. Abrir Administração → Synapse e validar uma janela de 7 dias.
+5. Abrir Administração → Financeiro → Synapse e validar uma janela de 7 dias.
 6. Após 20–30 chamadas reais, comparar entrada, saída, latência e custo com o
    período anterior.
 

@@ -423,11 +423,17 @@ class AdminOverviewResponse(BaseModel):
 class AdminSynapseUsageSummary(BaseModel):
     chamadas: int
     usuarios_ativos: int
+    casos_avaliados: int
+    assinantes_ativos: int
+    chamadas_assinantes: int
     input_tokens: int
     cached_input_tokens: int
     output_tokens: int
     total_tokens: int
     custo_estimado_usd: float
+    custo_medio_por_caso_usd: float
+    custo_medio_por_usuario_usd: float
+    chamadas_por_assinante: float
     custo_completo: bool
     duracao_media_ms: int
     duracao_p95_ms: int

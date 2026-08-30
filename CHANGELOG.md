@@ -9,6 +9,8 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 - Painel administrativo da Synapse em `GET /admin/synapse/consumo`, com filtros
   de período, tokens, custo estimado, cache, latência, modelos, operações e
   usuários com maior consumo, sem franquia ou bloqueio de perguntas.
+- Indicadores financeiros da Synapse com custo médio por caso, custo médio por
+  usuário e chamadas por assinante Premium ativo.
 - Benchmark offline reproduzível com 25 casos reais, cobrindo respostas
   completas, parciais e inseguras.
 - Área de Psiquiatria e Saúde Mental com 15 novos casos clínicos, elevando o
