@@ -4,15 +4,16 @@ import io
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
-from evaluation import ClinicalRubricDefinition
+from evaluation import ClinicalRubricDefinition, synapse_runtime_config
 from models import (
+    AIUsageRecord,
     Announcement,
     ClinicalCase,
     ClinicalExam,
@@ -32,6 +33,7 @@ from schemas import (
     AdminClinicalCaseUpsert,
     AdminFinancialResponse,
     AdminOverviewResponse,
+    AdminSynapseUsageResponse,
     AdminVisualChallengeResponse,
     AdminVisualChallengeUpsert,
     AnnouncementResponse,
@@ -364,6 +366,188 @@ def operational_overview(
         or 0,
         "conteudos_populares": popular[:10],
         "atividade_diaria": daily_metrics,
+    }
+
+
+def _synapse_usage_breakdown(
+    records: list[AIUsageRecord], attribute: str
+) -> list[dict[str, object]]:
+    buckets: dict[str, list[AIUsageRecord]] = defaultdict(list)
+    for record in records:
+        buckets[str(getattr(record, attribute))].append(record)
+
+    items = []
+    for key, bucket in buckets.items():
+        items.append(
+            {
+                "chave": key,
+                "chamadas": len(bucket),
+                "input_tokens": sum(item.input_tokens for item in bucket),
+                "output_tokens": sum(item.output_tokens for item in bucket),
+                "total_tokens": sum(item.total_tokens for item in bucket),
+                "custo_estimado_usd": round(
+                    sum(item.custo_estimado_usd or 0 for item in bucket), 8
+                ),
+                "duracao_media_ms": round(
+                    sum(item.duracao_ms for item in bucket) / len(bucket)
+                ),
+            }
+        )
+    return sorted(items, key=lambda item: item["chamadas"], reverse=True)
+
+
+@router.get("/synapse/consumo", response_model=AdminSynapseUsageResponse)
+def synapse_usage(
+    dias: int = Query(default=30, ge=1, le=180),
+    _: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(UTC)
+    since = (now - timedelta(days=dias - 1)).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+    )
+    rows = db.execute(
+        select(AIUsageRecord, User)
+        .join(User, User.id == AIUsageRecord.id_usuario)
+        .where(AIUsageRecord.created_at >= since)
+        .order_by(AIUsageRecord.created_at.desc())
+    ).all()
+    records = [record for record, _user in rows]
+    active_subscriber_ids = set(
+        db.scalars(
+            select(UserEntitlement.id_usuario).where(
+                UserEntitlement.status == "ativo",
+                UserEntitlement.valido_ate > now,
+            )
+        ).all()
+    )
+    input_tokens = sum(record.input_tokens for record in records)
+    cached_tokens = sum(record.cached_input_tokens for record in records)
+    total_cost = sum(record.custo_estimado_usd or 0 for record in records)
+    evaluation_records = [
+        record for record in records if record.operacao == "avaliacao_simulacao"
+    ]
+    evaluated_progress_ids = {
+        record.progresso_id
+        for record in evaluation_records
+        if record.progresso_id is not None
+    }
+    cases_evaluated = len(evaluated_progress_ids) + sum(
+        record.progresso_id is None for record in evaluation_records
+    )
+    evaluation_cost = sum(
+        record.custo_estimado_usd or 0 for record in evaluation_records
+    )
+    subscriber_calls = sum(
+        record.id_usuario in active_subscriber_ids for record in records
+    )
+    durations = sorted(record.duracao_ms for record in records)
+    p95_index = min(len(durations) - 1, int((len(durations) - 1) * 0.95))
+
+    daily: dict[str, dict[str, object]] = defaultdict(
+        lambda: {
+            "records": [],
+            "users": set(),
+        }
+    )
+    users: dict[int, dict[str, object]] = {}
+    for record, user in rows:
+        day_key = as_utc(record.created_at).date().isoformat()
+        daily[day_key]["records"].append(record)
+        daily[day_key]["users"].add(user.id)
+        bucket = users.setdefault(
+            user.id,
+            {
+                "usuario_id": user.id,
+                "nome": user.nome,
+                "email": user.email,
+                "chamadas": 0,
+                "total_tokens": 0,
+                "custo_estimado_usd": 0.0,
+            },
+        )
+        bucket["chamadas"] += 1
+        bucket["total_tokens"] += record.total_tokens
+        bucket["custo_estimado_usd"] += record.custo_estimado_usd or 0
+
+    daily_usage = []
+    for offset in range(dias - 1, -1, -1):
+        key = (now - timedelta(days=offset)).date().isoformat()
+        bucket_records = daily[key]["records"]
+        daily_usage.append(
+            {
+                "data": key,
+                "chamadas": len(bucket_records),
+                "usuarios": len(daily[key]["users"]),
+                "total_tokens": sum(record.total_tokens for record in bucket_records),
+                "custo_estimado_usd": round(
+                    sum(record.custo_estimado_usd or 0 for record in bucket_records),
+                    8,
+                ),
+                "duracao_media_ms": (
+                    round(
+                        sum(record.duracao_ms for record in bucket_records)
+                        / len(bucket_records)
+                    )
+                    if bucket_records
+                    else 0
+                ),
+            }
+        )
+
+    user_usage = sorted(
+        users.values(),
+        key=lambda item: (item["custo_estimado_usd"], item["total_tokens"]),
+        reverse=True,
+    )[:10]
+    for item in user_usage:
+        item["custo_estimado_usd"] = round(item["custo_estimado_usd"], 8)
+
+    return {
+        "periodo_dias": dias,
+        "gerado_em": now,
+        "resumo": {
+            "chamadas": len(records),
+            "usuarios_ativos": len(users),
+            "input_tokens": input_tokens,
+            "cached_input_tokens": cached_tokens,
+            "output_tokens": sum(record.output_tokens for record in records),
+            "total_tokens": sum(record.total_tokens for record in records),
+            "custo_estimado_usd": round(total_cost, 8),
+            "custo_medio_por_caso_usd": round(
+                evaluation_cost / cases_evaluated if cases_evaluated else 0,
+                8,
+            ),
+            "custo_medio_por_usuario_usd": round(
+                total_cost / len(users) if users else 0,
+                8,
+            ),
+            "casos_avaliados": cases_evaluated,
+            "assinantes_ativos": len(active_subscriber_ids),
+            "chamadas_assinantes": subscriber_calls,
+            "chamadas_por_assinante": round(
+                subscriber_calls / len(active_subscriber_ids)
+                if active_subscriber_ids
+                else 0,
+                2,
+            ),
+            "custo_completo": all(
+                record.custo_estimado_usd is not None for record in records
+            ),
+            "duracao_media_ms": (
+                round(sum(durations) / len(durations)) if durations else 0
+            ),
+            "duracao_p95_ms": durations[p95_index] if durations else 0,
+            "taxa_cache_percentual": percentage(cached_tokens, input_tokens),
+        },
+        "por_operacao": _synapse_usage_breakdown(records, "operacao"),
+        "por_modelo": _synapse_usage_breakdown(records, "modelo"),
+        "uso_diario": daily_usage,
+        "usuarios_mais_ativos": user_usage,
+        "configuracao": synapse_runtime_config(),
     }
 
 

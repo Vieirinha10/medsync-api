@@ -420,6 +420,75 @@ class AdminOverviewResponse(BaseModel):
     atividade_diaria: list[AdminDailyMetric]
 
 
+class AdminSynapseUsageSummary(BaseModel):
+    chamadas: int
+    usuarios_ativos: int
+    casos_avaliados: int
+    assinantes_ativos: int
+    chamadas_assinantes: int
+    input_tokens: int
+    cached_input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    custo_estimado_usd: float
+    custo_medio_por_caso_usd: float
+    custo_medio_por_usuario_usd: float
+    chamadas_por_assinante: float
+    custo_completo: bool
+    duracao_media_ms: int
+    duracao_p95_ms: int
+    taxa_cache_percentual: float
+
+
+class AdminSynapseUsageBreakdown(BaseModel):
+    chave: str
+    chamadas: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    custo_estimado_usd: float
+    duracao_media_ms: int
+
+
+class AdminSynapseDailyUsage(BaseModel):
+    data: str
+    chamadas: int
+    usuarios: int
+    total_tokens: int
+    custo_estimado_usd: float
+    duracao_media_ms: int
+
+
+class AdminSynapseUserUsage(BaseModel):
+    usuario_id: int
+    nome: str
+    email: EmailStr
+    chamadas: int
+    total_tokens: int
+    custo_estimado_usd: float
+
+
+class AdminSynapseRuntimeConfiguration(BaseModel):
+    modelo_rotina: str
+    modelo_avancado: str
+    modelo_perguntas: str
+    perguntas_com_roteamento_automatico: bool
+    esforco_raciocinio: str
+    limite_saida_feedback: int
+    limite_saida_pergunta: int
+
+
+class AdminSynapseUsageResponse(BaseModel):
+    periodo_dias: int
+    gerado_em: datetime
+    resumo: AdminSynapseUsageSummary
+    por_operacao: list[AdminSynapseUsageBreakdown]
+    por_modelo: list[AdminSynapseUsageBreakdown]
+    uso_diario: list[AdminSynapseDailyUsage]
+    usuarios_mais_ativos: list[AdminSynapseUserUsage]
+    configuracao: AdminSynapseRuntimeConfiguration
+
+
 class AdminFinancialSummary(BaseModel):
     total_pedidos: int
     pedidos_pendentes: int

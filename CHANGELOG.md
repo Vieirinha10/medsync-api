@@ -6,6 +6,13 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Adicionado
 
+- Painel administrativo da Synapse em `GET /admin/synapse/consumo`, com filtros
+  de período, tokens, custo estimado, cache, latência, modelos, operações e
+  usuários com maior consumo, sem franquia ou bloqueio de perguntas.
+- Indicadores financeiros da Synapse com custo médio por caso, custo médio por
+  usuário e chamadas por assinante Premium ativo.
+- Benchmark offline reproduzível com 25 casos reais, cobrindo respostas
+  completas, parciais e inseguras.
 - Área de Psiquiatria e Saúde Mental com 15 novos casos clínicos, elevando o
   catálogo de 65 para 80 casos e a meta final do projeto de 100 para 115 casos.
 - Casos distribuídos igualmente entre os níveis fácil, intermediário e difícil,
@@ -30,6 +37,17 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Alterado
 
+- Contexto da Synapse compactado para remover rubrica, resultado e campos
+  repetidos; a IA passou a gerar somente a camada curta de tutoria sobre o
+  feedback determinístico.
+- Roteamento entre `gpt-5.6-luna` para tarefas comuns e `gpt-5.6-terra` para
+  ambiguidade, complexidade incompleta e risco clínico, com modelos configuráveis.
+- Tetos de saída aplicados ao feedback (900 tokens) e às perguntas (450 tokens),
+  com limites seguros configuráveis por ambiente.
+- Esforço de raciocínio reduzido para `low` e verbosidade baixa nas chamadas
+  interativas, preservando a avaliação clínica no mecanismo determinístico.
+- Comparativo de 25 casos mediu redução de 59,3% no contexto de entrada e 62,8%
+  no schema de saída, preservando as invariantes clínicas em toda a amostra.
 - Tom de voz da Synapse reformulado para funcionar como uma preceptora clínica
   atenta: reconhecimento específico, explicação clínica e próximo passo prático,
   sem perder firmeza em alertas de segurança.
