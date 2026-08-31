@@ -1001,6 +1001,106 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Associação com acidose e lesão renal",
         ],
     },
+    "desafio-visual-101": {
+        "correct_option_id": "artrite-reumatoide",
+        "diagnosis": "Artrite reumatoide com deformidades avançadas da mão",
+        "explanation": "O desvio ulnar dos dedos, as subluxações metacarpofalângicas e as deformidades crônicas resultam da sinovite persistente da artrite reumatoide. O padrão costuma ser bilateral e simétrico, com predomínio em punhos, metacarpofalângicas e interfalângicas proximais.",
+        "key_findings": [
+            "Desvio ulnar dos dedos",
+            "Subluxações metacarpofalângicas",
+            "Deformidade articular crônica da mão",
+        ],
+    },
+    "desafio-visual-102": {
+        "correct_option_id": "gota",
+        "diagnosis": "Gota por cristais de urato monossódico",
+        "explanation": "Cristais finos e aciculares com birrefringência negativa sob luz polarizada compensada são característicos do urato monossódico. A identificação no líquido sinovial confirma artrite por cristais e ajuda a diferenciar gota da deposição de pirofosfato de cálcio.",
+        "key_findings": [
+            "Cristais em forma de agulha",
+            "Birrefringência negativa sob luz polarizada",
+            "Cristais presentes no líquido sinovial",
+        ],
+    },
+    "desafio-visual-103": {
+        "correct_option_id": "espondilite-anquilosante",
+        "diagnosis": "Espondilite anquilosante com coluna em bambu",
+        "explanation": "Sindesmófitos marginais finos fazem pontes entre corpos vertebrais consecutivos e produzem o aspecto contínuo de coluna em bambu. Em doença avançada, a anquilose axial costuma acompanhar sacroiliíte bilateral.",
+        "key_findings": [
+            "Sindesmófitos marginais em pontes",
+            "Anquilose entre corpos vertebrais",
+            "Aspecto radiográfico de coluna em bambu",
+        ],
+    },
+    "desafio-visual-104": {
+        "correct_option_id": "dermatomiosite",
+        "diagnosis": "Dermatomiosite com pápulas de Gottron",
+        "explanation": "Pápulas eritematovioláceas sobre as superfícies extensoras das articulações metacarpofalângicas e interfalângicas são pápulas de Gottron, um achado cutâneo altamente característico da dermatomiosite.",
+        "key_findings": [
+            "Pápulas eritematovioláceas",
+            "Localização sobre metacarpofalângicas e interfalângicas",
+            "Distribuição nas superfícies extensoras",
+        ],
+    },
+    "desafio-visual-105": {
+        "correct_option_id": "esclerose-sistemica",
+        "diagnosis": "Esclerose sistêmica com esclerodactilia",
+        "explanation": "A pele distal espessada, brilhante, endurecida e com redução dos pregueamentos caracteriza esclerodactilia. Quando bilateral e associada a fenômeno de Raynaud ou alterações vasculares, esse achado favorece esclerose sistêmica.",
+        "key_findings": [
+            "Espessamento cutâneo distal bilateral",
+            "Pele brilhante e pouco pregueada",
+            "Endurecimento dos dedos",
+        ],
+    },
+    "desafio-visual-106": {
+        "correct_option_id": "artrite-psoriasica",
+        "diagnosis": "Artrite psoriásica erosiva",
+        "explanation": "O acometimento das interfalângicas distais, a distribuição assimétrica e a combinação de erosão com remodelamento ósseo favorecem artrite psoriásica. A presença de psoríase cutânea ou ungueal reforça a distinção em relação à artrite reumatoide.",
+        "key_findings": [
+            "Acometimento de interfalângicas distais",
+            "Erosões articulares assimétricas",
+            "Remodelamento ósseo associado à destruição",
+        ],
+    },
+    "desafio-visual-107": {
+        "correct_option_id": "cppd",
+        "diagnosis": "Doença por deposição de pirofosfato de cálcio",
+        "explanation": "Calcificações lineares nos meniscos e na cartilagem formam a condrocalcinose, achado radiográfico clássico da deposição de pirofosfato de cálcio. O quadro pode se apresentar como artrite aguda, frequentemente no joelho, ou como artropatia crônica.",
+        "key_findings": [
+            "Calcificação linear dos meniscos",
+            "Depósito paralelo à superfície articular",
+            "Condrocalcinose no joelho",
+        ],
+    },
+    "desafio-visual-108": {
+        "correct_option_id": "lupus-eritematoso-sistemico",
+        "diagnosis": "Lúpus eritematoso sistêmico com eritema malar",
+        "explanation": "O eritema simétrico sobre as regiões malares e a ponte nasal compõe o padrão em asa de borboleta. Associado a fotossensibilidade, artralgias e proteinúria, o achado favorece lúpus eritematoso sistêmico, embora a imagem isolada não estabeleça o diagnóstico.",
+        "key_findings": [
+            "Eritema bilateral nas regiões malares",
+            "Extensão sobre a ponte nasal",
+            "Distribuição facial em asa de borboleta",
+        ],
+    },
+    "desafio-visual-109": {
+        "correct_option_id": "osteoartrite-maos",
+        "diagnosis": "Osteoartrite das mãos com nódulos de Heberden",
+        "explanation": "Aumentos nodulares duros nas articulações interfalângicas distais correspondem aos nódulos de Heberden, produzidos por osteófitos da osteoartrite. Nódulos semelhantes nas interfalângicas proximais são chamados de nódulos de Bouchard.",
+        "key_findings": [
+            "Nódulos nas interfalângicas distais",
+            "Aumento ósseo firme",
+            "Deformidade de múltiplos dedos",
+        ],
+    },
+    "desafio-visual-110": {
+        "correct_option_id": "arterite-celulas-gigantes",
+        "diagnosis": "Arterite de células gigantes",
+        "explanation": "A biópsia mostra inflamação granulomatosa da parede arterial, espessamento intimal e estreitamento luminal. Em pessoa com mais de 50 anos, cefaleia nova e sintomas visuais, esse padrão é compatível com arterite de células gigantes e exige avaliação e tratamento urgentes para reduzir o risco de perda visual permanente.",
+        "key_findings": [
+            "Inflamação transmural da artéria",
+            "Espessamento intimal",
+            "Estreitamento importante do lúmen",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1503,5 +1603,55 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Ajay Kumar Chaurasiya / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Calcium_oxalate_crystals_in_Urine_Microscopy.jpg",
+    ),
+    "desafio-visual-101": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Rheumatoid_Arthritis.JPG",
+    ),
+    "desafio-visual-102": (
+        "Ed Uthman / Wikimedia Commons",
+        "CC BY-SA 2.0",
+        "https://commons.wikimedia.org/wiki/File:Gout_-_monosodium_urate_crystals_in_joint_fluid_(1).jpg",
+    ),
+    "desafio-visual-103": (
+        "Stevenfruitsmaak / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Bamboo_spine_ankylosing_spondylitis.jpg",
+    ),
+    "desafio-visual-104": (
+        "Elizabeth M. Dugan, Adam M. Huber, Frederick W. Miller e Lisa G. Rider / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Dermatomyositis2.jpg",
+    ),
+    "desafio-visual-105": (
+        "Maria Sieglinda von Nudeldorf / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Systemic_sclerosis,_changes_on_hands_are_allways_bilateral.jpg",
+    ),
+    "desafio-visual-106": (
+        "Cecco / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:Artrite_psoriasica_Rx_Mano_Sn.PNG",
+    ),
+    "desafio-visual-107": (
+        "Taokinesis; anotação por Mikael Häggström / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:Chondrocalcinosis_-_annotated.jpg",
+    ),
+    "desafio-visual-108": (
+        "CNX OpenStax / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Butterfly_rash_of_lupus_erythematosus.jpg",
+    ),
+    "desafio-visual-109": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Heberden-Arthrose.JPG",
+    ),
+    "desafio-visual-110": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Giant_cell_arteritis_--_very_low_mag.jpg",
     ),
 }
