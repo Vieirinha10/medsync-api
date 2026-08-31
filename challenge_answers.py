@@ -1001,6 +1001,506 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Associação com acidose e lesão renal",
         ],
     },
+    "desafio-visual-101": {
+        "correct_option_id": "artrite-reumatoide",
+        "diagnosis": "Artrite reumatoide com deformidades avançadas da mão",
+        "explanation": "O desvio ulnar dos dedos, as subluxações metacarpofalângicas e as deformidades crônicas resultam da sinovite persistente da artrite reumatoide. O padrão costuma ser bilateral e simétrico, com predomínio em punhos, metacarpofalângicas e interfalângicas proximais.",
+        "key_findings": [
+            "Desvio ulnar dos dedos",
+            "Subluxações metacarpofalângicas",
+            "Deformidade articular crônica da mão",
+        ],
+    },
+    "desafio-visual-102": {
+        "correct_option_id": "gota",
+        "diagnosis": "Gota por cristais de urato monossódico",
+        "explanation": "Cristais finos e aciculares com birrefringência negativa sob luz polarizada compensada são característicos do urato monossódico. A identificação no líquido sinovial confirma artrite por cristais e ajuda a diferenciar gota da deposição de pirofosfato de cálcio.",
+        "key_findings": [
+            "Cristais em forma de agulha",
+            "Birrefringência negativa sob luz polarizada",
+            "Cristais presentes no líquido sinovial",
+        ],
+    },
+    "desafio-visual-103": {
+        "correct_option_id": "espondilite-anquilosante",
+        "diagnosis": "Espondilite anquilosante com coluna em bambu",
+        "explanation": "Sindesmófitos marginais finos fazem pontes entre corpos vertebrais consecutivos e produzem o aspecto contínuo de coluna em bambu. Em doença avançada, a anquilose axial costuma acompanhar sacroiliíte bilateral.",
+        "key_findings": [
+            "Sindesmófitos marginais em pontes",
+            "Anquilose entre corpos vertebrais",
+            "Aspecto radiográfico de coluna em bambu",
+        ],
+    },
+    "desafio-visual-104": {
+        "correct_option_id": "dermatomiosite",
+        "diagnosis": "Dermatomiosite com pápulas de Gottron",
+        "explanation": "Pápulas eritematovioláceas sobre as superfícies extensoras das articulações metacarpofalângicas e interfalângicas são pápulas de Gottron, um achado cutâneo altamente característico da dermatomiosite.",
+        "key_findings": [
+            "Pápulas eritematovioláceas",
+            "Localização sobre metacarpofalângicas e interfalângicas",
+            "Distribuição nas superfícies extensoras",
+        ],
+    },
+    "desafio-visual-105": {
+        "correct_option_id": "esclerose-sistemica",
+        "diagnosis": "Esclerose sistêmica com esclerodactilia",
+        "explanation": "A pele distal espessada, brilhante, endurecida e com redução dos pregueamentos caracteriza esclerodactilia. Quando bilateral e associada a fenômeno de Raynaud ou alterações vasculares, esse achado favorece esclerose sistêmica.",
+        "key_findings": [
+            "Espessamento cutâneo distal bilateral",
+            "Pele brilhante e pouco pregueada",
+            "Endurecimento dos dedos",
+        ],
+    },
+    "desafio-visual-106": {
+        "correct_option_id": "artrite-psoriasica",
+        "diagnosis": "Artrite psoriásica erosiva",
+        "explanation": "O acometimento das interfalângicas distais, a distribuição assimétrica e a combinação de erosão com remodelamento ósseo favorecem artrite psoriásica. A presença de psoríase cutânea ou ungueal reforça a distinção em relação à artrite reumatoide.",
+        "key_findings": [
+            "Acometimento de interfalângicas distais",
+            "Erosões articulares assimétricas",
+            "Remodelamento ósseo associado à destruição",
+        ],
+    },
+    "desafio-visual-107": {
+        "correct_option_id": "cppd",
+        "diagnosis": "Doença por deposição de pirofosfato de cálcio",
+        "explanation": "Calcificações lineares nos meniscos e na cartilagem formam a condrocalcinose, achado radiográfico clássico da deposição de pirofosfato de cálcio. O quadro pode se apresentar como artrite aguda, frequentemente no joelho, ou como artropatia crônica.",
+        "key_findings": [
+            "Calcificação linear dos meniscos",
+            "Depósito paralelo à superfície articular",
+            "Condrocalcinose no joelho",
+        ],
+    },
+    "desafio-visual-108": {
+        "correct_option_id": "lupus-eritematoso-sistemico",
+        "diagnosis": "Lúpus eritematoso sistêmico com eritema malar",
+        "explanation": "O eritema simétrico sobre as regiões malares e a ponte nasal compõe o padrão em asa de borboleta. Associado a fotossensibilidade, artralgias e proteinúria, o achado favorece lúpus eritematoso sistêmico, embora a imagem isolada não estabeleça o diagnóstico.",
+        "key_findings": [
+            "Eritema bilateral nas regiões malares",
+            "Extensão sobre a ponte nasal",
+            "Distribuição facial em asa de borboleta",
+        ],
+    },
+    "desafio-visual-109": {
+        "correct_option_id": "osteoartrite-maos",
+        "diagnosis": "Osteoartrite das mãos com nódulos de Heberden",
+        "explanation": "Aumentos nodulares duros nas articulações interfalângicas distais correspondem aos nódulos de Heberden, produzidos por osteófitos da osteoartrite. Nódulos semelhantes nas interfalângicas proximais são chamados de nódulos de Bouchard.",
+        "key_findings": [
+            "Nódulos nas interfalângicas distais",
+            "Aumento ósseo firme",
+            "Deformidade de múltiplos dedos",
+        ],
+    },
+    "desafio-visual-110": {
+        "correct_option_id": "arterite-celulas-gigantes",
+        "diagnosis": "Arterite de células gigantes",
+        "explanation": "A biópsia mostra inflamação granulomatosa da parede arterial, espessamento intimal e estreitamento luminal. Em pessoa com mais de 50 anos, cefaleia nova e sintomas visuais, esse padrão é compatível com arterite de células gigantes e exige avaliação e tratamento urgentes para reduzir o risco de perda visual permanente.",
+        "key_findings": [
+            "Inflamação transmural da artéria",
+            "Espessamento intimal",
+            "Estreitamento importante do lúmen",
+        ],
+    },
+    "desafio-visual-111": {
+        "correct_option_id": "hidronefrose",
+        "diagnosis": "Hidronefrose moderada",
+        "explanation": "A dilatação anecoica e comunicante da pelve e dos cálices renais caracteriza hidronefrose. O achado indica obstrução ou dificuldade de drenagem urinária, cuja causa e repercussão sobre o parênquima devem ser investigadas.",
+        "key_findings": [
+            "Dilatação da pelve renal",
+            "Cálices renais dilatados e comunicantes",
+            "Conteúdo anecoico no sistema coletor",
+        ],
+    },
+    "desafio-visual-112": {
+        "correct_option_id": "calculo-coraliforme",
+        "diagnosis": "Cálculo renal coraliforme",
+        "explanation": "O cálculo radiopaco ocupa a pelve renal e se ramifica pelos cálices, reproduzindo o formato do sistema coletor. Esse padrão define o cálculo coraliforme, frequentemente associado a cálculos de estruvita e infecções por bactérias produtoras de urease.",
+        "key_findings": [
+            "Opacidade mineral na topografia renal",
+            "Morfologia ramificada",
+            "Ocupação da pelve e dos cálices",
+        ],
+    },
+    "desafio-visual-113": {
+        "correct_option_id": "doenca-renal-policistica-autossomica-dominante",
+        "diagnosis": "Doença renal policística autossômica dominante",
+        "explanation": "Rins bilateralmente aumentados e deformados por numerosos cistos de tamanhos variados são típicos da doença renal policística autossômica dominante. Cistos hepáticos associados podem reforçar o diagnóstico em adultos.",
+        "key_findings": [
+            "Múltiplos cistos renais bilaterais",
+            "Aumento do volume dos rins",
+            "Substituição e distorção do parênquima renal",
+        ],
+    },
+    "desafio-visual-114": {
+        "correct_option_id": "infarto-renal",
+        "diagnosis": "Infarto renal",
+        "explanation": "A área periférica em cunha que não capta contraste corresponde a parênquima renal isquêmico. Dor súbita no flanco, elevação de LDH e uma fonte embólica, como fibrilação atrial, tornam o infarto renal a principal hipótese.",
+        "key_findings": [
+            "Defeito de realce em forma de cunha",
+            "Distribuição periférica no parênquima",
+            "Contraste com o tecido renal viável adjacente",
+        ],
+    },
+    "desafio-visual-115": {
+        "correct_option_id": "lesao-tubular-aguda",
+        "diagnosis": "Lesão tubular aguda",
+        "explanation": "Cilindros granulosos grosseiros abundantes favorecem lesão tubular aguda. No contexto de choque, o padrão é compatível com injúria tubular isquêmica e ajuda a diferenciá-la da azotemia pré-renal, que costuma apresentar sedimento pouco ativo.",
+        "key_findings": [
+            "Cilindros granulosos grosseiros",
+            "Conteúdo granular dentro da matriz cilíndrica",
+            "Sedimento urinário compatível com dano tubular",
+        ],
+    },
+    "desafio-visual-116": {
+        "correct_option_id": "nefrite-intersticial-aguda",
+        "diagnosis": "Nefrite intersticial aguda medicamentosa",
+        "explanation": "Cilindros leucocitários indicam inflamação originada no parênquima renal. Quando surgem após exposição a medicamento e acompanham febre, exantema, eosinofilia e lesão renal aguda, o conjunto favorece nefrite intersticial aguda; o achado isolado também pode ocorrer na pielonefrite.",
+        "key_findings": [
+            "Leucócitos agrupados em matriz cilíndrica",
+            "Origem tubular do sedimento inflamatório",
+            "Contexto clínico de hipersensibilidade medicamentosa",
+        ],
+    },
+    "desafio-visual-117": {
+        "correct_option_id": "nefropatia-diabetica",
+        "diagnosis": "Nefropatia diabética com glomeruloesclerose nodular",
+        "explanation": "A expansão mesangial nodular forma as lesões de Kimmelstiel-Wilson, padrão clássico da nefropatia diabética avançada. Em paciente com diabetes de longa duração e proteinúria, esse achado sustenta glomeruloesclerose diabética.",
+        "key_findings": [
+            "Nódulos mesangiais arredondados",
+            "Glomeruloesclerose nodular",
+            "Comprometimento de múltiplos glomérulos",
+        ],
+    },
+    "desafio-visual-118": {
+        "correct_option_id": "glomerulonefrite-rapidamente-progressiva",
+        "diagnosis": "Glomerulonefrite rapidamente progressiva com crescentes",
+        "explanation": "A proliferação celular no espaço de Bowman forma um crescente que comprime o tufo glomerular. Quando associada a hematúria e queda rápida da função renal, essa lesão define o padrão de glomerulonefrite rapidamente progressiva; imunofluorescência e sorologias são necessárias para determinar a causa.",
+        "key_findings": [
+            "Crescente fibrocelular no espaço de Bowman",
+            "Compressão do tufo glomerular",
+            "Proliferação extracapilar",
+        ],
+    },
+    "desafio-visual-119": {
+        "correct_option_id": "nefropatia-membranosa",
+        "diagnosis": "Nefropatia membranosa",
+        "explanation": "A coloração pela prata evidencia espículas na face externa da membrana basal glomerular entre os depósitos subepiteliais, produzindo o padrão spike and dome. Em adulto com síndrome nefrótica, esse achado é característico da nefropatia membranosa.",
+        "key_findings": [
+            "Espessamento da membrana basal glomerular",
+            "Espículas evidenciadas pela prata",
+            "Padrão compatível com depósitos subepiteliais",
+        ],
+    },
+    "desafio-visual-120": {
+        "correct_option_id": "pielonefrite-aguda",
+        "diagnosis": "Pielonefrite aguda",
+        "explanation": "O infiltrado neutrofílico no interstício e no interior dos túbulos representa inflamação supurativa tubulointersticial. Associado a febre, dor no flanco e piúria, o padrão é compatível com pielonefrite aguda.",
+        "key_findings": [
+            "Infiltrado neutrofílico intersticial",
+            "Neutrófilos no interior dos túbulos",
+            "Inflamação supurativa do parênquima renal",
+        ],
+    },
+    "desafio-visual-121": {
+        "correct_option_id": "pneumotorax-hipertensivo",
+        "diagnosis": "Pneumotórax hipertensivo",
+        "explanation": "A hipertransparência unilateral, a ausência de trama vascular periférica e o desvio do mediastino indicam pneumotórax sob tensão. Associado a dessaturação e instabilidade hemodinâmica durante ventilação mecânica, é um diagnóstico clínico que exige descompressão imediata, sem aguardar nova imagem.",
+        "key_findings": [
+            "Hemitórax hipertransparente sem trama vascular",
+            "Desvio mediastinal contralateral",
+            "Instabilidade após ventilação com pressão positiva",
+        ],
+    },
+    "desafio-visual-122": {
+        "correct_option_id": "sdra",
+        "diagnosis": "Síndrome do desconforto respiratório agudo",
+        "explanation": "Opacidades alveolares bilaterais difusas em paciente com sepse e hipoxemia grave, sem explicação cardiogênica, sustentam síndrome do desconforto respiratório agudo. A radiografia isolada não distingue todas as causas de preenchimento alveolar; o contexto clínico e a exclusão de edema hidrostático são essenciais.",
+        "key_findings": [
+            "Opacidades bilaterais difusas",
+            "Hipoxemia aguda grave",
+            "Fator precipitante compatível: sepse",
+        ],
+    },
+    "desafio-visual-123": {
+        "correct_option_id": "linhas-b",
+        "diagnosis": "Linhas B no ultrassom pulmonar",
+        "explanation": "Linhas B são artefatos verticais hiperecogênicos que nascem na linha pleural, chegam ao limite inferior da tela sem atenuação e se movem com o deslizamento pleural. Múltiplas linhas B indicam aumento da densidade intersticial pulmonar, mas não definem sozinhas a causa, podendo ocorrer em edema, inflamação ou fibrose.",
+        "key_findings": [
+            "Artefatos verticais originados na pleura",
+            "Extensão até o fundo da tela",
+            "Ausência de atenuação ao longo do trajeto",
+        ],
+    },
+    "desafio-visual-124": {
+        "correct_option_id": "fast-positivo-hemoperitonio",
+        "diagnosis": "FAST positivo para líquido livre intraperitoneal",
+        "explanation": "A faixa anecoica entre o fígado e o rim corresponde a líquido livre no recesso hepatorrenal, ou espaço de Morison. Em paciente politraumatizado e hipotenso, o achado deve ser interpretado como hemoperitônio até prova em contrário e orienta decisão imediata conforme a condição hemodinâmica.",
+        "key_findings": [
+            "Líquido anecoico no recesso hepatorrenal",
+            "Localização entre fígado e rim direito",
+            "Trauma associado a instabilidade hemodinâmica",
+        ],
+    },
+    "desafio-visual-125": {
+        "correct_option_id": "tamponamento-cardiaco",
+        "diagnosis": "Tamponamento cardíaco por grande derrame pericárdico",
+        "explanation": "A coleção anecoica ao redor do coração demonstra grande derrame pericárdico. Hipotensão, turgência jugular e bulhas hipofonéticas indicam repercussão hemodinâmica compatível com tamponamento; a imagem estática confirma o derrame, enquanto sinais dinâmicos, como colapso de câmaras direitas, ajudam a documentar o tamponamento.",
+        "key_findings": [
+            "Grande coleção anecoica pericárdica",
+            "Hipotensão com turgência jugular",
+            "Contexto de repercussão hemodinâmica",
+        ],
+    },
+    "desafio-visual-126": {
+        "correct_option_id": "mallampati-iv",
+        "diagnosis": "Classificação de Mallampati IV",
+        "explanation": "Na classe IV de Mallampati, apenas o palato duro é visível; palato mole, úvula e pilares não são visualizados. O achado sugere maior probabilidade de laringoscopia difícil, mas deve ser combinado com outras medidas da via aérea, pois não prediz isoladamente a dificuldade de intubação.",
+        "key_findings": [
+            "Visibilidade apenas do palato duro",
+            "Palato mole e úvula não visualizados",
+            "Avaliação com boca aberta e língua protruída",
+        ],
+    },
+    "desafio-visual-127": {
+        "correct_option_id": "conexao-frouxa-circuito",
+        "diagnosis": "Conexão frouxa no circuito respiratório",
+        "explanation": "Perdas abruptas e intermitentes do capnograma, especialmente quando desaparecem após manipular o circuito, sugerem conexão frouxa ou desconexão parcial. Broncoespasmo costuma produzir subida expiratória inclinada; reinalação de CO₂ eleva a linha de base, e hipoventilação tende a aumentar progressivamente o ETCO₂.",
+        "key_findings": [
+            "Interrupções abruptas do traçado",
+            "Padrão intermitente durante ventilação",
+            "Normalização após ajuste do circuito",
+        ],
+    },
+    "desafio-visual-128": {
+        "correct_option_id": "cormack-lehane-iii",
+        "diagnosis": "Cormack-Lehane grau III",
+        "explanation": "No grau III de Cormack-Lehane, a epiglote é visível, mas a abertura glótica não é identificada. O grau IV se diferencia pela ausência de visualização tanto da glote quanto da epiglote; os graus I e II permitem ver toda ou parte da glote.",
+        "key_findings": [
+            "Epiglote visível",
+            "Glote não visualizada",
+            "Visão laringoscópica compatível com via aérea difícil",
+        ],
+    },
+    "desafio-visual-129": {
+        "correct_option_id": "hipercalemia",
+        "diagnosis": "Hipercalemia com alterações eletrocardiográficas",
+        "explanation": "Ondas T difusamente altas, estreitas e apiculadas são manifestação precoce clássica da hipercalemia. À medida que a toxicidade cardíaca progride, podem surgir prolongamento do PR, desaparecimento da onda P, alargamento do QRS e padrão sinusoidal, exigindo tratamento urgente quando há alterações no ECG.",
+        "key_findings": [
+            "Ondas T altas e apiculadas",
+            "Alterações em múltiplas derivações",
+            "Doença renal como contexto de retenção de potássio",
+        ],
+    },
+    "desafio-visual-130": {
+        "correct_option_id": "hipotermia",
+        "diagnosis": "Hipotermia com onda J de Osborn",
+        "explanation": "A deflexão positiva no ponto J, logo após o complexo QRS, é a onda J de Osborn e está classicamente associada à hipotermia. Temperatura central de 30 °C e bradicardia reforçam o diagnóstico; tremor muscular, prolongamento dos intervalos e arritmias também podem ocorrer conforme o resfriamento se agrava.",
+        "key_findings": [
+            "Onda J no final do QRS",
+            "Bradicardia",
+            "Temperatura central de 30 °C",
+        ],
+    },
+    "desafio-visual-131": {
+        "correct_option_id": "lesao-suspeita-malignidade",
+        "diagnosis": "Lesão mamária suspeita para malignidade",
+        "explanation": "A pequena lesão irregular indicada na mamografia representa um achado suspeito que requer avaliação diagnóstica dirigida e, conforme a classificação radiológica, confirmação histológica. A imagem utilizada corresponde a uma lesão maligna, mas a mamografia isolada não define o subtipo tumoral.",
+        "key_findings": [
+            "Pequena lesão mamária irregular",
+            "Assimetria focal assinalada na mamografia",
+            "Morfologia que exige investigação diagnóstica",
+        ],
+    },
+    "desafio-visual-132": {
+        "correct_option_id": "nodulo-suspeito-malignidade",
+        "diagnosis": "Nódulo pulmonar suspeito para malignidade",
+        "explanation": "Margens espiculadas e retração do parênquima adjacente aumentam significativamente a suspeita de malignidade em um nódulo pulmonar, sobretudo em fumante mais velho. A tomografia estima o risco, mas não determina sozinha o tipo histológico; comparação temporal, PET/CT e amostragem podem ser necessários.",
+        "key_findings": [
+            "Margens espiculadas",
+            "Nódulo pulmonar sólido periférico",
+            "Paciente com alto risco clínico por tabagismo",
+        ],
+    },
+    "desafio-visual-133": {
+        "correct_option_id": "carcinoma-hepatocelular",
+        "diagnosis": "Carcinoma hepatocelular",
+        "explanation": "Em fígado cirrótico, a combinação de hiper-realce na fase arterial e redução relativa do realce nas fases portal ou tardia, o chamado washout, é o padrão vascular clássico do carcinoma hepatocelular. O tamanho do nódulo e a qualidade técnica determinam se o diagnóstico pode ser firmado por imagem.",
+        "key_findings": [
+            "Hiper-realce do nódulo na fase arterial",
+            "Washout na fase portal",
+            "Fígado com contexto de cirrose",
+        ],
+    },
+    "desafio-visual-134": {
+        "correct_option_id": "metastase-cerebral",
+        "diagnosis": "Metástase cerebral de câncer de mama",
+        "explanation": "Em paciente com neoplasia mamária disseminada, uma nova lesão expansiva cerebral acompanhada de edema vasogênico é altamente sugestiva de metástase. Metástases frequentemente se localizam na junção entre substância cinzenta e branca e podem ser únicas ou múltiplas; ressonância com contraste define melhor a extensão.",
+        "key_findings": [
+            "Lesão expansiva cerebral",
+            "Edema vasogênico extenso",
+            "História de câncer de mama metastático",
+        ],
+    },
+    "desafio-visual-135": {
+        "correct_option_id": "carcinoma-renal-celulas-claras",
+        "diagnosis": "Carcinoma renal de células claras",
+        "explanation": "O carcinoma renal de células claras é formado por ninhos ou alvéolos de células com citoplasma opticamente claro, separados por uma rede delicada de capilares. O aspecto claro decorre da remoção de lipídios e glicogênio durante o processamento histológico.",
+        "key_findings": [
+            "Células neoplásicas com citoplasma claro",
+            "Arquitetura em ninhos ou alvéolos",
+            "Rede vascular delicada entre os agrupamentos",
+        ],
+    },
+    "desafio-visual-136": {
+        "correct_option_id": "osteossarcoma",
+        "diagnosis": "Osteossarcoma",
+        "explanation": "A produção direta de osteoide por células malignas é o critério histológico definidor do osteossarcoma. Em adolescente com tumor doloroso da metáfise de osso longo, a combinação do contexto clínico e da matriz osteoide neoplásica diferencia a lesão de outros tumores ósseos primários.",
+        "key_findings": [
+            "Osteoide produzido por células malignas",
+            "Células pleomórficas com atipia nuclear",
+            "Tumor metafisário em adolescente",
+        ],
+    },
+    "desafio-visual-137": {
+        "correct_option_id": "metastases-osseas-osteoblasticas",
+        "diagnosis": "Metástases ósseas osteoblásticas de câncer de próstata",
+        "explanation": "Múltiplos focos de hipercaptação distribuídos pela coluna, costelas e pelve indicam intensa atividade osteoblástica multifocal. No contexto de câncer de próstata e PSA elevado, o padrão é compatível com metástases ósseas; alterações degenerativas tendem a ter distribuição articular mais previsível.",
+        "key_findings": [
+            "Múltiplos focos de hipercaptação óssea",
+            "Predomínio no esqueleto axial",
+            "Contexto de câncer de próstata",
+        ],
+    },
+    "desafio-visual-138": {
+        "correct_option_id": "metastases-osseas-prostata",
+        "diagnosis": "Metástases ósseas de câncer de próstata no PET/CT com PSMA",
+        "explanation": "A captação focal do ligante de PSMA concordante com lesões ósseas na tomografia indica envolvimento metastático do câncer de próstata. A intensa atividade renal é fisiológica por excreção do radiofármaco e não deve ser confundida com doença tumoral.",
+        "key_findings": [
+            "Focos ósseos com captação aumentada de PSMA",
+            "Correspondência anatômica na tomografia",
+            "Lesões em vértebra e osso ilíaco",
+        ],
+    },
+    "desafio-visual-139": {
+        "correct_option_id": "feocromocitoma",
+        "diagnosis": "Feocromocitoma com captação de MIBG",
+        "explanation": "A MIBG é captada por tecido neuroendócrino adrenérgico. Um foco patológico na adrenal em paciente com crises adrenérgicas e metanefrinas elevadas sustenta feocromocitoma; a captação na tireoide, no fígado e na bexiga observada no exame pode ser fisiológica.",
+        "key_findings": [
+            "Foco de MIBG na topografia adrenal",
+            "Sintomas episódicos de excesso catecolaminérgico",
+            "Metanefrinas elevadas",
+        ],
+    },
+    "desafio-visual-140": {
+        "correct_option_id": "embolia-pulmonar",
+        "diagnosis": "Embolia pulmonar com mismatch ventilação-perfusão",
+        "explanation": "Defeitos segmentares de perfusão em áreas com ventilação preservada configuram mismatch e indicam alta suspeita de embolia pulmonar no contexto clínico adequado. Doenças do parênquima pulmonar costumam produzir defeitos correspondentes de ventilação e perfusão.",
+        "key_findings": [
+            "Ventilação pulmonar preservada",
+            "Defeitos segmentares de perfusão",
+            "Discordância entre ventilação e perfusão",
+        ],
+    },
+    "desafio-visual-141": {
+        "correct_option_id": "trissomia-21",
+        "diagnosis": "Trissomia livre do cromossomo 21 (síndrome de Down)",
+        "explanation": "O cariograma mostra três cópias livres do cromossomo 21, resultando em 47 cromossomos. Associada a hipotonia, prega palmar única e cardiopatia congênita, essa alteração confirma a síndrome de Down por trissomia livre do 21.",
+        "key_findings": [
+            "Três cópias do cromossomo 21",
+            "Cariograma masculino com 47 cromossomos",
+            "Fenótipo neonatal compatível com síndrome de Down",
+        ],
+    },
+    "desafio-visual-142": {
+        "correct_option_id": "sindrome-turner",
+        "diagnosis": "Síndrome de Turner (45,X)",
+        "explanation": "O cariograma apresenta apenas um cromossomo X, sem um segundo cromossomo sexual, configurando monossomia X. Baixa estatura, pescoço alado e amenorreia primária são manifestações típicas da síndrome de Turner.",
+        "key_findings": [
+            "Apenas um cromossomo X",
+            "Ausência do segundo cromossomo sexual",
+            "Baixa estatura e amenorreia primária",
+        ],
+    },
+    "desafio-visual-143": {
+        "correct_option_id": "sindrome-klinefelter",
+        "diagnosis": "Síndrome de Klinefelter (47,XXY)",
+        "explanation": "O cariograma demonstra dois cromossomos X e um cromossomo Y. Em homem com testículos pequenos, ginecomastia e infertilidade, o conjunto caracteriza a síndrome de Klinefelter, geralmente associada a hipogonadismo hipergonadotrófico.",
+        "key_findings": [
+            "Dois cromossomos X e um cromossomo Y",
+            "Cariótipo 47,XXY",
+            "Hipogonadismo e infertilidade masculinos",
+        ],
+    },
+    "desafio-visual-144": {
+        "correct_option_id": "neurofibromatose-tipo-1",
+        "diagnosis": "Neurofibromatose tipo 1",
+        "explanation": "Múltiplas manchas café com leite, especialmente seis ou mais acima do limite de tamanho para a idade, associadas a efélides axilares e história familiar, satisfazem critérios clínicos importantes para neurofibromatose tipo 1. Uma mancha isolada não permite o diagnóstico.",
+        "key_findings": [
+            "Seis ou mais manchas café com leite",
+            "Efélides na região axilar",
+            "História familiar compatível",
+        ],
+    },
+    "desafio-visual-145": {
+        "correct_option_id": "osteogenese-imperfeita",
+        "diagnosis": "Osteogênese imperfeita",
+        "explanation": "A fragilidade óssea com fraturas após traumas mínimos, arqueamento dos ossos longos e escleras azuladas sugere osteogênese imperfeita. A radiografia contribui ao mostrar alteração da modelagem óssea, mas a avaliação deve integrar história, exame físico e investigação genética, inclusive para diferenciar trauma não acidental.",
+        "key_findings": [
+            "Fraturas com trauma mínimo",
+            "Arqueamento e alteração da modelagem dos ossos longos",
+            "Escleras azuladas",
+        ],
+    },
+    "desafio-visual-146": {
+        "correct_option_id": "hernia-diafragmatica-congenita",
+        "diagnosis": "Hérnia diafragmática congênita esquerda",
+        "explanation": "A radiografia mostra alças intestinais aeradas no hemitórax esquerdo, com compressão pulmonar e desvio mediastinal. O abdome escavado e o desconforto respiratório desde o nascimento reforçam hérnia diafragmática congênita, mais frequentemente pelo defeito posterolateral de Bochdalek.",
+        "key_findings": [
+            "Alças intestinais no hemitórax esquerdo",
+            "Desvio mediastinal contralateral",
+            "Abdome escavado no recém-nascido",
+        ],
+    },
+    "desafio-visual-147": {
+        "correct_option_id": "doenca-membrana-hialina",
+        "diagnosis": "Síndrome do desconforto respiratório neonatal por deficiência de surfactante",
+        "explanation": "Em prematuro com sintomas logo após o nascimento, baixo volume pulmonar, opacidades reticulogranulares difusas e broncogramas aéreos formam o padrão clássico da síndrome do desconforto respiratório neonatal, também chamada doença da membrana hialina.",
+        "key_findings": [
+            "Prematuridade e início precoce",
+            "Baixo volume pulmonar com padrão reticulogranular",
+            "Broncogramas aéreos",
+        ],
+    },
+    "desafio-visual-148": {
+        "correct_option_id": "enterocolite-necrosante",
+        "diagnosis": "Enterocolite necrosante",
+        "explanation": "A pneumatose intestinal, caracterizada por gás na parede das alças, é um achado radiográfico característico de enterocolite necrosante. Prematuridade, alimentação enteral, distensão abdominal e sangue nas fezes completam o contexto clínico típico.",
+        "key_findings": [
+            "Pneumatose intestinal",
+            "Prematuridade em alimentação enteral",
+            "Distensão abdominal e sangue nas fezes",
+        ],
+    },
+    "desafio-visual-149": {
+        "correct_option_id": "sindrome-aspiracao-meconial",
+        "diagnosis": "Síndrome de aspiração meconial",
+        "explanation": "No recém-nascido pós-termo exposto a líquido meconial, hiperinsuflação combinada com opacidades grosseiras, irregulares e assimétricas sugere obstrução parcial das vias aéreas e pneumonite química por aspiração de mecônio.",
+        "key_findings": [
+            "Líquido amniótico meconial",
+            "Hiperinsuflação pulmonar",
+            "Opacidades grosseiras e assimétricas",
+        ],
+    },
+    "desafio-visual-150": {
+        "correct_option_id": "transposicao-grandes-arterias",
+        "diagnosis": "Transposição das grandes artérias",
+        "explanation": "A combinação de cianose neonatal intensa com silhueta cardíaca ovalada e mediastino superior estreito corresponde ao sinal clássico do ovo sobre um fio, descrito na transposição das grandes artérias. O sinal radiográfico pode não estar presente em todos os casos, e a confirmação é ecocardiográfica.",
+        "key_findings": [
+            "Cianose neonatal pouco responsiva ao oxigênio",
+            "Silhueta cardíaca ovalada",
+            "Mediastino superior estreito",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1503,5 +2003,255 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Ajay Kumar Chaurasiya / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Calcium_oxalate_crystals_in_Urine_Microscopy.jpg",
+    ),
+    "desafio-visual-101": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Rheumatoid_Arthritis.JPG",
+    ),
+    "desafio-visual-102": (
+        "Ed Uthman / Wikimedia Commons",
+        "CC BY-SA 2.0",
+        "https://commons.wikimedia.org/wiki/File:Gout_-_monosodium_urate_crystals_in_joint_fluid_(1).jpg",
+    ),
+    "desafio-visual-103": (
+        "Stevenfruitsmaak / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Bamboo_spine_ankylosing_spondylitis.jpg",
+    ),
+    "desafio-visual-104": (
+        "Elizabeth M. Dugan, Adam M. Huber, Frederick W. Miller e Lisa G. Rider / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Dermatomyositis2.jpg",
+    ),
+    "desafio-visual-105": (
+        "Maria Sieglinda von Nudeldorf / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Systemic_sclerosis,_changes_on_hands_are_allways_bilateral.jpg",
+    ),
+    "desafio-visual-106": (
+        "Cecco / Wikimedia Commons",
+        "Domínio público",
+        "https://commons.wikimedia.org/wiki/File:Artrite_psoriasica_Rx_Mano_Sn.PNG",
+    ),
+    "desafio-visual-107": (
+        "Taokinesis; anotação por Mikael Häggström / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:Chondrocalcinosis_-_annotated.jpg",
+    ),
+    "desafio-visual-108": (
+        "CNX OpenStax / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Butterfly_rash_of_lupus_erythematosus.jpg",
+    ),
+    "desafio-visual-109": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Heberden-Arthrose.JPG",
+    ),
+    "desafio-visual-110": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Giant_cell_arteritis_--_very_low_mag.jpg",
+    ),
+    "desafio-visual-111": (
+        "Cerevisae / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Ultrasound_of_right_kidney_moderate_hydronephrosis.jpg",
+    ),
+    "desafio-visual-112": (
+        "Nevit Dilmen / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Staghorn_Kidney_Stone_08779.jpg",
+    ),
+    "desafio-visual-113": (
+        "Steven Fruitsmaak / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:CT_scan_autosomal_dominant_polycystic_kidney_disease.jpg",
+    ),
+    "desafio-visual-114": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Niereninfarkt_in_der_Computertomographie.jpg",
+    ),
+    "desafio-visual-115": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Granular_Casts_in_Urine_Microscopy.jpg",
+    ),
+    "desafio-visual-116": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:WBC_cast_in_urine.jpg",
+    ),
+    "desafio-visual-117": (
+        "Centers for Disease Control and Prevention (CDC) / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:Nodular_glomerulosclerosis.jpeg",
+    ),
+    "desafio-visual-118": (
+        "Arunachalam Ramaswami et al. / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Crescentic_glomerulonephritis_HE_stain.JPEG",
+    ),
+    "desafio-visual-119": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Membranous_nephropathy_-_cropped_-_mpas_-_very_high_mag.jpg",
+    ),
+    "desafio-visual-120": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Acute_pyelonephritis_-_2_cropped_-_very_high_mag.jpg",
+    ),
+    "desafio-visual-121": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Tensionpneumo.png",
+    ),
+    "desafio-visual-122": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:ARDSSevere.png",
+    ),
+    "desafio-visual-123": (
+        "Tinss / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:B_lines_on_a_lung_ultrasound_of_a_patient_with_fibrosis.jpg",
+    ),
+    "desafio-visual-124": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Morison004.jpg",
+    ),
+    "desafio-visual-125": (
+        "Jmh649 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Hemorragic_effusion.jpg",
+    ),
+    "desafio-visual-126": (
+        "Jmarchn / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Mallampati.svg",
+    ),
+    "desafio-visual-127": (
+        "Rschiedon / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Capno-losse-verb1.jpg",
+    ),
+    "desafio-visual-128": (
+        "Tubus / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Larinqoskopiya-Cormack-Lehane.jpg",
+    ),
+    "desafio-visual-129": (
+        "Michael-Joseph F. Agbayani e Eddieson Gonzales / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Hyperkalemia_ECG.jpg",
+    ),
+    "desafio-visual-130": (
+        "WikiSysop / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:HypothermiaECG.jpg",
+    ),
+    "desafio-visual-131": (
+        "National Cancer Institute; fotógrafo não identificado / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:Mammogram_showing_small_lesion.jpg",
+    ),
+    "desafio-visual-132": (
+        "Annemie Snoeckx et al. / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:CT_of_a_spiculated_lung_nodule.png",
+    ),
+    "desafio-visual-133": (
+        "Kristie Guite, Louis Hinshaw e Fred Lee / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Arterial_and_portal_venous_phase_CT_of_cirrhosis_and_hepatocellular_carcinoma.jpg",
+    ),
+    "desafio-visual-134": (
+        "Frank Gaillard / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Cerebral_Metastasis_Breast_Cancer.jpg",
+    ),
+    "desafio-visual-135": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Clear_cell_renal_cell_carcinoma_high_mag.jpg",
+    ),
+    "desafio-visual-136": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Osteosarcoma.jpg",
+    ),
+    "desafio-visual-137": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Knochenszintigramm_multiple_Filiae.jpg",
+    ),
+    "desafio-visual-138": (
+        "Isabel Rauscher et al. / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Gallium_PSMA_PET_scan.png",
+    ),
+    "desafio-visual-139": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Pheochromocytoma_Scan.jpg",
+    ),
+    "desafio-visual-140": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Missmatch_V-P_Szintigrahie_der_Lunge_bei_Lungenembolie_58M_-_NM_-_001.jpg",
+    ),
+    "desafio-visual-141": (
+        "U.S. Department of Energy Human Genome Program / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:21_trisomy_-_Down_syndrome.png",
+    ),
+    "desafio-visual-142": (
+        "The cat / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:45,X.jpg",
+    ),
+    "desafio-visual-143": (
+        "The cat / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:47,XXY.jpg",
+    ),
+    "desafio-visual-144": (
+        "Jyothi Idiculla, Shine Pakalomattom, Anasuya Desai e Babu Philip / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Caf%C3%A9-au-lait_spot_on_the_abdomen_in_neurofibromatosis_type_1.png",
+    ),
+    "desafio-visual-145": (
+        "Mikael Häggström, M.D. / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:X-ray_of_osteogenesis_imperfecta_type_5_in_newborn_-_right_arm.jpg",
+    ),
+    "desafio-visual-146": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Kongenitale_Zwerchfellhernie_links_vor_und_nach_operativer_Versorgung_0M_-_CR_-_001.jpg",
+    ),
+    "desafio-visual-147": (
+        "Snich / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:Respiratory_distress_of_the_newborn.jpg",
+    ),
+    "desafio-visual-148": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Pneumatosis_intestinalis_und_hepatis_bei_NEC_0W_-_CR_ap_-_001.jpg",
+    ),
+    "desafio-visual-149": (
+        "Kinderradiologie Olgahospital, Klinikum Stuttgart / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:MekAsp_w_1d_1.3.51.0.7.1277489803.56708.9039.46848.34134.21565.59325.jpg",
+    ),
+    "desafio-visual-150": (
+        "Madhero88 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Transposition-of-great-vessels.jpg",
     ),
 }
