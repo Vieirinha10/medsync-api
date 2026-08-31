@@ -146,6 +146,26 @@ def test_rule_based_feedback_keeps_patient_safety_explicit_and_firm():
     )
 
 
+def test_zero_conduct_is_explicit_and_explains_the_corrected_sequence():
+    submission = SimulationSubmission(
+        exames_solicitados=["hemo"],
+        hipotese_diagnostica="Anemia ferropriva após bypass gástrico",
+        conduta_proposta="Orientar repouso domiciliar e retorno se houver piora.",
+    )
+
+    score, exams, context = evaluate_objective(
+        _case_seven(), submission, PILOT_RUBRICS[7]
+    )
+    narrative = build_rule_based_narrative(submission, score, exams, context)
+
+    assert score.conduta == 0
+    assert "pontuação zero" in narrative.feedback_conduta
+    assert "medidas ausentes" in narrative.feedback_conduta
+    assert PILOT_RUBRICS[7]["conduta_referencia"] in narrative.feedback_conduta
+    assert narrative.feedback_exames is not None
+    assert "Hemograma" in narrative.feedback_exames
+
+
 def test_synapse_ai_prompts_share_the_same_educational_voice_contract():
     for instructions in (
         SYNAPSE_FEEDBACK_INSTRUCTIONS,
@@ -238,6 +258,14 @@ def test_model_router_escalates_only_ambiguity_complexity_or_safety(monkeypatch)
 
     assert select_feedback_model(case, safe_score, safe_context) == "rotina"
     assert select_feedback_model(case, unsafe_score, unsafe_context) == "avancado"
+    assert (
+        select_feedback_model(
+            case,
+            safe_score.model_copy(update={"conduta": 0}),
+            {**safe_context, "nivel_conduta": "parcial"},
+        )
+        == "avancado"
+    )
     assert select_question_model("Como posso revisar este caso?", {}) == "rotina"
     assert select_question_model("Qual foi o risco de deterioração?", {}) == "avancado"
 
@@ -269,6 +297,9 @@ def test_ai_enhancement_has_output_ceiling_and_preserves_objective_feedback(
         sintese_raciocinio=(
             "A hipótese conecta os achados principais; agora organize a conduta "
             "por prioridade e reavaliação."
+        ),
+        feedback_exames=(
+            "O hemograma foi pertinente para confirmar a anemia e dimensionar sua gravidade."
         ),
         feedback_hipotese="A hipótese foi bem direcionada.",
         feedback_conduta="A conduta contemplou os principais pilares.",
@@ -308,6 +339,7 @@ def test_ai_enhancement_has_output_ceiling_and_preserves_objective_feedback(
     assert captured["verbosity"] == "low"
     assert captured["text_format"] is SynapseNarrativeEnhancement
     assert narrative.resumo == enhancement.resumo
+    assert narrative.feedback_exames == enhancement.feedback_exames
     assert narrative.acertos
     assert narrative.feedback_seguranca
     assert usage.total_tokens == 580

@@ -37,12 +37,18 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Alterado
 
+- O feedback principal da Synapse passa a analisar obrigatoriamente exames,
+  hipótese e conduta, priorizando o eixo de menor desempenho e explicando de
+  forma explícita condutas zeradas, omissões e sequência clínica corrigida.
+- Respostas com conduta abaixo de 40% são encaminhadas ao modelo avançado, e o
+  teto padrão do feedback foi ampliado para 1100 tokens para comportar a análise
+  personalizada sem alterar a pontuação determinística.
 - Contexto da Synapse compactado para remover rubrica, resultado e campos
   repetidos; a IA passou a gerar somente a camada curta de tutoria sobre o
   feedback determinístico.
 - Roteamento entre `gpt-5.6-luna` para tarefas comuns e `gpt-5.6-terra` para
   ambiguidade, complexidade incompleta e risco clínico, com modelos configuráveis.
-- Tetos de saída aplicados ao feedback (900 tokens) e às perguntas (450 tokens),
+- Tetos de saída aplicados ao feedback (1100 tokens) e às perguntas (450 tokens),
   com limites seguros configuráveis por ambiente.
 - Esforço de raciocínio reduzido para `low` e verbosidade baixa nas chamadas
   interativas, preservando a avaliação clínica no mecanismo determinístico.

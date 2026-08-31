@@ -22,7 +22,7 @@ MODEL_PRICING_USD_PER_MILLION = {
 
 DEFAULT_ROUTINE_MODEL = "gpt-5.6-luna"
 DEFAULT_ADVANCED_MODEL = "gpt-5.6-terra"
-DEFAULT_FEEDBACK_MAX_OUTPUT_TOKENS = 900
+DEFAULT_FEEDBACK_MAX_OUTPUT_TOKENS = 1100
 DEFAULT_QUESTION_MAX_OUTPUT_TOKENS = 450
 DEFAULT_REASONING_EFFORT = "low"
 SUPPORTED_REASONING_EFFORTS = {"none", "low", "medium", "high", "xhigh", "max"}
@@ -51,15 +51,22 @@ SYNAPSE_FEEDBACK_INSTRUCTIONS = (
     "Você é a camada de tutoria da Synapse na MedSync. A pontuação, os acertos, "
     "as omissões, a segurança e o impacto clínico já foram calculados pelo "
     "sistema e não devem ser refeitos. Produza apenas a síntese educacional, o "
-    "feedback da hipótese e da conduta e até três próximos passos, em português "
-    "brasileiro. "
+    "feedback dos exames, da hipótese e da conduta e até três próximos passos, "
+    "em português brasileiro. "
     + SYNAPSE_VOICE_GUIDE
     + " Use somente o caso, o gabarito e a pontuação fornecidos. Não altere "
-    "notas, não invente dados e não revele raciocínio interno. Diferencie erro, "
+    "notas, não invente dados e não revele raciocínio interno. Analise "
+    "obrigatoriamente os três eixos — exames, hipótese e conduta — usando as "
+    "escolhas reais do estudante e a avaliação objetiva. Diferencie erro, "
     "omissão e alternativa clinicamente aceitável. Na síntese, siga a sequência "
     "reconhecimento específico, significado clínico e próximo passo. Não copie "
-    "integralmente as respostas do estudante nem o gabarito. Não invente "
-    "evolução, tratamento ou prognóstico. Se a resposta estiver fora do tema, "
+    "integralmente as respostas do estudante nem o gabarito. Dê mais espaço ao "
+    "eixo com menor desempenho. Se a conduta tiver pontuação zero, diga "
+    "explicitamente que ela não contemplou nenhum critério pontuado, identifique "
+    "as medidas ausentes, "
+    "explique o impacto clínico e apresente uma sequência corrigida. Se estiver "
+    "incompleta, reconheça primeiro apenas as medidas realmente identificadas. "
+    "Não invente evolução, tratamento ou prognóstico. Se a resposta estiver fora do tema, "
     "explique isso diretamente. Diante de uma omissão de segurança, mantenha a "
     "prioridade indicada pelo sistema e não a suavize."
 )
@@ -337,6 +344,7 @@ class ClinicalNarrative(BaseModel):
     omissoes: list[str] = Field(default_factory=list)
     exames_baixo_valor: list[str] = Field(default_factory=list)
     pontos_melhoria: list[str]
+    feedback_exames: str | None = None
     feedback_hipotese: str
     feedback_conduta: str
     feedback_seguranca: str
@@ -356,8 +364,23 @@ class SynapseNarrativeEnhancement(BaseModel):
 
     resumo: str = Field(min_length=10, max_length=420)
     sintese_raciocinio: str = Field(min_length=20, max_length=850)
+    feedback_exames: str = Field(
+        min_length=20,
+        max_length=650,
+        description=(
+            "Análise personalizada dos exames escolhidos, essenciais ausentes e itens de "
+            "baixo valor, explicando o que essas escolhas mudam no caso."
+        ),
+    )
     feedback_hipotese: str = Field(min_length=10, max_length=650)
-    feedback_conduta: str = Field(min_length=10, max_length=700)
+    feedback_conduta: str = Field(
+        min_length=20,
+        max_length=900,
+        description=(
+            "Análise da conduta real do estudante: medidas reconhecidas, erros ou omissões, "
+            "impacto clínico e sequência corrigida. Pontuação zero deve ser declarada."
+        ),
+    )
     plano_pessoal_melhoria: list[str] = Field(min_length=1, max_length=3)
 
     @model_validator(mode="after")
@@ -813,6 +836,36 @@ def build_rule_based_narrative(
             + ", ".join(exams.desnecessarios)
             + ", confirme se o resultado realmente mudaria sua decisão neste caso."
         )
+
+    exam_feedback_parts: list[str] = []
+    if exams.adequados:
+        exam_feedback_parts.append(
+            "Você selecionou corretamente " + ", ".join(exams.adequados) + "."
+        )
+    else:
+        exam_feedback_parts.append(
+            "A seleção não incluiu nenhum dos exames reconhecidos como adequados "
+            "pela rubrica deste caso."
+        )
+    if exams.essenciais_ausentes:
+        exam_feedback_parts.append(
+            "Faltaram "
+            + ", ".join(exams.essenciais_ausentes)
+            + ", que poderiam modificar a confirmação diagnóstica, a avaliação de "
+            "gravidade ou a segurança da conduta."
+        )
+    if exams.desnecessarios:
+        exam_feedback_parts.append(
+            "A solicitação de "
+            + ", ".join(exams.desnecessarios)
+            + " teve baixo valor neste cenário porque não mudaria a decisão prioritária."
+        )
+    if not exams.essenciais_ausentes and not exams.desnecessarios:
+        exam_feedback_parts.append(
+            "A investigação ficou focada, sem omissões essenciais ou exames de baixo "
+            "valor identificados."
+        )
+    exam_selection_feedback = " ".join(exam_feedback_parts)
     if missing_conduct:
         improvements.append(
             "Complete a conduta com: " + ", ".join(missing_conduct) + "."
@@ -920,6 +973,15 @@ def build_rule_based_narrative(
             + ". Para tornar o plano mais completo, acrescente "
             + ", ".join(missing_conduct)
             + ". Referência do caso: "
+            + rubric["conduta_referencia"]
+        )
+    elif score.conduta == 0:
+        conduct_feedback = (
+            "A conduta recebeu pontuação zero porque a proposta não contemplou nenhum "
+            "dos critérios pontuados para este caso. As medidas ausentes foram: "
+            + ", ".join(missing_conduct)
+            + ". Isso impede que um diagnóstico correto seja convertido em um plano "
+            "terapêutico completo e seguro. Organize a correção nesta sequência: "
             + rubric["conduta_referencia"]
         )
     else:
@@ -1039,6 +1101,7 @@ def build_rule_based_narrative(
         omissoes=omissions,
         exames_baixo_valor=exams.desnecessarios,
         pontos_melhoria=improvements,
+        feedback_exames=exam_selection_feedback,
         feedback_hipotese=hypothesis_feedback,
         feedback_conduta=conduct_feedback,
         feedback_seguranca=safety_feedback,
@@ -1178,6 +1241,9 @@ def build_compact_question_payload(
             "exames": evaluation.get("exames", {}),
             "resumo": _compact_text(narrative.get("resumo"), 420),
             "sintese": _compact_text(narrative.get("sintese_raciocinio"), 850),
+            "feedback_exames": _compact_text(
+                narrative.get("feedback_exames"), 650
+            ),
             "feedback_hipotese": _compact_text(narrative.get("feedback_hipotese"), 650),
             "feedback_conduta": _compact_text(narrative.get("feedback_conduta"), 700),
             "feedback_seguranca": _compact_text(
@@ -1201,6 +1267,8 @@ def select_feedback_model(
     context: dict[str, Any],
 ) -> str:
     config = synapse_runtime_config()
+    if score.conduta < 12:
+        return config["modelo_avancado"]
     if context.get("nivel_conduta") == "insegura":
         return config["modelo_avancado"]
     if context.get("classificacao_hipotese") == "parcial":
