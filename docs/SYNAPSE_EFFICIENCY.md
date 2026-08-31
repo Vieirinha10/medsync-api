@@ -14,10 +14,12 @@ O sistema determinístico continua responsável por:
 - reação e desfecho clínico simulados;
 - reavaliação e consequências temporais.
 
-A IA passou a atuar somente como uma camada curta de tutoria: síntese educativa,
-feedback da hipótese, feedback da conduta e até três próximos passos. O resultado
-final mantém o mesmo contrato `ClinicalNarrative`, porque os demais campos são
-preservados do avaliador determinístico.
+A IA passou a atuar somente como uma camada de tutoria: síntese educativa,
+feedback dos exames, feedback da hipótese, feedback da conduta e até três
+próximos passos. Os três eixos são obrigatórios, e o eixo de menor desempenho
+recebe maior profundidade. O resultado final mantém o mesmo contrato
+`ClinicalNarrative`, porque os demais campos são preservados do avaliador
+determinístico.
 
 ## Contexto compacto
 
@@ -41,7 +43,7 @@ Os limites são aplicados diretamente em `max_output_tokens`:
 
 | Operação | Padrão | Faixa aceita |
 |---|---:|---:|
-| Feedback da simulação | 900 | 400–1600 |
+| Feedback da simulação | 1100 | 400–1600 |
 | Pergunta pós-simulação | 450 | 200–800 |
 
 O limite inclui tokens visíveis e não visíveis. Caso uma resposta estruturada
@@ -122,11 +124,13 @@ A amostra foi distribuída pelo catálogo inteiro e contém 9 respostas completa
 |---|---:|---:|---:|
 | Contexto total dos 25 casos | 162.515 bytes | 66.150 bytes | 59,3% |
 | Estimativa local de entrada | 40.629 tokens | 16.538 tokens | 59,3% |
-| Schema estruturado de saída | 2.024 bytes | 753 bytes | 62,8% |
+| Schema estruturado de saída | 2.129 bytes | 1.192 bytes | 44,0% |
 
 Todos os 25 casos preservaram pontuação, feedback de segurança, impacto clínico e
-ausência de fontes repetidas. O roteamento levou 8 cenários completos à rota
-econômica e escalou 17 cenários ambíguos, incompletos ou de risco.
+ausência de fontes repetidas. O schema compacto permanece 44% menor que o legado,
+mesmo após incluir a análise obrigatória e personalizada dos três eixos. O
+roteamento levou 8 cenários completos à rota econômica e escalou 17 cenários
+ambíguos, incompletos ou de risco.
 
 A estimativa local de tokens é apenas comparativa. Após a publicação, o painel
 deve ser usado para validar os números faturáveis de `response.usage`, o custo e
