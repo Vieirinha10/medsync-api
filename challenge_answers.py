@@ -1201,6 +1201,106 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Inflamação supurativa do parênquima renal",
         ],
     },
+    "desafio-visual-121": {
+        "correct_option_id": "pneumotorax-hipertensivo",
+        "diagnosis": "Pneumotórax hipertensivo",
+        "explanation": "A hipertransparência unilateral, a ausência de trama vascular periférica e o desvio do mediastino indicam pneumotórax sob tensão. Associado a dessaturação e instabilidade hemodinâmica durante ventilação mecânica, é um diagnóstico clínico que exige descompressão imediata, sem aguardar nova imagem.",
+        "key_findings": [
+            "Hemitórax hipertransparente sem trama vascular",
+            "Desvio mediastinal contralateral",
+            "Instabilidade após ventilação com pressão positiva",
+        ],
+    },
+    "desafio-visual-122": {
+        "correct_option_id": "sdra",
+        "diagnosis": "Síndrome do desconforto respiratório agudo",
+        "explanation": "Opacidades alveolares bilaterais difusas em paciente com sepse e hipoxemia grave, sem explicação cardiogênica, sustentam síndrome do desconforto respiratório agudo. A radiografia isolada não distingue todas as causas de preenchimento alveolar; o contexto clínico e a exclusão de edema hidrostático são essenciais.",
+        "key_findings": [
+            "Opacidades bilaterais difusas",
+            "Hipoxemia aguda grave",
+            "Fator precipitante compatível: sepse",
+        ],
+    },
+    "desafio-visual-123": {
+        "correct_option_id": "linhas-b",
+        "diagnosis": "Linhas B no ultrassom pulmonar",
+        "explanation": "Linhas B são artefatos verticais hiperecogênicos que nascem na linha pleural, chegam ao limite inferior da tela sem atenuação e se movem com o deslizamento pleural. Múltiplas linhas B indicam aumento da densidade intersticial pulmonar, mas não definem sozinhas a causa, podendo ocorrer em edema, inflamação ou fibrose.",
+        "key_findings": [
+            "Artefatos verticais originados na pleura",
+            "Extensão até o fundo da tela",
+            "Ausência de atenuação ao longo do trajeto",
+        ],
+    },
+    "desafio-visual-124": {
+        "correct_option_id": "fast-positivo-hemoperitonio",
+        "diagnosis": "FAST positivo para líquido livre intraperitoneal",
+        "explanation": "A faixa anecoica entre o fígado e o rim corresponde a líquido livre no recesso hepatorrenal, ou espaço de Morison. Em paciente politraumatizado e hipotenso, o achado deve ser interpretado como hemoperitônio até prova em contrário e orienta decisão imediata conforme a condição hemodinâmica.",
+        "key_findings": [
+            "Líquido anecoico no recesso hepatorrenal",
+            "Localização entre fígado e rim direito",
+            "Trauma associado a instabilidade hemodinâmica",
+        ],
+    },
+    "desafio-visual-125": {
+        "correct_option_id": "tamponamento-cardiaco",
+        "diagnosis": "Tamponamento cardíaco por grande derrame pericárdico",
+        "explanation": "A coleção anecoica ao redor do coração demonstra grande derrame pericárdico. Hipotensão, turgência jugular e bulhas hipofonéticas indicam repercussão hemodinâmica compatível com tamponamento; a imagem estática confirma o derrame, enquanto sinais dinâmicos, como colapso de câmaras direitas, ajudam a documentar o tamponamento.",
+        "key_findings": [
+            "Grande coleção anecoica pericárdica",
+            "Hipotensão com turgência jugular",
+            "Contexto de repercussão hemodinâmica",
+        ],
+    },
+    "desafio-visual-126": {
+        "correct_option_id": "mallampati-iv",
+        "diagnosis": "Classificação de Mallampati IV",
+        "explanation": "Na classe IV de Mallampati, apenas o palato duro é visível; palato mole, úvula e pilares não são visualizados. O achado sugere maior probabilidade de laringoscopia difícil, mas deve ser combinado com outras medidas da via aérea, pois não prediz isoladamente a dificuldade de intubação.",
+        "key_findings": [
+            "Visibilidade apenas do palato duro",
+            "Palato mole e úvula não visualizados",
+            "Avaliação com boca aberta e língua protruída",
+        ],
+    },
+    "desafio-visual-127": {
+        "correct_option_id": "conexao-frouxa-circuito",
+        "diagnosis": "Conexão frouxa no circuito respiratório",
+        "explanation": "Perdas abruptas e intermitentes do capnograma, especialmente quando desaparecem após manipular o circuito, sugerem conexão frouxa ou desconexão parcial. Broncoespasmo costuma produzir subida expiratória inclinada; reinalação de CO₂ eleva a linha de base, e hipoventilação tende a aumentar progressivamente o ETCO₂.",
+        "key_findings": [
+            "Interrupções abruptas do traçado",
+            "Padrão intermitente durante ventilação",
+            "Normalização após ajuste do circuito",
+        ],
+    },
+    "desafio-visual-128": {
+        "correct_option_id": "cormack-lehane-iii",
+        "diagnosis": "Cormack-Lehane grau III",
+        "explanation": "No grau III de Cormack-Lehane, a epiglote é visível, mas a abertura glótica não é identificada. O grau IV se diferencia pela ausência de visualização tanto da glote quanto da epiglote; os graus I e II permitem ver toda ou parte da glote.",
+        "key_findings": [
+            "Epiglote visível",
+            "Glote não visualizada",
+            "Visão laringoscópica compatível com via aérea difícil",
+        ],
+    },
+    "desafio-visual-129": {
+        "correct_option_id": "hipercalemia",
+        "diagnosis": "Hipercalemia com alterações eletrocardiográficas",
+        "explanation": "Ondas T difusamente altas, estreitas e apiculadas são manifestação precoce clássica da hipercalemia. À medida que a toxicidade cardíaca progride, podem surgir prolongamento do PR, desaparecimento da onda P, alargamento do QRS e padrão sinusoidal, exigindo tratamento urgente quando há alterações no ECG.",
+        "key_findings": [
+            "Ondas T altas e apiculadas",
+            "Alterações em múltiplas derivações",
+            "Doença renal como contexto de retenção de potássio",
+        ],
+    },
+    "desafio-visual-130": {
+        "correct_option_id": "hipotermia",
+        "diagnosis": "Hipotermia com onda J de Osborn",
+        "explanation": "A deflexão positiva no ponto J, logo após o complexo QRS, é a onda J de Osborn e está classicamente associada à hipotermia. Temperatura central de 30 °C e bradicardia reforçam o diagnóstico; tremor muscular, prolongamento dos intervalos e arritmias também podem ocorrer conforme o resfriamento se agrava.",
+        "key_findings": [
+            "Onda J no final do QRS",
+            "Bradicardia",
+            "Temperatura central de 30 °C",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1803,5 +1903,55 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Nephron / Wikimedia Commons",
         "CC BY-SA 3.0",
         "https://commons.wikimedia.org/wiki/File:Acute_pyelonephritis_-_2_cropped_-_very_high_mag.jpg",
+    ),
+    "desafio-visual-121": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Tensionpneumo.png",
+    ),
+    "desafio-visual-122": (
+        "James Heilman, MD / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:ARDSSevere.png",
+    ),
+    "desafio-visual-123": (
+        "Tinss / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:B_lines_on_a_lung_ultrasound_of_a_patient_with_fibrosis.jpg",
+    ),
+    "desafio-visual-124": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Morison004.jpg",
+    ),
+    "desafio-visual-125": (
+        "Jmh649 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Hemorragic_effusion.jpg",
+    ),
+    "desafio-visual-126": (
+        "Jmarchn / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Mallampati.svg",
+    ),
+    "desafio-visual-127": (
+        "Rschiedon / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Capno-losse-verb1.jpg",
+    ),
+    "desafio-visual-128": (
+        "Tubus / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Larinqoskopiya-Cormack-Lehane.jpg",
+    ),
+    "desafio-visual-129": (
+        "Michael-Joseph F. Agbayani e Eddieson Gonzales / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Hyperkalemia_ECG.jpg",
+    ),
+    "desafio-visual-130": (
+        "WikiSysop / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:HypothermiaECG.jpg",
     ),
 }
