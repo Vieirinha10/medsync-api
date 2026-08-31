@@ -1301,6 +1301,106 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Temperatura central de 30 °C",
         ],
     },
+    "desafio-visual-131": {
+        "correct_option_id": "lesao-suspeita-malignidade",
+        "diagnosis": "Lesão mamária suspeita para malignidade",
+        "explanation": "A pequena lesão irregular indicada na mamografia representa um achado suspeito que requer avaliação diagnóstica dirigida e, conforme a classificação radiológica, confirmação histológica. A imagem utilizada corresponde a uma lesão maligna, mas a mamografia isolada não define o subtipo tumoral.",
+        "key_findings": [
+            "Pequena lesão mamária irregular",
+            "Assimetria focal assinalada na mamografia",
+            "Morfologia que exige investigação diagnóstica",
+        ],
+    },
+    "desafio-visual-132": {
+        "correct_option_id": "nodulo-suspeito-malignidade",
+        "diagnosis": "Nódulo pulmonar suspeito para malignidade",
+        "explanation": "Margens espiculadas e retração do parênquima adjacente aumentam significativamente a suspeita de malignidade em um nódulo pulmonar, sobretudo em fumante mais velho. A tomografia estima o risco, mas não determina sozinha o tipo histológico; comparação temporal, PET/CT e amostragem podem ser necessários.",
+        "key_findings": [
+            "Margens espiculadas",
+            "Nódulo pulmonar sólido periférico",
+            "Paciente com alto risco clínico por tabagismo",
+        ],
+    },
+    "desafio-visual-133": {
+        "correct_option_id": "carcinoma-hepatocelular",
+        "diagnosis": "Carcinoma hepatocelular",
+        "explanation": "Em fígado cirrótico, a combinação de hiper-realce na fase arterial e redução relativa do realce nas fases portal ou tardia, o chamado washout, é o padrão vascular clássico do carcinoma hepatocelular. O tamanho do nódulo e a qualidade técnica determinam se o diagnóstico pode ser firmado por imagem.",
+        "key_findings": [
+            "Hiper-realce do nódulo na fase arterial",
+            "Washout na fase portal",
+            "Fígado com contexto de cirrose",
+        ],
+    },
+    "desafio-visual-134": {
+        "correct_option_id": "metastase-cerebral",
+        "diagnosis": "Metástase cerebral de câncer de mama",
+        "explanation": "Em paciente com neoplasia mamária disseminada, uma nova lesão expansiva cerebral acompanhada de edema vasogênico é altamente sugestiva de metástase. Metástases frequentemente se localizam na junção entre substância cinzenta e branca e podem ser únicas ou múltiplas; ressonância com contraste define melhor a extensão.",
+        "key_findings": [
+            "Lesão expansiva cerebral",
+            "Edema vasogênico extenso",
+            "História de câncer de mama metastático",
+        ],
+    },
+    "desafio-visual-135": {
+        "correct_option_id": "carcinoma-renal-celulas-claras",
+        "diagnosis": "Carcinoma renal de células claras",
+        "explanation": "O carcinoma renal de células claras é formado por ninhos ou alvéolos de células com citoplasma opticamente claro, separados por uma rede delicada de capilares. O aspecto claro decorre da remoção de lipídios e glicogênio durante o processamento histológico.",
+        "key_findings": [
+            "Células neoplásicas com citoplasma claro",
+            "Arquitetura em ninhos ou alvéolos",
+            "Rede vascular delicada entre os agrupamentos",
+        ],
+    },
+    "desafio-visual-136": {
+        "correct_option_id": "osteossarcoma",
+        "diagnosis": "Osteossarcoma",
+        "explanation": "A produção direta de osteoide por células malignas é o critério histológico definidor do osteossarcoma. Em adolescente com tumor doloroso da metáfise de osso longo, a combinação do contexto clínico e da matriz osteoide neoplásica diferencia a lesão de outros tumores ósseos primários.",
+        "key_findings": [
+            "Osteoide produzido por células malignas",
+            "Células pleomórficas com atipia nuclear",
+            "Tumor metafisário em adolescente",
+        ],
+    },
+    "desafio-visual-137": {
+        "correct_option_id": "metastases-osseas-osteoblasticas",
+        "diagnosis": "Metástases ósseas osteoblásticas de câncer de próstata",
+        "explanation": "Múltiplos focos de hipercaptação distribuídos pela coluna, costelas e pelve indicam intensa atividade osteoblástica multifocal. No contexto de câncer de próstata e PSA elevado, o padrão é compatível com metástases ósseas; alterações degenerativas tendem a ter distribuição articular mais previsível.",
+        "key_findings": [
+            "Múltiplos focos de hipercaptação óssea",
+            "Predomínio no esqueleto axial",
+            "Contexto de câncer de próstata",
+        ],
+    },
+    "desafio-visual-138": {
+        "correct_option_id": "metastases-osseas-prostata",
+        "diagnosis": "Metástases ósseas de câncer de próstata no PET/CT com PSMA",
+        "explanation": "A captação focal do ligante de PSMA concordante com lesões ósseas na tomografia indica envolvimento metastático do câncer de próstata. A intensa atividade renal é fisiológica por excreção do radiofármaco e não deve ser confundida com doença tumoral.",
+        "key_findings": [
+            "Focos ósseos com captação aumentada de PSMA",
+            "Correspondência anatômica na tomografia",
+            "Lesões em vértebra e osso ilíaco",
+        ],
+    },
+    "desafio-visual-139": {
+        "correct_option_id": "feocromocitoma",
+        "diagnosis": "Feocromocitoma com captação de MIBG",
+        "explanation": "A MIBG é captada por tecido neuroendócrino adrenérgico. Um foco patológico na adrenal em paciente com crises adrenérgicas e metanefrinas elevadas sustenta feocromocitoma; a captação na tireoide, no fígado e na bexiga observada no exame pode ser fisiológica.",
+        "key_findings": [
+            "Foco de MIBG na topografia adrenal",
+            "Sintomas episódicos de excesso catecolaminérgico",
+            "Metanefrinas elevadas",
+        ],
+    },
+    "desafio-visual-140": {
+        "correct_option_id": "embolia-pulmonar",
+        "diagnosis": "Embolia pulmonar com mismatch ventilação-perfusão",
+        "explanation": "Defeitos segmentares de perfusão em áreas com ventilação preservada configuram mismatch e indicam alta suspeita de embolia pulmonar no contexto clínico adequado. Doenças do parênquima pulmonar costumam produzir defeitos correspondentes de ventilação e perfusão.",
+        "key_findings": [
+            "Ventilação pulmonar preservada",
+            "Defeitos segmentares de perfusão",
+            "Discordância entre ventilação e perfusão",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1953,5 +2053,55 @@ BUILTIN_CHALLENGE_SOURCES = {
         "WikiSysop / Wikimedia Commons",
         "CC BY 3.0",
         "https://commons.wikimedia.org/wiki/File:HypothermiaECG.jpg",
+    ),
+    "desafio-visual-131": (
+        "National Cancer Institute; fotógrafo não identificado / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:Mammogram_showing_small_lesion.jpg",
+    ),
+    "desafio-visual-132": (
+        "Annemie Snoeckx et al. / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:CT_of_a_spiculated_lung_nodule.png",
+    ),
+    "desafio-visual-133": (
+        "Kristie Guite, Louis Hinshaw e Fred Lee / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Arterial_and_portal_venous_phase_CT_of_cirrhosis_and_hepatocellular_carcinoma.jpg",
+    ),
+    "desafio-visual-134": (
+        "Frank Gaillard / Wikimedia Commons",
+        "CC BY 3.0",
+        "https://commons.wikimedia.org/wiki/File:Cerebral_Metastasis_Breast_Cancer.jpg",
+    ),
+    "desafio-visual-135": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Clear_cell_renal_cell_carcinoma_high_mag.jpg",
+    ),
+    "desafio-visual-136": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Osteosarcoma.jpg",
+    ),
+    "desafio-visual-137": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Knochenszintigramm_multiple_Filiae.jpg",
+    ),
+    "desafio-visual-138": (
+        "Isabel Rauscher et al. / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Gallium_PSMA_PET_scan.png",
+    ),
+    "desafio-visual-139": (
+        "Drahreg01 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Pheochromocytoma_Scan.jpg",
+    ),
+    "desafio-visual-140": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Missmatch_V-P_Szintigrahie_der_Lunge_bei_Lungenembolie_58M_-_NM_-_001.jpg",
     ),
 }
