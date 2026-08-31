@@ -1101,6 +1101,106 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Estreitamento importante do lúmen",
         ],
     },
+    "desafio-visual-111": {
+        "correct_option_id": "hidronefrose",
+        "diagnosis": "Hidronefrose moderada",
+        "explanation": "A dilatação anecoica e comunicante da pelve e dos cálices renais caracteriza hidronefrose. O achado indica obstrução ou dificuldade de drenagem urinária, cuja causa e repercussão sobre o parênquima devem ser investigadas.",
+        "key_findings": [
+            "Dilatação da pelve renal",
+            "Cálices renais dilatados e comunicantes",
+            "Conteúdo anecoico no sistema coletor",
+        ],
+    },
+    "desafio-visual-112": {
+        "correct_option_id": "calculo-coraliforme",
+        "diagnosis": "Cálculo renal coraliforme",
+        "explanation": "O cálculo radiopaco ocupa a pelve renal e se ramifica pelos cálices, reproduzindo o formato do sistema coletor. Esse padrão define o cálculo coraliforme, frequentemente associado a cálculos de estruvita e infecções por bactérias produtoras de urease.",
+        "key_findings": [
+            "Opacidade mineral na topografia renal",
+            "Morfologia ramificada",
+            "Ocupação da pelve e dos cálices",
+        ],
+    },
+    "desafio-visual-113": {
+        "correct_option_id": "doenca-renal-policistica-autossomica-dominante",
+        "diagnosis": "Doença renal policística autossômica dominante",
+        "explanation": "Rins bilateralmente aumentados e deformados por numerosos cistos de tamanhos variados são típicos da doença renal policística autossômica dominante. Cistos hepáticos associados podem reforçar o diagnóstico em adultos.",
+        "key_findings": [
+            "Múltiplos cistos renais bilaterais",
+            "Aumento do volume dos rins",
+            "Substituição e distorção do parênquima renal",
+        ],
+    },
+    "desafio-visual-114": {
+        "correct_option_id": "infarto-renal",
+        "diagnosis": "Infarto renal",
+        "explanation": "A área periférica em cunha que não capta contraste corresponde a parênquima renal isquêmico. Dor súbita no flanco, elevação de LDH e uma fonte embólica, como fibrilação atrial, tornam o infarto renal a principal hipótese.",
+        "key_findings": [
+            "Defeito de realce em forma de cunha",
+            "Distribuição periférica no parênquima",
+            "Contraste com o tecido renal viável adjacente",
+        ],
+    },
+    "desafio-visual-115": {
+        "correct_option_id": "lesao-tubular-aguda",
+        "diagnosis": "Lesão tubular aguda",
+        "explanation": "Cilindros granulosos grosseiros abundantes favorecem lesão tubular aguda. No contexto de choque, o padrão é compatível com injúria tubular isquêmica e ajuda a diferenciá-la da azotemia pré-renal, que costuma apresentar sedimento pouco ativo.",
+        "key_findings": [
+            "Cilindros granulosos grosseiros",
+            "Conteúdo granular dentro da matriz cilíndrica",
+            "Sedimento urinário compatível com dano tubular",
+        ],
+    },
+    "desafio-visual-116": {
+        "correct_option_id": "nefrite-intersticial-aguda",
+        "diagnosis": "Nefrite intersticial aguda medicamentosa",
+        "explanation": "Cilindros leucocitários indicam inflamação originada no parênquima renal. Quando surgem após exposição a medicamento e acompanham febre, exantema, eosinofilia e lesão renal aguda, o conjunto favorece nefrite intersticial aguda; o achado isolado também pode ocorrer na pielonefrite.",
+        "key_findings": [
+            "Leucócitos agrupados em matriz cilíndrica",
+            "Origem tubular do sedimento inflamatório",
+            "Contexto clínico de hipersensibilidade medicamentosa",
+        ],
+    },
+    "desafio-visual-117": {
+        "correct_option_id": "nefropatia-diabetica",
+        "diagnosis": "Nefropatia diabética com glomeruloesclerose nodular",
+        "explanation": "A expansão mesangial nodular forma as lesões de Kimmelstiel-Wilson, padrão clássico da nefropatia diabética avançada. Em paciente com diabetes de longa duração e proteinúria, esse achado sustenta glomeruloesclerose diabética.",
+        "key_findings": [
+            "Nódulos mesangiais arredondados",
+            "Glomeruloesclerose nodular",
+            "Comprometimento de múltiplos glomérulos",
+        ],
+    },
+    "desafio-visual-118": {
+        "correct_option_id": "glomerulonefrite-rapidamente-progressiva",
+        "diagnosis": "Glomerulonefrite rapidamente progressiva com crescentes",
+        "explanation": "A proliferação celular no espaço de Bowman forma um crescente que comprime o tufo glomerular. Quando associada a hematúria e queda rápida da função renal, essa lesão define o padrão de glomerulonefrite rapidamente progressiva; imunofluorescência e sorologias são necessárias para determinar a causa.",
+        "key_findings": [
+            "Crescente fibrocelular no espaço de Bowman",
+            "Compressão do tufo glomerular",
+            "Proliferação extracapilar",
+        ],
+    },
+    "desafio-visual-119": {
+        "correct_option_id": "nefropatia-membranosa",
+        "diagnosis": "Nefropatia membranosa",
+        "explanation": "A coloração pela prata evidencia espículas na face externa da membrana basal glomerular entre os depósitos subepiteliais, produzindo o padrão spike and dome. Em adulto com síndrome nefrótica, esse achado é característico da nefropatia membranosa.",
+        "key_findings": [
+            "Espessamento da membrana basal glomerular",
+            "Espículas evidenciadas pela prata",
+            "Padrão compatível com depósitos subepiteliais",
+        ],
+    },
+    "desafio-visual-120": {
+        "correct_option_id": "pielonefrite-aguda",
+        "diagnosis": "Pielonefrite aguda",
+        "explanation": "O infiltrado neutrofílico no interstício e no interior dos túbulos representa inflamação supurativa tubulointersticial. Associado a febre, dor no flanco e piúria, o padrão é compatível com pielonefrite aguda.",
+        "key_findings": [
+            "Infiltrado neutrofílico intersticial",
+            "Neutrófilos no interior dos túbulos",
+            "Inflamação supurativa do parênquima renal",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -1653,5 +1753,55 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Nephron / Wikimedia Commons",
         "CC BY-SA 3.0",
         "https://commons.wikimedia.org/wiki/File:Giant_cell_arteritis_--_very_low_mag.jpg",
+    ),
+    "desafio-visual-111": (
+        "Cerevisae / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Ultrasound_of_right_kidney_moderate_hydronephrosis.jpg",
+    ),
+    "desafio-visual-112": (
+        "Nevit Dilmen / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Staghorn_Kidney_Stone_08779.jpg",
+    ),
+    "desafio-visual-113": (
+        "Steven Fruitsmaak / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:CT_scan_autosomal_dominant_polycystic_kidney_disease.jpg",
+    ),
+    "desafio-visual-114": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Niereninfarkt_in_der_Computertomographie.jpg",
+    ),
+    "desafio-visual-115": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Granular_Casts_in_Urine_Microscopy.jpg",
+    ),
+    "desafio-visual-116": (
+        "Ajay Kumar Chaurasiya / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:WBC_cast_in_urine.jpg",
+    ),
+    "desafio-visual-117": (
+        "Centers for Disease Control and Prevention (CDC) / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:Nodular_glomerulosclerosis.jpeg",
+    ),
+    "desafio-visual-118": (
+        "Arunachalam Ramaswami et al. / Wikimedia Commons",
+        "CC BY 2.0",
+        "https://commons.wikimedia.org/wiki/File:Crescentic_glomerulonephritis_HE_stain.JPEG",
+    ),
+    "desafio-visual-119": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Membranous_nephropathy_-_cropped_-_mpas_-_very_high_mag.jpg",
+    ),
+    "desafio-visual-120": (
+        "Nephron / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Acute_pyelonephritis_-_2_cropped_-_very_high_mag.jpg",
     ),
 }
