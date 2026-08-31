@@ -375,3 +375,116 @@ def test_follow_up_question_uses_compact_context_and_output_policy(monkeypatch):
     assert captured["text"] == {"verbosity": "low"}
     assert captured["store"] is False
     assert "fontes_clinicas" not in captured["input"]
+
+
+def test_provider_pricing_calculation():
+    from synapse_providers import calculate_cost_usd
+
+    # Teste de precificação para cada provedor
+    claude_cost = calculate_cost_usd("claude-3-5-haiku-20241022", 1000, 0, 500)
+    assert claude_cost == pytest.approx(0.0028)
+
+    gemini_cost = calculate_cost_usd("gemini-2.0-flash", 1000, 0, 500)
+    assert gemini_cost == pytest.approx(0.0003)
+
+    deepseek_cost = calculate_cost_usd("deepseek-reasoner", 1000, 0, 500)
+    assert deepseek_cost == pytest.approx(0.001645)
+
+
+def test_multi_provider_consensus_aggregates_perspectives_and_metrics(monkeypatch):
+    from synapse_providers import (
+        ProviderUsageMetrics,
+        SynapseMultiEngine,
+    )
+
+    engine = SynapseMultiEngine()
+
+    class MockAnthropic:
+        name = "anthropic"
+
+        def is_configured(self):
+            return True
+
+        def generate_narrative(self, payload, instructions, max_tokens=900):
+            return {
+                "sintese_raciocinio": "Síntese didática e empática pelo Claude 3.5.",
+                "feedback_hipotese": "Hipótese de anemia consistente.",
+                "feedback_conduta": "Conduta correta.",
+                "plano_pessoal_melhoria": ["Revisar absorção de ferro no duodeno."],
+            }, ProviderUsageMetrics(
+                provider="anthropic",
+                model="claude-3-5-haiku-20241022",
+                input_tokens=800,
+                cached_input_tokens=100,
+                output_tokens=300,
+                total_tokens=1100,
+                duracao_ms=1200,
+                custo_estimado_usd=0.0018,
+            )
+
+    class MockDeepSeek:
+        name = "deepseek"
+
+        def is_configured(self):
+            return True
+
+        def generate_narrative(self, payload, instructions, max_tokens=1200):
+            return {
+                "sintese_raciocinio": "Síntese do DeepSeek.",
+                "feedback_hipotese": "Raciocínio fisiopatológico profundo pelo DeepSeek-R1.",
+                "feedback_conduta": "Conduta correta.",
+                "plano_pessoal_melhoria": ["Priorizar reposição IV sobre VO em bariátricos."],
+            }, ProviderUsageMetrics(
+                provider="deepseek",
+                model="deepseek-reasoner",
+                input_tokens=900,
+                cached_input_tokens=0,
+                output_tokens=400,
+                reasoning_tokens=200,
+                total_tokens=1300,
+                duracao_ms=2100,
+                custo_estimado_usd=0.0013,
+            )
+
+    engine.anthropic = MockAnthropic()
+    engine.gemini.is_configured = lambda: False
+    engine.xai.is_configured = lambda: False
+    engine.deepseek = MockDeepSeek()
+
+    primary_openai = {
+        "sintese_raciocinio": "Síntese base OpenAI.",
+        "feedback_hipotese": "Hipótese base.",
+        "feedback_conduta": "Conduta base.",
+        "plano_pessoal_melhoria": ["Plano base."],
+    }
+    openai_metrics = SimpleNamespace(
+        model="gpt-5.6-luna",
+        input_tokens=700,
+        cached_input_tokens=0,
+        output_tokens=250,
+        reasoning_tokens=0,
+        total_tokens=950,
+        duracao_ms=900,
+        custo_estimado_usd=0.00044,
+    )
+
+    consensus = engine.execute_multi_provider_consensus(
+        payload={"caso": "teste"},
+        instructions="instrucoes",
+        primary_openai_narrative=primary_openai,
+        primary_openai_metrics=openai_metrics,
+    )
+
+    assert consensus is not None
+    assert consensus.source == "synapse_multi_llm"
+    assert "openai" in consensus.active_providers
+    assert "anthropic" in consensus.active_providers
+    assert "deepseek" in consensus.active_providers
+    # Confirma que o Claude enriqueceu a síntese
+    assert "Claude 3.5" in consensus.narrative["sintese_raciocinio"]
+    # Confirma que o DeepSeek enriqueceu a hipótese
+    assert "DeepSeek-R1" in consensus.narrative["feedback_hipotese"]
+    # Confirma que os planos de melhoria foram unificados
+    assert len(consensus.narrative["plano_pessoal_melhoria"]) >= 2
+    assert consensus.total_cost_usd > 0
+
