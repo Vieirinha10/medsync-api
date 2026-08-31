@@ -6,6 +6,9 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ### Adicionado
 
+- Arquitetura Synapse Multi-LLM 5-Core (`synapse_providers.py` e `evaluation.py`), integrando clientes assíncronos e motor de consenso de Junta Médica para 5 grandes provedores de IA: OpenAI (GPT-4o/5), Anthropic (Claude 3.5), Google Gemini (2.0 Flash), xAI (Grok 2) e DeepSeek (R1 Reasoning).
+- Sistema de ativação Plug & Play sob demanda por variáveis de ambiente (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `DEEPSEEK_API_KEY`), operando com OpenAI isolada por padrão e alternando automaticamente para consenso quando novas chaves forem inseridas.
+- Guia técnico e de custos da Synapse em `docs/SYNAPSE_MULTI_LLM.md`.
 - Painel administrativo da Synapse em `GET /admin/synapse/consumo`, com filtros
   de período, tokens, custo estimado, cache, latência, modelos, operações e
   usuários com maior consumo, sem franquia ou bloqueio de perguntas.

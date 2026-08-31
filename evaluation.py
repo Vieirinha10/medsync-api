@@ -93,6 +93,8 @@ class AIUsageMetrics(BaseModel):
     duracao_ms: int = Field(ge=0)
     custo_estimado_usd: float | None = Field(default=None, ge=0)
     response_id: str | None = None
+    provedores_consultados: list[str] | None = None
+    metricas_provedores: dict[str, Any] | None = None
 
 
 @lru_cache(maxsize=1)
@@ -404,7 +406,15 @@ class SimulationEvaluation(BaseModel):
     nivel_conduta: Literal["adequada", "parcial", "insegura"] = "parcial"
     consequencias: ClinicalConsequences | None = None
     versao_rubrica: int | None = None
-    fonte_feedback: Literal["openai", "agente_regras"]
+    fonte_feedback: Literal[
+        "openai",
+        "synapse_multi_llm",
+        "anthropic",
+        "gemini",
+        "xai",
+        "deepseek",
+        "agente_regras",
+    ]
     modelo_ia: str | None = None
     uso_ia: AIUsageMetrics | None = None
     aviso_educacional: str = (
@@ -437,7 +447,15 @@ class SimulationQuestionRequest(BaseModel):
 
 class SimulationQuestionResponse(BaseModel):
     resposta: str
-    fonte_feedback: Literal["openai", "agente_regras"]
+    fonte_feedback: Literal[
+        "openai",
+        "synapse_multi_llm",
+        "anthropic",
+        "gemini",
+        "xai",
+        "deepseek",
+        "agente_regras",
+    ]
     modelo_ia: str | None = None
     uso_ia: AIUsageMetrics | None = None
     aviso_educacional: str = "Resposta restrita ao caso simulado e à rubrica revisada; não constitui orientação para pacientes reais."
@@ -1313,7 +1331,15 @@ def enhance_narrative_with_ai(
     context: dict[str, Any],
 ) -> tuple[
     ClinicalNarrative,
-    Literal["openai", "agente_regras"],
+    Literal[
+        "openai",
+        "synapse_multi_llm",
+        "anthropic",
+        "gemini",
+        "xai",
+        "deepseek",
+        "agente_regras",
+    ],
     str | None,
     AIUsageMetrics | None,
 ]:
@@ -1323,63 +1349,112 @@ def enhance_narrative_with_ai(
         exams,
         context,
     )
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return fallback, "agente_regras", None, None
+    payload = build_compact_feedback_payload(
+        case,
+        submission,
+        score,
+        exams,
+        context,
+    )
 
-    config = synapse_runtime_config()
-    model = select_feedback_model(case, score, context)
-    try:
-        client = _openai_client(api_key)
-        payload = build_compact_feedback_payload(
-            case,
-            submission,
-            score,
-            exams,
-            context,
-        )
-        started_at = time.perf_counter()
-        response = client.responses.parse(
-            model=model,
-            store=False,
-            max_output_tokens=config["limite_saida_feedback"],
-            reasoning={"effort": config["esforco_raciocinio"]},
-            verbosity="low",
-            input=[
-                {
-                    "role": "developer",
-                    "content": SYNAPSE_FEEDBACK_INSTRUCTIONS,
-                },
-                {
-                    "role": "user",
-                    "content": json.dumps(payload, ensure_ascii=False),
-                },
-            ],
-            text_format=SynapseNarrativeEnhancement,
-        )
-        usage = _usage_metrics(response, model, started_at)
-        if response.output_parsed is None:
-            return (
-                fallback,
-                "agente_regras",
-                model,
-                usage,
+    from synapse_providers import multi_engine
+
+    primary_narrative: dict[str, Any] | None = None
+    primary_usage: AIUsageMetrics | None = None
+    model: str | None = None
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if api_key:
+        config = synapse_runtime_config()
+        model = select_feedback_model(case, score, context)
+        try:
+            client = _openai_client(api_key)
+            started_at = time.perf_counter()
+            response = client.responses.parse(
+                model=model,
+                store=False,
+                max_output_tokens=config["limite_saida_feedback"],
+                reasoning={"effort": config["esforco_raciocinio"]},
+                verbosity="low",
+                input=[
+                    {
+                        "role": "developer",
+                        "content": SYNAPSE_FEEDBACK_INSTRUCTIONS,
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps(payload, ensure_ascii=False),
+                    },
+                ],
+                text_format=SynapseNarrativeEnhancement,
             )
-        enhanced = fallback.model_copy(
-            update=response.output_parsed.model_dump(),
-        )
+            primary_usage = _usage_metrics(response, model, started_at)
+            if response.output_parsed is not None:
+                primary_narrative = response.output_parsed.model_dump()
+        except Exception:
+            logger.exception(
+                "Falha ao gerar feedback clínico com OpenAI usando o modelo %s",
+                model,
+            )
+
+    # Se outros provedores de IA estiverem configurados (Anthropic, Gemini, xAI, DeepSeek),
+    # executa o consenso da Junta Médica Multi-LLM em paralelo:
+    if multi_engine.is_multi_provider_active():
+        try:
+            consensus = multi_engine.execute_multi_provider_consensus(
+                payload,
+                SYNAPSE_FEEDBACK_INSTRUCTIONS,
+                primary_narrative,
+                primary_usage,
+            )
+            if consensus and consensus.narrative:
+                enhanced = fallback.model_copy(update=consensus.narrative)
+                combined_metrics = AIUsageMetrics(
+                    input_tokens=sum(
+                        m.input_tokens for m in consensus.metrics_by_provider.values()
+                    ),
+                    cached_input_tokens=sum(
+                        m.cached_input_tokens
+                        for m in consensus.metrics_by_provider.values()
+                    ),
+                    output_tokens=sum(
+                        m.output_tokens for m in consensus.metrics_by_provider.values()
+                    ),
+                    reasoning_tokens=sum(
+                        m.reasoning_tokens
+                        for m in consensus.metrics_by_provider.values()
+                    ),
+                    total_tokens=sum(
+                        m.total_tokens for m in consensus.metrics_by_provider.values()
+                    ),
+                    duracao_ms=consensus.total_duration_ms,
+                    custo_estimado_usd=consensus.total_cost_usd,
+                    provedores_consultados=consensus.active_providers,
+                    metricas_provedores={
+                        k: v.model_dump()
+                        for k, v in consensus.metrics_by_provider.items()
+                    },
+                )
+                return (
+                    enhanced,
+                    consensus.source,
+                    model or "+".join(consensus.active_providers),
+                    combined_metrics,
+                )
+        except Exception:
+            logger.exception("Falha no motor de consenso Multi-LLM da Synapse")
+
+    # Se apenas a OpenAI estiver ativa e gerou narrativa:
+    if primary_narrative is not None:
+        enhanced = fallback.model_copy(update=primary_narrative)
         return (
             enhanced,
             "openai",
             model,
-            usage,
+            primary_usage,
         )
-    except Exception:
-        logger.exception(
-            "Falha ao gerar feedback clínico com OpenAI usando o modelo %s",
-            model,
-        )
-        return fallback, "agente_regras", None, None
+
+    return fallback, "agente_regras", None, None
 
 
 def answer_simulation_question(
