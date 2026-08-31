@@ -11,6 +11,7 @@ Suporta 5 provedores de inteligência artificial médica:
 import json
 import logging
 import os
+import pathlib
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
@@ -20,6 +21,25 @@ import httpx
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+
+def _ensure_env_loaded() -> None:
+    env_file = pathlib.Path(__file__).parent / ".env"
+    if env_file.exists():
+        try:
+            for line in env_file.read_text(encoding="utf-8-sig").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k and k not in os.environ:
+                        os.environ[k] = v
+        except Exception:
+            pass
+
+
+_ensure_env_loaded()
 
 # Tabela unificada de preços (USD por 1 milhão de tokens: input, cached_input, output)
 PROVIDER_MODEL_PRICING: dict[str, tuple[float, float, float]] = {
@@ -83,11 +103,15 @@ class AnthropicProvider:
     name = "anthropic"
 
     def __init__(self):
-        self.api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
         self.default_model = os.getenv(
             "SYNAPSE_ANTHROPIC_MODEL", "claude-3-5-haiku-20241022"
         )
         self.timeout = float(os.getenv("ANTHROPIC_TIMEOUT_SECONDS", "30"))
+
+    @property
+    def api_key(self) -> str:
+        _ensure_env_loaded()
+        return os.getenv("ANTHROPIC_API_KEY", "").strip()
 
     def is_configured(self) -> bool:
         return bool(self.api_key) and os.getenv(
@@ -181,11 +205,15 @@ class GeminiProvider:
     name = "gemini"
 
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
         self.default_model = os.getenv(
             "SYNAPSE_GEMINI_MODEL", "gemini-2.0-flash"
         )
         self.timeout = float(os.getenv("GEMINI_TIMEOUT_SECONDS", "30"))
+
+    @property
+    def api_key(self) -> str:
+        _ensure_env_loaded()
+        return os.getenv("GEMINI_API_KEY", "").strip()
 
     def is_configured(self) -> bool:
         return bool(self.api_key) and os.getenv(
@@ -263,9 +291,13 @@ class XAIProvider:
     name = "xai"
 
     def __init__(self):
-        self.api_key = os.getenv("XAI_API_KEY", "").strip()
         self.default_model = os.getenv("SYNAPSE_XAI_MODEL", "grok-2-mini")
         self.timeout = float(os.getenv("XAI_TIMEOUT_SECONDS", "30"))
+
+    @property
+    def api_key(self) -> str:
+        _ensure_env_loaded()
+        return os.getenv("XAI_API_KEY", "").strip()
 
     def is_configured(self) -> bool:
         return bool(self.api_key) and os.getenv(
@@ -344,11 +376,15 @@ class DeepSeekProvider:
     name = "deepseek"
 
     def __init__(self):
-        self.api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
         self.default_model = os.getenv(
             "SYNAPSE_DEEPSEEK_MODEL", "deepseek-reasoner"
         )
         self.timeout = float(os.getenv("DEEPSEEK_TIMEOUT_SECONDS", "45"))
+
+    @property
+    def api_key(self) -> str:
+        _ensure_env_loaded()
+        return os.getenv("DEEPSEEK_API_KEY", "").strip()
 
     def is_configured(self) -> bool:
         return bool(self.api_key) and os.getenv(
