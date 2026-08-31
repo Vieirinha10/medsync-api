@@ -1401,6 +1401,106 @@ BUILTIN_CHALLENGE_ANSWERS = {
             "Discordância entre ventilação e perfusão",
         ],
     },
+    "desafio-visual-141": {
+        "correct_option_id": "trissomia-21",
+        "diagnosis": "Trissomia livre do cromossomo 21 (síndrome de Down)",
+        "explanation": "O cariograma mostra três cópias livres do cromossomo 21, resultando em 47 cromossomos. Associada a hipotonia, prega palmar única e cardiopatia congênita, essa alteração confirma a síndrome de Down por trissomia livre do 21.",
+        "key_findings": [
+            "Três cópias do cromossomo 21",
+            "Cariograma masculino com 47 cromossomos",
+            "Fenótipo neonatal compatível com síndrome de Down",
+        ],
+    },
+    "desafio-visual-142": {
+        "correct_option_id": "sindrome-turner",
+        "diagnosis": "Síndrome de Turner (45,X)",
+        "explanation": "O cariograma apresenta apenas um cromossomo X, sem um segundo cromossomo sexual, configurando monossomia X. Baixa estatura, pescoço alado e amenorreia primária são manifestações típicas da síndrome de Turner.",
+        "key_findings": [
+            "Apenas um cromossomo X",
+            "Ausência do segundo cromossomo sexual",
+            "Baixa estatura e amenorreia primária",
+        ],
+    },
+    "desafio-visual-143": {
+        "correct_option_id": "sindrome-klinefelter",
+        "diagnosis": "Síndrome de Klinefelter (47,XXY)",
+        "explanation": "O cariograma demonstra dois cromossomos X e um cromossomo Y. Em homem com testículos pequenos, ginecomastia e infertilidade, o conjunto caracteriza a síndrome de Klinefelter, geralmente associada a hipogonadismo hipergonadotrófico.",
+        "key_findings": [
+            "Dois cromossomos X e um cromossomo Y",
+            "Cariótipo 47,XXY",
+            "Hipogonadismo e infertilidade masculinos",
+        ],
+    },
+    "desafio-visual-144": {
+        "correct_option_id": "neurofibromatose-tipo-1",
+        "diagnosis": "Neurofibromatose tipo 1",
+        "explanation": "Múltiplas manchas café com leite, especialmente seis ou mais acima do limite de tamanho para a idade, associadas a efélides axilares e história familiar, satisfazem critérios clínicos importantes para neurofibromatose tipo 1. Uma mancha isolada não permite o diagnóstico.",
+        "key_findings": [
+            "Seis ou mais manchas café com leite",
+            "Efélides na região axilar",
+            "História familiar compatível",
+        ],
+    },
+    "desafio-visual-145": {
+        "correct_option_id": "osteogenese-imperfeita",
+        "diagnosis": "Osteogênese imperfeita",
+        "explanation": "A fragilidade óssea com fraturas após traumas mínimos, arqueamento dos ossos longos e escleras azuladas sugere osteogênese imperfeita. A radiografia contribui ao mostrar alteração da modelagem óssea, mas a avaliação deve integrar história, exame físico e investigação genética, inclusive para diferenciar trauma não acidental.",
+        "key_findings": [
+            "Fraturas com trauma mínimo",
+            "Arqueamento e alteração da modelagem dos ossos longos",
+            "Escleras azuladas",
+        ],
+    },
+    "desafio-visual-146": {
+        "correct_option_id": "hernia-diafragmatica-congenita",
+        "diagnosis": "Hérnia diafragmática congênita esquerda",
+        "explanation": "A radiografia mostra alças intestinais aeradas no hemitórax esquerdo, com compressão pulmonar e desvio mediastinal. O abdome escavado e o desconforto respiratório desde o nascimento reforçam hérnia diafragmática congênita, mais frequentemente pelo defeito posterolateral de Bochdalek.",
+        "key_findings": [
+            "Alças intestinais no hemitórax esquerdo",
+            "Desvio mediastinal contralateral",
+            "Abdome escavado no recém-nascido",
+        ],
+    },
+    "desafio-visual-147": {
+        "correct_option_id": "doenca-membrana-hialina",
+        "diagnosis": "Síndrome do desconforto respiratório neonatal por deficiência de surfactante",
+        "explanation": "Em prematuro com sintomas logo após o nascimento, baixo volume pulmonar, opacidades reticulogranulares difusas e broncogramas aéreos formam o padrão clássico da síndrome do desconforto respiratório neonatal, também chamada doença da membrana hialina.",
+        "key_findings": [
+            "Prematuridade e início precoce",
+            "Baixo volume pulmonar com padrão reticulogranular",
+            "Broncogramas aéreos",
+        ],
+    },
+    "desafio-visual-148": {
+        "correct_option_id": "enterocolite-necrosante",
+        "diagnosis": "Enterocolite necrosante",
+        "explanation": "A pneumatose intestinal, caracterizada por gás na parede das alças, é um achado radiográfico característico de enterocolite necrosante. Prematuridade, alimentação enteral, distensão abdominal e sangue nas fezes completam o contexto clínico típico.",
+        "key_findings": [
+            "Pneumatose intestinal",
+            "Prematuridade em alimentação enteral",
+            "Distensão abdominal e sangue nas fezes",
+        ],
+    },
+    "desafio-visual-149": {
+        "correct_option_id": "sindrome-aspiracao-meconial",
+        "diagnosis": "Síndrome de aspiração meconial",
+        "explanation": "No recém-nascido pós-termo exposto a líquido meconial, hiperinsuflação combinada com opacidades grosseiras, irregulares e assimétricas sugere obstrução parcial das vias aéreas e pneumonite química por aspiração de mecônio.",
+        "key_findings": [
+            "Líquido amniótico meconial",
+            "Hiperinsuflação pulmonar",
+            "Opacidades grosseiras e assimétricas",
+        ],
+    },
+    "desafio-visual-150": {
+        "correct_option_id": "transposicao-grandes-arterias",
+        "diagnosis": "Transposição das grandes artérias",
+        "explanation": "A combinação de cianose neonatal intensa com silhueta cardíaca ovalada e mediastino superior estreito corresponde ao sinal clássico do ovo sobre um fio, descrito na transposição das grandes artérias. O sinal radiográfico pode não estar presente em todos os casos, e a confirmação é ecocardiográfica.",
+        "key_findings": [
+            "Cianose neonatal pouco responsiva ao oxigênio",
+            "Silhueta cardíaca ovalada",
+            "Mediastino superior estreito",
+        ],
+    },
 }
 
 BUILTIN_CHALLENGE_SOURCES = {
@@ -2103,5 +2203,55 @@ BUILTIN_CHALLENGE_SOURCES = {
         "Hellerhoff / Wikimedia Commons",
         "CC BY-SA 4.0",
         "https://commons.wikimedia.org/wiki/File:Missmatch_V-P_Szintigrahie_der_Lunge_bei_Lungenembolie_58M_-_NM_-_001.jpg",
+    ),
+    "desafio-visual-141": (
+        "U.S. Department of Energy Human Genome Program / Wikimedia Commons",
+        "Domínio público — Governo Federal dos Estados Unidos",
+        "https://commons.wikimedia.org/wiki/File:21_trisomy_-_Down_syndrome.png",
+    ),
+    "desafio-visual-142": (
+        "The cat / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:45,X.jpg",
+    ),
+    "desafio-visual-143": (
+        "The cat / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:47,XXY.jpg",
+    ),
+    "desafio-visual-144": (
+        "Jyothi Idiculla, Shine Pakalomattom, Anasuya Desai e Babu Philip / Wikimedia Commons",
+        "CC BY 4.0",
+        "https://commons.wikimedia.org/wiki/File:Caf%C3%A9-au-lait_spot_on_the_abdomen_in_neurofibromatosis_type_1.png",
+    ),
+    "desafio-visual-145": (
+        "Mikael Häggström, M.D. / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:X-ray_of_osteogenesis_imperfecta_type_5_in_newborn_-_right_arm.jpg",
+    ),
+    "desafio-visual-146": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Kongenitale_Zwerchfellhernie_links_vor_und_nach_operativer_Versorgung_0M_-_CR_-_001.jpg",
+    ),
+    "desafio-visual-147": (
+        "Snich / Wikimedia Commons",
+        "CC0 1.0",
+        "https://commons.wikimedia.org/wiki/File:Respiratory_distress_of_the_newborn.jpg",
+    ),
+    "desafio-visual-148": (
+        "Hellerhoff / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:Pneumatosis_intestinalis_und_hepatis_bei_NEC_0W_-_CR_ap_-_001.jpg",
+    ),
+    "desafio-visual-149": (
+        "Kinderradiologie Olgahospital, Klinikum Stuttgart / Wikimedia Commons",
+        "CC BY-SA 4.0",
+        "https://commons.wikimedia.org/wiki/File:MekAsp_w_1d_1.3.51.0.7.1277489803.56708.9039.46848.34134.21565.59325.jpg",
+    ),
+    "desafio-visual-150": (
+        "Madhero88 / Wikimedia Commons",
+        "CC BY-SA 3.0",
+        "https://commons.wikimedia.org/wiki/File:Transposition-of-great-vessels.jpg",
     ),
 }
