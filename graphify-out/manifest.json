@@ -1,0 +1,506 @@
+{
+  "alembic/env.py": {
+    "mtime": 1788287515.3856702,
+    "seen": 1788287672.290341,
+    "ast_hash": "8a549f37a6561db4fd7b879dcdf519f3",
+    "semantic_hash": "8a549f37a6561db4fd7b879dcdf519f3"
+  },
+  "alembic/versions/20260801_01_initial_schema.py": {
+    "mtime": 1788287515.3859956,
+    "seen": 1788287672.2903445,
+    "ast_hash": "6a1faac088322483b49b245a1c9e2647",
+    "semantic_hash": "6a1faac088322483b49b245a1c9e2647"
+  },
+  "alembic/versions/20260801_02_clinical_content.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903461,
+    "ast_hash": "dd35c30bda7ed2ff522fcf1b2e595156",
+    "semantic_hash": "dd35c30bda7ed2ff522fcf1b2e595156"
+  },
+  "alembic/versions/20260802_03_user_academic_profile.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903473,
+    "ast_hash": "2972fd25621685412e22849f70aad5c6",
+    "semantic_hash": "2972fd25621685412e22849f70aad5c6"
+  },
+  "alembic/versions/20260802_04_study_error_notebook.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903483,
+    "ast_hash": "7843a4909393bd5dcb977daa0d18a404",
+    "semantic_hash": "7843a4909393bd5dcb977daa0d18a404"
+  },
+  "alembic/versions/20260802_05_learning_paths.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.290349,
+    "ast_hash": "57a671d5d0e6b1600889304c402f0c81",
+    "semantic_hash": "57a671d5d0e6b1600889304c402f0c81"
+  },
+  "alembic/versions/20260802_06_spaced_review.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903502,
+    "ast_hash": "ddd6b2aa5599e55f8c64b35625659865",
+    "semantic_hash": "ddd6b2aa5599e55f8c64b35625659865"
+  },
+  "alembic/versions/20260802_07_admin_operations.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.290351,
+    "ast_hash": "1b3daa1728b4b7b6eb51ac567086fffb",
+    "semantic_hash": "1b3daa1728b4b7b6eb51ac567086fffb"
+  },
+  "alembic/versions/20260811_08_public_case_titles.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903519,
+    "ast_hash": "731d3f324c1773de2fcf4fa658875358",
+    "semantic_hash": "731d3f324c1773de2fcf4fa658875358"
+  },
+  "alembic/versions/20260811_09_asaas_payments.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903526,
+    "ast_hash": "3e2e5e82e475bc2bf5be9d919b5c2bec",
+    "semantic_hash": "3e2e5e82e475bc2bf5be9d919b5c2bec"
+  },
+  "alembic/versions/20260811_10_asaas_transparent_checkout.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903538,
+    "ast_hash": "a81d792b304c89a9173fb782b13d576f",
+    "semantic_hash": "a81d792b304c89a9173fb782b13d576f"
+  },
+  "alembic/versions/20260811_11_legal_acceptance.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903545,
+    "ast_hash": "e81f23f51dc9e367bfa03e12a85fc4ca",
+    "semantic_hash": "e81f23f51dc9e367bfa03e12a85fc4ca"
+  },
+  "alembic/versions/20260818_13_exam_questions.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903554,
+    "ast_hash": "d910e9204e57c8b857161fe5f9545b14",
+    "semantic_hash": "d910e9204e57c8b857161fe5f9545b14"
+  },
+  "alembic/versions/20260823_14_synapse_reliability.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903562,
+    "ast_hash": "a38a4e589376095c1ab28525556127b9",
+    "semantic_hash": "a38a4e589376095c1ab28525556127b9"
+  },
+  "alembic/versions/20260827_15_password_recovery.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903574,
+    "ast_hash": "6cb32667e13afc76db83e3a0baef73dd",
+    "semantic_hash": "6cb32667e13afc76db83e3a0baef73dd"
+  },
+  "case_catalog.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.290358,
+    "ast_hash": "326feab025ef9836f034a8525c29754a",
+    "semantic_hash": "326feab025ef9836f034a8525c29754a"
+  },
+  "challenge_answers.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903588,
+    "ast_hash": "a43d8725f6051a6ea52f511efd140622",
+    "semantic_hash": "a43d8725f6051a6ea52f511efd140622"
+  },
+  "clinical_cases_batch_one.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903595,
+    "ast_hash": "1c75c2478accf66db7be230c44b3588d",
+    "semantic_hash": "1c75c2478accf66db7be230c44b3588d"
+  },
+  "clinical_cases_batch_two.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903602,
+    "ast_hash": "1a1103f6c31b36b469da1802cf2fce5b",
+    "semantic_hash": "1a1103f6c31b36b469da1802cf2fce5b"
+  },
+  "clinical_cases_psychiatry.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903612,
+    "ast_hash": "972990110b4be3733b0ec0e17c2041ea",
+    "semantic_hash": "972990110b4be3733b0ec0e17c2041ea"
+  },
+  "clinical_feedback_batch_final.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.290362,
+    "ast_hash": "ad65d8e4104ca016314d307f06163c66",
+    "semantic_hash": "ad65d8e4104ca016314d307f06163c66"
+  },
+  "clinical_feedback_batch_five.py": {
+    "mtime": 1788287515.3860884,
+    "seen": 1788287672.2903626,
+    "ast_hash": "e598786b64c679ec34b7be8374cf840a",
+    "semantic_hash": "e598786b64c679ec34b7be8374cf840a"
+  },
+  "clinical_feedback_batch_four.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.2903636,
+    "ast_hash": "c8446652b44d12cd56fc9b57b375aa2f",
+    "semantic_hash": "c8446652b44d12cd56fc9b57b375aa2f"
+  },
+  "clinical_feedback_batch_one.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.2903645,
+    "ast_hash": "f609c6566539683712ff21a7241e33ce",
+    "semantic_hash": "f609c6566539683712ff21a7241e33ce"
+  },
+  "clinical_feedback_batch_three.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.290365,
+    "ast_hash": "3dde2f8b9842a1b6f261831f3b354c40",
+    "semantic_hash": "3dde2f8b9842a1b6f261831f3b354c40"
+  },
+  "clinical_feedback_batch_two.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.2903657,
+    "ast_hash": "9c04a63ab2db0e4ff7ca2fed47044480",
+    "semantic_hash": "9c04a63ab2db0e4ff7ca2fed47044480"
+  },
+  "clinical_rubric_catalog.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.2903666,
+    "ast_hash": "767db58dc2bd9e295b8be07cd3facf4f",
+    "semantic_hash": "767db58dc2bd9e295b8be07cd3facf4f"
+  },
+  "clinical_titles.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.2903671,
+    "ast_hash": "bb6c244a7966a6c761fb4775476464b5",
+    "semantic_hash": "bb6c244a7966a6c761fb4775476464b5"
+  },
+  "database.py": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788287672.290368,
+    "ast_hash": "e3c56af318e5bce007407c52fb6bb4ab",
+    "semantic_hash": "e3c56af318e5bce007407c52fb6bb4ab"
+  },
+  "evaluation.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903688,
+    "ast_hash": "1dd6e021c0ff16c1725afb9d3698ffa2",
+    "semantic_hash": "1dd6e021c0ff16c1725afb9d3698ffa2"
+  },
+  "gunicorn_config.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903695,
+    "ast_hash": "c780541f2897f1be686d6885e3680019",
+    "semantic_hash": "c780541f2897f1be686d6885e3680019"
+  },
+  "learning_path_catalog.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903702,
+    "ast_hash": "907c403ae4108195b86a726ccd54c0c4",
+    "semantic_hash": "907c403ae4108195b86a726ccd54c0c4"
+  },
+  "main.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903707,
+    "ast_hash": "ef9ff123dbfa2b6a76e7b20e37638533",
+    "semantic_hash": "ef9ff123dbfa2b6a76e7b20e37638533"
+  },
+  "middleware.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.290372,
+    "ast_hash": "f1493c38c979478f658f1b629f79209c",
+    "semantic_hash": "f1493c38c979478f658f1b629f79209c"
+  },
+  "models.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903726,
+    "ast_hash": "d2bff88265f1e9d6e8e0159c12575f70",
+    "semantic_hash": "d2bff88265f1e9d6e8e0159c12575f70"
+  },
+  "primary_care_catalog.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.2903733,
+    "ast_hash": "77849102b801fa0de709f4ed27840aa0",
+    "semantic_hash": "77849102b801fa0de709f4ed27840aa0"
+  },
+  "routers/__init__.py": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788287672.290374,
+    "ast_hash": "f00a5a2a9f1648923b5c30371cb41d50",
+    "semantic_hash": "f00a5a2a9f1648923b5c30371cb41d50"
+  },
+  "routers/admin.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.290375,
+    "ast_hash": "f22c01b9178fb136f7fbb5aa4a1d9f44",
+    "semantic_hash": "f22c01b9178fb136f7fbb5aa4a1d9f44"
+  },
+  "routers/cases.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.290376,
+    "ast_hash": "7632ab82e2026245cc7cf78292391389",
+    "semantic_hash": "7632ab82e2026245cc7cf78292391389"
+  },
+  "routers/content.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903767,
+    "ast_hash": "7761d204cfe0f4439a68ed059346b5cc",
+    "semantic_hash": "7761d204cfe0f4439a68ed059346b5cc"
+  },
+  "routers/error_notebook.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903774,
+    "ast_hash": "fd31cd927e0322397b2d8c288804cbe9",
+    "semantic_hash": "fd31cd927e0322397b2d8c288804cbe9"
+  },
+  "routers/learning_paths.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.290378,
+    "ast_hash": "276e65c8dc6eb8f7e2dae1a1ddc4c196",
+    "semantic_hash": "276e65c8dc6eb8f7e2dae1a1ddc4c196"
+  },
+  "routers/payments.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903788,
+    "ast_hash": "a9293f2ea3efab4b22b4a711659f2461",
+    "semantic_hash": "a9293f2ea3efab4b22b4a711659f2461"
+  },
+  "routers/progress.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903802,
+    "ast_hash": "741a7ab6a1b9991fd9077c2c3994a296",
+    "semantic_hash": "741a7ab6a1b9991fd9077c2c3994a296"
+  },
+  "routers/questions.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903812,
+    "ast_hash": "1786ae04cb8b1e38d005c6134f8b3ee3",
+    "semantic_hash": "1786ae04cb8b1e38d005c6134f8b3ee3"
+  },
+  "routers/simulations.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.290382,
+    "ast_hash": "e3095de20d01b78f042c073d20f67979",
+    "semantic_hash": "e3095de20d01b78f042c073d20f67979"
+  },
+  "routers/system.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903829,
+    "ast_hash": "d706fbe114d7b6a18e0a7499a8af0e6c",
+    "semantic_hash": "d706fbe114d7b6a18e0a7499a8af0e6c"
+  },
+  "routers/users.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903833,
+    "ast_hash": "842738a7f46570355f79aa893b34845d",
+    "semantic_hash": "842738a7f46570355f79aa893b34845d"
+  },
+  "schemas.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.290384,
+    "ast_hash": "f236b1322943ff778a518ee913aa02ad",
+    "semantic_hash": "f236b1322943ff778a518ee913aa02ad"
+  },
+  "scripts/__init__.py": {
+    "mtime": 1788287515.3926208,
+    "seen": 1788287672.2903845,
+    "ast_hash": "ad3c1ee28732a9f414267b0744facef9",
+    "semantic_hash": "ad3c1ee28732a9f414267b0744facef9"
+  },
+  "scripts/benchmark_synapse_efficiency.py": {
+    "mtime": 1788287515.3935804,
+    "seen": 1788287672.2903855,
+    "ast_hash": "a67b1901460b2611745eee4b437b8d5f",
+    "semantic_hash": "a67b1901460b2611745eee4b437b8d5f"
+  },
+  "scripts/build_question_catalog.py": {
+    "mtime": 1788287515.3935804,
+    "seen": 1788287672.290386,
+    "ast_hash": "7dfccabb94298862cd3baed52f89605e",
+    "semantic_hash": "7dfccabb94298862cd3baed52f89605e"
+  },
+  "scripts/seed_clinical_content.py": {
+    "mtime": 1788287515.3935804,
+    "seen": 1788287672.2903864,
+    "ast_hash": "dd8b61ee767dafb0de9127ccb38a7af8",
+    "semantic_hash": "dd8b61ee767dafb0de9127ccb38a7af8"
+  },
+  "security.py": {
+    "mtime": 1788287515.3935804,
+    "seen": 1788287672.2903872,
+    "ast_hash": "775dde784d59641e7fdc792f12452965",
+    "semantic_hash": "775dde784d59641e7fdc792f12452965"
+  },
+  "services/__init__.py": {
+    "mtime": 1788287515.3935804,
+    "seen": 1788287672.2903879,
+    "ast_hash": "6639781936997e5e13796a04a4516d54",
+    "semantic_hash": "6639781936997e5e13796a04a4516d54"
+  },
+  "services/activity.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903886,
+    "ast_hash": "8a28cd075e76c94d4a5aad09f1f49d89",
+    "semantic_hash": "8a28cd075e76c94d4a5aad09f1f49d89"
+  },
+  "services/asaas.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903893,
+    "ast_hash": "778b9d2ad704e6f5042922f473787602",
+    "semantic_hash": "778b9d2ad704e6f5042922f473787602"
+  },
+  "services/clinical_content.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.29039,
+    "ast_hash": "2c3aab439a0b27989a941394eeebda6b",
+    "semantic_hash": "2c3aab439a0b27989a941394eeebda6b"
+  },
+  "services/database_bootstrap.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903907,
+    "ast_hash": "d8dec8be0751d6975ecb25ad0b58a939",
+    "semantic_hash": "d8dec8be0751d6975ecb25ad0b58a939"
+  },
+  "services/email.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903912,
+    "ast_hash": "f190a8fa9ab8a218eabce3eff11e70b5",
+    "semantic_hash": "f190a8fa9ab8a218eabce3eff11e70b5"
+  },
+  "services/question_content.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903922,
+    "ast_hash": "47cfebcab659cdc3495feb97857600da",
+    "semantic_hash": "47cfebcab659cdc3495feb97857600da"
+  },
+  "services/question_explanations.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903926,
+    "ast_hash": "951ae59a2b7ba27c541c4c3c8ed3ef23",
+    "semantic_hash": "951ae59a2b7ba27c541c4c3c8ed3ef23"
+  },
+  "services/vital_signs.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903934,
+    "ast_hash": "dbd64c5259dec664cc18e49073ef3661",
+    "semantic_hash": "dbd64c5259dec664cc18e49073ef3661"
+  },
+  "settings.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903943,
+    "ast_hash": "9efb5f2a205fc147a4394edeaf79c5f8",
+    "semantic_hash": "9efb5f2a205fc147a4394edeaf79c5f8"
+  },
+  "synapse_providers.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903948,
+    "ast_hash": "51469616387b3fc722deccd800a6f1ca",
+    "semantic_hash": "51469616387b3fc722deccd800a6f1ca"
+  },
+  "tests/test_api.py": {
+    "mtime": 1788287515.3937914,
+    "seen": 1788287672.2903957,
+    "ast_hash": "6fe69d2381a090be9fb843f8e1fd015f",
+    "semantic_hash": "6fe69d2381a090be9fb843f8e1fd015f"
+  },
+  "tests/test_evaluation.py": {
+    "mtime": 1788287515.3948126,
+    "seen": 1788287672.2903962,
+    "ast_hash": "7a7bd28c02335b343f5c0b46711b2180",
+    "semantic_hash": "7a7bd28c02335b343f5c0b46711b2180"
+  },
+  "docs/ai/skills-lock.json": {
+    "mtime": 1788287998.7489004,
+    "seen": 1788288202.3438234,
+    "ast_hash": "a3c53405c2e1288ec15fd60b7d0caf21",
+    "semantic_hash": "a3c53405c2e1288ec15fd60b7d0caf21"
+  },
+  "scripts/setup_agent_skills.py": {
+    "mtime": 1788287965.4570835,
+    "seen": 1788288202.3446968,
+    "ast_hash": "7259cdd0c94242663fccab2f91ee4443",
+    "semantic_hash": "7259cdd0c94242663fccab2f91ee4443"
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1788287515.3856702,
+    "seen": 1788288168.6976585,
+    "ast_hash": "b8195399602205b9aa287d6edc8c3a09",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1788287955.6011322,
+    "seen": 1788288168.6976595,
+    "ast_hash": "b0968bfedbf450bcd476ffc7c09e7edf",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1788287959.369107,
+    "seen": 1788288168.6976602,
+    "ast_hash": "075f3ba6252695e3f6c458da9adc3aca",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1788287515.3856702,
+    "seen": 1788288168.6976607,
+    "ast_hash": "d6fd17fe49be1c40ed66a2efcbec5573",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1788287515.3872905,
+    "seen": 1788288168.6976614,
+    "ast_hash": "0949467475367d74533619b20a30071b",
+    "semantic_hash": ""
+  },
+  "docs/DIRETRIZ_DESAFIOS_VISUAIS.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976638,
+    "ast_hash": "20b1a5829cbe9d8c4e2d883280baccd2",
+    "semantic_hash": ""
+  },
+  "docs/RUBRICAS_CLINICAS_2.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976643,
+    "ast_hash": "1335acdebf377ed8260252bb08e19883",
+    "semantic_hash": ""
+  },
+  "docs/RUBRICAS_CLINICAS_LOTE_2.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.697665,
+    "ast_hash": "990ba20731a4bfb01490805bd42daa83",
+    "semantic_hash": ""
+  },
+  "docs/SIMULACAO_CLINICA_2.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976657,
+    "ast_hash": "9a78139c82bfdb850f9343176fe4031f",
+    "semantic_hash": ""
+  },
+  "docs/SYNAPSE_EFFICIENCY.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976666,
+    "ast_hash": "41041c05c3f695475b89994ff1eac0c9",
+    "semantic_hash": ""
+  },
+  "docs/SYNAPSE_MULTI_LLM.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976674,
+    "ast_hash": "436e3312a702ac1cb7f84687ded7141a",
+    "semantic_hash": ""
+  },
+  "docs/SYNAPSE_VOICE.md": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.697668,
+    "ast_hash": "01e52bc7d5daa73030bb9ab59f31c025",
+    "semantic_hash": ""
+  },
+  "docs/ai/SKILLS.md": {
+    "mtime": 1788287958.7331111,
+    "seen": 1788288168.6976686,
+    "ast_hash": "56aa278ea23a6b1709db8fc700164920",
+    "semantic_hash": ""
+  },
+  "requirements-dev.txt": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976693,
+    "ast_hash": "bbcc17383178362d50db02a2e7a6f31d",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1788287515.3911169,
+    "seen": 1788288168.6976702,
+    "ast_hash": "f846d5318e6f4ee4af89ee18b1f15a55",
+    "semantic_hash": ""
+  }
+}

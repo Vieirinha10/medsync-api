@@ -2,6 +2,26 @@
 
 Estas instruções abrangem todo o repositório.
 
+## Repertório de IA do MedSync
+
+Antes de alterar arquitetura, contratos, Synapse, autenticação, pagamentos ou
+conteúdo protegido, leia `docs/ai/SKILLS.md`. Informe ao usuário quando a
+skill `graphify` for utilizada e por quê.
+
+Use `graphify` antes de mudanças que atravessem vários módulos, afetem o
+contrato com o frontend ou tenham impacto arquitetural incerto. Não o exija
+para uma correção pequena e já localizada. Quando
+`graphify-out/graph.json` existir, consulte o grafo antes de uma investigação
+ampla e execute `graphify update .` depois de alterar código.
+
+A skill e o pacote devem permanecer idênticos às versões registradas em
+`docs/ai/skills-lock.json`. Preferências e regras próprias do MedSync ficam
+fora da skill original.
+
+Não instale, atualize, envie código, abra PR, faça merge, acesse dados externos
+ou publique em produção sem a autorização correspondente. Uma autorização de
+implementação não implica autorização de publicação.
+
 Antes de criar, editar, importar ou revisar desafios visuais, leia integralmente
 `docs/DIRETRIZ_DESAFIOS_VISUAIS.md`.
 
