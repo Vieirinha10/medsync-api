@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-09-01",
+  "skills": {
+    "graphify": {
+      "repository": "https://github.com/Graphify-Labs/graphify",
+      "commit": "33362d969292b57eda82f3fbd9eb5f3f5bc9bbc2",
+      "version": "0.9.53",
+      "license": "Apache-2.0 AND MIT",
+      "installation": "repository-skill-and-local-cli",
+      "local_tool": "graphifyy==0.9.53",
+      "files": {
+        ".agents/skills/graphify/LICENSE": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+        ".agents/skills/graphify/LICENSE-MIT": "b1d9746fb5c6c39fd502e2ebe432a12ad9a097f3",
+        ".agents/skills/graphify/NOTICE": "791bf88bb1e50572902dbbe9228153ea29846adf",
+        ".agents/skills/graphify/SKILL.md": "190827d9ace989750d2722691e555061cd805927",
+        ".agents/skills/graphify/references/add-watch.md": "77844343e140553b7f1bf419e32640568c2014ff",
+        ".agents/skills/graphify/references/exports.md": "242ff868e015b158504dda3ea1992e4cd9686843",
+        ".agents/skills/graphify/references/extraction-spec.md": "388df7674f2d25e83f87041864bbe7635aa15e75",
+        ".agents/skills/graphify/references/github-and-merge.md": "a41ea06e17c1676483356a2a06504a1bfb0870e4",
+        ".agents/skills/graphify/references/hooks.md": "3fb74d1545394154c30ee052f24da8dd07dd9e9f",
+        ".agents/skills/graphify/references/query.md": "56565eb782951a1f0e1279f851b8a022292f3ac3",
+        ".agents/skills/graphify/references/transcribe.md": "b967f8379998b890945706b3c95fef23b2ec402f",
+        ".agents/skills/graphify/references/update.md": "3632fd41266964bdcf04b58d4359f9364cedfbce"
+      }
+    }
+  }
+}
