@@ -35,6 +35,9 @@ A diretriz `MEDSYNC-DV-001` é obrigatória para novos lotes. Em especial:
 - utilize apenas imagens clínicas reais, rastreáveis e com licença compatível;
 - não exponha o gabarito no frontend, na imagem, no nome do arquivo ou no texto
   alternativo;
+- distribua as respostas corretas entre A, B, C e D: em cada bloco consecutivo
+  de 10, cada posição deve aparecer 2 ou 3 vezes; no catálogo completo, a
+  diferença entre a posição mais e menos frequente deve ser de no máximo 1;
 - não declare um lote pronto enquanto o checklist clínico, editorial, visual,
   legal e técnico da diretriz não estiver concluído.
 

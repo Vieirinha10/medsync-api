@@ -4,6 +4,10 @@ Todas as mudanças relevantes da API MedSync são registradas neste arquivo.
 
 ## Não publicado
 
+### Alterado
+- Formalizada a distribuição das respostas corretas dos desafios visuais entre
+  A, B, C e D, com equilíbrio global e por blocos consecutivos de dez.
+
 ### Adicionado
 
 - Repertório compartilhado de IA para Codex e Google Antigravity, com Graphify
