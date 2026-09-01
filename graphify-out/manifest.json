@@ -420,15 +420,15 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1788287955.6011322,
-    "seen": 1788288168.6976595,
-    "ast_hash": "b0968bfedbf450bcd476ffc7c09e7edf",
+    "mtime": 1788291739.1729977,
+    "seen": 1788291894.9635284,
+    "ast_hash": "5369c5512b66527120f52146ce1cbb2f",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1788287959.369107,
-    "seen": 1788288168.6976602,
-    "ast_hash": "075f3ba6252695e3f6c458da9adc3aca",
+    "mtime": 1788291740.572991,
+    "seen": 1788291894.9635298,
+    "ast_hash": "c125a5593091964c5bce44a9ca4c4783",
     "semantic_hash": ""
   },
   "README.md": {
@@ -444,9 +444,9 @@
     "semantic_hash": ""
   },
   "docs/DIRETRIZ_DESAFIOS_VISUAIS.md": {
-    "mtime": 1788287515.3911169,
-    "seen": 1788288168.6976638,
-    "ast_hash": "20b1a5829cbe9d8c4e2d883280baccd2",
+    "mtime": 1788291739.880994,
+    "seen": 1788291894.9635682,
+    "ast_hash": "c46671c9524075d799307b3ea2f87251",
     "semantic_hash": ""
   },
   "docs/RUBRICAS_CLINICAS_2.md": {
@@ -486,9 +486,9 @@
     "semantic_hash": ""
   },
   "docs/ai/SKILLS.md": {
-    "mtime": 1788287958.7331111,
-    "seen": 1788288168.6976686,
-    "ast_hash": "56aa278ea23a6b1709db8fc700164920",
+    "mtime": 1788288231.1190019,
+    "seen": 1788291894.9636834,
+    "ast_hash": "a2cd88e1a267583bc58d5f5a83e936f0",
     "semantic_hash": ""
   },
   "requirements-dev.txt": {

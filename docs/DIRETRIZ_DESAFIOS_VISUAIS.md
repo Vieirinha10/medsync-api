@@ -154,6 +154,12 @@ Cada desafio deverá conter:
 - Não utilizar “todas as anteriores” ou “nenhuma das anteriores”.
 - As alternativas incorretas devem funcionar como diferenciais pedagógicos reais.
 - A ordem da alternativa correta deverá variar ao longo do lote.
+- Em cada bloco consecutivo de dez desafios, A, B, C e D deverão receber 2 ou
+  3 respostas corretas cada.
+- No catálogo completo, a diferença entre a posição mais frequente e a menos
+  frequente deverá ser de no máximo 1.
+- A ordem pode ser pseudoaleatória, mas deve permanecer estável durante a
+  interação para que uma alternativa não mude de posição após ser selecionada.
 
 ## 10. Regras para a explicação
 
@@ -227,7 +233,8 @@ Antes de considerar o lote concluído, verificar:
 - [ ] cada item possui exatamente quatro alternativas;
 - [ ] existe apenas uma resposta correta por item;
 - [ ] cada gabarito corresponde literalmente a uma alternativa pública válida;
-- [ ] a posição das respostas corretas foi variada;
+- [ ] cada bloco de dez possui 2 ou 3 respostas corretas em cada posição;
+- [ ] no catálogo completo, a diferença entre as posições é de no máximo 1;
 - [ ] todos possuem explicação e três achados-chave;
 - [ ] as inferências clínicas são sustentadas pela imagem e pelo enunciado;
 - [ ] todas as imagens foram inspecionadas visualmente;
@@ -238,6 +245,14 @@ Antes de considerar o lote concluído, verificar:
 - [ ] não existem duplicações injustificadas no catálogo;
 - [ ] gabaritos e explicações protegidas permanecem na API;
 - [ ] testes, lint, build e validação cruzada entre frontend e API foram aprovados.
+
+Com os repositórios lado a lado, execute no `medsync-frontend` a auditoria
+automática da posição dos gabaritos:
+
+```bash
+python scripts/audit_visual_challenge_distribution.py \
+  --api-file ../medsync-api/challenge_answers.py
+```
 
 ## 17. Instrução pronta para outras IAs
 
@@ -260,12 +275,13 @@ Crie um lote de 10 novos desafios visuais para o MedSync seguindo obrigatoriamen
 7. Não invente fontes, autores, licenças ou páginas de origem. Se uma informação não puder ser confirmada, sinalize o item como pendente e não o considere pronto para publicação.
 8. Não revele o diagnóstico na imagem, legenda, nome do arquivo, texto alternativo ou enunciado.
 9. As quatro alternativas devem ser plausíveis, pertencer à mesma categoria e possuir nível semelhante de especificidade. Deve haver apenas uma resposta inequivocamente correta.
-10. Não solicite uma conclusão mais específica do que a imagem e o contexto permitem.
-11. A dificuldade deve decorrer do raciocínio clínico, nunca de imagem ruim, informação ausente ou ambiguidade.
-12. A explicação deve identificar a resposta, descrever os achados visuais, integrar o contexto, diferenciar as alternativas relevantes e indicar a implicação clínica quando aplicável.
-13. Cada item deve conter exatamente três achados-chave observáveis, sem apenas repetir o diagnóstico.
-14. Evite duplicar desafios já existentes, salvo quando houver abordagem visual ou objetivo pedagógico claramente diferente.
-15. Não altere os 150 desafios atuais. Esta orientação se aplica somente aos novos lotes.
+10. Distribua as respostas corretas entre A, B, C e D. Em cada bloco consecutivo de dez, cada posição deverá aparecer 2 ou 3 vezes; no catálogo completo, a diferença entre a posição mais e menos frequente deverá ser de no máximo 1.
+11. Não solicite uma conclusão mais específica do que a imagem e o contexto permitem.
+12. A dificuldade deve decorrer do raciocínio clínico, nunca de imagem ruim, informação ausente ou ambiguidade.
+13. A explicação deve identificar a resposta, descrever os achados visuais, integrar o contexto, diferenciar as alternativas relevantes e indicar a implicação clínica quando aplicável.
+14. Cada item deve conter exatamente três achados-chave observáveis, sem apenas repetir o diagnóstico.
+15. Evite duplicar desafios já existentes, salvo quando houver abordagem visual ou objetivo pedagógico claramente diferente.
+16. Não altere os 150 desafios atuais. Esta orientação se aplica somente aos novos lotes.
 
 Antes de finalizar, apresente uma tabela-resumo que demonstre o cumprimento da proporção 6/4 e da distribuição 3/4/3. Depois, execute o checklist editorial, clínico, visual, legal e técnico da Diretriz MEDSYNC-DV-001. Qualquer item não verificado deverá ser marcado como pendente, sem alegar que o lote está pronto para publicação.
 
@@ -276,4 +292,3 @@ Antes de finalizar, apresente uma tabela-resumo que demonstre o cumprimento da p
 | Versão | Data | Alteração | Aprovação |
 |---|---|---|---|
 | 1.0 | 31/08/2026 | Criação da diretriz e adoção da proporção 6/4 para novos lotes | Fundador do MedSync |
-
