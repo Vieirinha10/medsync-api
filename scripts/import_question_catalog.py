@@ -50,6 +50,15 @@ def compute_sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def validate_hash_format(hash_val: Any, field_name: str, line_num: int, source_id: str) -> str:
+    if not isinstance(hash_val, str) or len(hash_val) != 64 or not all(c in "0123456789abcdefABCDEF" for c in hash_val):
+        raise ValueError(
+            f"Linha {line_num} (source_id={source_id}): campo obrigatório '{field_name}' ausente ou malformado "
+            f"(deve ter exatamente 64 caracteres hexadecimais, recebido: {hash_val!r})."
+        )
+    return hash_val.lower()
+
+
 def validate_and_normalize_record(
     rec: Dict[str, Any],
     line_num: int
@@ -58,45 +67,50 @@ def validate_and_normalize_record(
     Valida estritamente cada registro contra o contrato canônico do extrator v1.1.
     Recalcula hashes e valida integridade do gabarito.
     """
-    # 1. Campos obrigatórios de identificação
     source_id = str(rec.get("source_id") or "").strip()
     if not source_id:
-        raise ValueError(f"Linha {line_num}: 'source_id' é obrigatório e não pode ser vazio.")
+        raise ValueError(f"Linha {line_num}: 'source_id' obrigatório ausente.")
 
-    ano_val = rec.get("ano")
-    if ano_val is None or not isinstance(ano_val, int):
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): 'ano' obrigatório e deve ser inteiro.")
-
-    stmt_plain = str(rec.get("statement_plain") or "").strip()
-    if not stmt_plain:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): 'statement_plain' é obrigatório.")
-
-    stmt_rich = str(rec.get("statement_rich_html") or stmt_plain).strip()
-    corr_letter = str(rec.get("correct_letter") or "").strip()
-    if not corr_letter:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): 'correct_letter' é obrigatório.")
-
-    # 2. Validação estrita de elegibilidade e mídia (Regra 8)
+    # 1. Validação de Elegibilidade e Mídia (Regra 8)
     pub_status = rec.get("publication_status")
     if pub_status != "ACTIVE":
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): publication_status='{pub_status}' inválido para piloto (esperado 'ACTIVE').")
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): publication_status '{pub_status}' não é ACTIVE.")
 
     quarantine = rec.get("quarantine_reasons") or []
-    if len(quarantine) > 0:
+    if quarantine:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): registro em quarentena: {quarantine}")
 
     media_class = rec.get("media_classification")
-    if media_class not in ("NO_VISUAL_DEPENDENCY", "VISUAL_TERM_CONTEXT_ONLY"):
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): media_classification='{media_class}' não autorizada no piloto.")
+    if media_class not in {"NO_VISUAL_DEPENDENCY", "VISUAL_TERM_CONTEXT_ONLY"}:
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): media_classification '{media_class}' inválida.")
 
     rights_status = rec.get("image_rights_status")
     if rights_status != "NONE_REQUIRED":
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): image_rights_status='{rights_status}' inválido (esperado 'NONE_REQUIRED').")
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): image_rights_status '{rights_status}' não é NONE_REQUIRED.")
 
     if rec.get("has_video") is not False:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): has_video deve ser False.")
 
-    # 3. Alternativas
+    # 2. Enunciado (Regra 1 e 9)
+    stmt_plain = str(rec.get("statement_plain") or "").strip()
+    stmt_rich = str(rec.get("statement_rich_html") or stmt_plain).strip()
+    if not stmt_plain:
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): enunciado de texto plano vazio.")
+
+    # Ano canônico (Regra 1 - sem defaults como 2020)
+    ano_raw = rec.get("ano")
+    if ano_raw is None:
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): campo obrigatório 'ano' ausente.")
+    try:
+        ano_val = int(ano_raw)
+    except (ValueError, TypeError):
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): ano inválido: {ano_raw}")
+
+    # 3. Alternativas e Gabarito (Regra 1, 3 e 9 - Vínculo explícito sem inferência)
+    corr_letter = str(rec.get("correct_letter") or "").strip()
+    if not corr_letter:
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): 'correct_letter' obrigatório ausente.")
+
     raw_alts = rec.get("alternatives") or []
     if len(raw_alts) < 2:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): mínimo de 2 alternativas necessárias.")
@@ -106,10 +120,22 @@ def validate_and_normalize_record(
     letters_seen = set()
 
     for idx, alt in enumerate(raw_alts):
-        letter = str(alt.get("letter") or chr(ord("A") + idx)).strip()
-        body_p = str(alt.get("body_plain") or alt.get("body") or "").strip()
-        body_r = str(alt.get("body_rich_html") or body_p).strip()
-        is_corr = bool(alt.get("is_correct") or (letter == corr_letter))
+        letter = str(alt.get("letter") or alt.get("id") or chr(ord("A") + idx)).strip()
+        body_p = str(alt.get("body_plain") or alt.get("body") or alt.get("texto") or "").strip()
+        body_r = str(alt.get("body_rich_html") or alt.get("html") or body_p).strip()
+
+        # Item 3 do Codex: Vínculo explícito do gabarito sem qualquer inferência
+        if "is_correct" not in alt:
+            raise ValueError(
+                f"Linha {line_num} (source_id={source_id}): alternativa '{letter}' não possui o campo obrigatório 'is_correct'."
+            )
+        if not isinstance(alt["is_correct"], bool):
+            raise ValueError(
+                f"Linha {line_num} (source_id={source_id}): campo 'is_correct' da alternativa '{letter}' deve ser booleano estrito "
+                f"(recebido: {alt['is_correct']!r} do tipo {type(alt['is_correct']).__name__})."
+            )
+
+        is_corr = alt["is_correct"]
 
         if letter in letters_seen:
             raise ValueError(f"Linha {line_num} (source_id={source_id}): letra de alternativa duplicada '{letter}'.")
@@ -118,7 +144,10 @@ def validate_and_normalize_record(
         if is_corr:
             correct_count += 1
             if letter != corr_letter:
-                raise ValueError(f"Linha {line_num} (source_id={source_id}): inconsistência entre flag is_correct e correct_letter='{corr_letter}'.")
+                raise ValueError(
+                    f"Linha {line_num} (source_id={source_id}): inconsistência entre flag is_correct=True na alternativa '{letter}' "
+                    f"e correct_letter='{corr_letter}'."
+                )
 
         norm_alts.append({
             "id": letter,
@@ -131,12 +160,14 @@ def validate_and_normalize_record(
         })
 
     if correct_count != 1:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): exatamente 1 alternativa correta é esperada (encontradas {correct_count}).")
+        raise ValueError(
+            f"Linha {line_num} (source_id={source_id}): exatamente 1 alternativa correta é esperada (encontradas {correct_count})."
+        )
 
     if corr_letter not in letters_seen:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): gabarito '{corr_letter}' não encontrado nas alternativas.")
 
-    # 4. Recálculo e validação estrita de hashes (Regra 9)
+    # 4. Recálculo e validação estrita de hashes obrigatórios (Item 2 do Codex)
     sorted_alts = sorted(norm_alts, key=lambda x: x["id"])
     alts_plain_payload = "|".join(f"{a['id']}:{a['body_plain']}" for a in sorted_alts)
     alts_rich_payload = "|".join(f"{a['id']}:{a['body_rich_html']}" for a in sorted_alts)
@@ -146,17 +177,26 @@ def validate_and_normalize_record(
     calc_content_hash_rich = compute_sha256(f"{stmt_rich}||{alts_rich_payload}")
     calc_answer_binding = compute_sha256(f"{calc_content_hash_plain}||{corr_letter}||{alts_binding_payload}")
 
-    exp_content_plain = rec.get("content_hash_plain") or rec.get("content_hash")
-    if exp_content_plain and exp_content_plain != calc_content_hash_plain:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): divergência em content_hash_plain! Fornecido: {exp_content_plain}, Calculado: {calc_content_hash_plain}")
+    exp_content_plain = validate_hash_format(rec.get("content_hash_plain"), "content_hash_plain", line_num, source_id)
+    if exp_content_plain != calc_content_hash_plain:
+        raise ValueError(
+            f"Linha {line_num} (source_id={source_id}): divergência em content_hash_plain! "
+            f"Fornecido: {exp_content_plain}, Calculado: {calc_content_hash_plain}"
+        )
 
-    exp_content_rich = rec.get("content_hash_rich")
-    if exp_content_rich and exp_content_rich != calc_content_hash_rich:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): divergência em content_hash_rich! Fornecido: {exp_content_rich}, Calculado: {calc_content_hash_rich}")
+    exp_content_rich = validate_hash_format(rec.get("content_hash_rich"), "content_hash_rich", line_num, source_id)
+    if exp_content_rich != calc_content_hash_rich:
+        raise ValueError(
+            f"Linha {line_num} (source_id={source_id}): divergência em content_hash_rich! "
+            f"Fornecido: {exp_content_rich}, Calculado: {calc_content_hash_rich}"
+        )
 
-    exp_binding = rec.get("answer_binding_hash")
-    if exp_binding and exp_binding != calc_answer_binding:
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): divergência em answer_binding_hash! Fornecido: {exp_binding}, Calculado: {calc_answer_binding}")
+    exp_binding = validate_hash_format(rec.get("answer_binding_hash"), "answer_binding_hash", line_num, source_id)
+    if exp_binding != calc_answer_binding:
+        raise ValueError(
+            f"Linha {line_num} (source_id={source_id}): divergência em answer_binding_hash! "
+            f"Fornecido: {exp_binding}, Calculado: {calc_answer_binding}"
+        )
 
     # 5. Normalização de metadados sem valores artificiais (Regra 1)
     # Campos realmente opcionais permanecem None.
@@ -170,12 +210,11 @@ def validate_and_normalize_record(
     inst_clean = clean_opt(rec.get("instituicao"))
     cabecalho = f"{inst_clean} · {ano_val}" if inst_clean else f"Prova · {ano_val}"
 
-    # Assunto / Tema
+    # Assunto / Tema sem preenchimento artificial
     esp_clean = clean_opt(rec.get("especialidade"))
     tema_clean = clean_opt(rec.get("tema"))
     subtema_clean = clean_opt(rec.get("subtema"))
-    # No MedSync clássico, assunto era usado como assunto geral da especialidade
-    assunto_legacy = tema_clean or esp_clean or "Geral"
+    assunto_clean = tema_clean or esp_clean
 
     # Rank determinístico para amostragem O(1)
     h_int = int(calc_content_hash_plain[:12], 16)
@@ -190,7 +229,7 @@ def validate_and_normalize_record(
         "especialidade": esp_clean,
         "tema": tema_clean,
         "subtema": subtema_clean,
-        "assunto": assunto_legacy,
+        "assunto": assunto_clean,
         "banca": clean_opt(rec.get("banca")),
         "finalidade": clean_opt(rec.get("finalidade")),
         "regiao": clean_opt(rec.get("regiao")),
@@ -258,6 +297,7 @@ def import_catalog(
     catalog_version: str = "v2",
     dry_run: bool = False,
     batch_size: int = 100,
+    simulated_failure_step: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Importa o catálogo de questões com atomicidade absoluta e idempotência estrita.
@@ -369,6 +409,12 @@ def import_catalog(
             # Flush periódico opcional para alívio de memória sem efetivar transação
             if idx % batch_size == 0:
                 db.flush()
+
+            if simulated_failure_step is not None and idx == simulated_failure_step:
+                raise RuntimeError(
+                    f"FALHA INJETADA APÓS FLUSH: Falha intencional no registro {idx} "
+                    f"(após flush dos primeiros registros) para teste estrito de rollback de persistência."
+                )
 
         # ÚNICO commit após todo o lote ser processado com sucesso absoluto
         db.commit()

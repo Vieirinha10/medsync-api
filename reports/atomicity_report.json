@@ -1,0 +1,10 @@
+{
+  "test_prevalidation": "test_03a_atomic_prevalidation_failure",
+  "prevalidation_failure_persisted": 0,
+  "test_persistence_after_flush": "test_03b_atomic_persistence_failure_after_flush",
+  "flush_batch_size": 5,
+  "failure_injected_at_step": 6,
+  "persistence_failure_after_flush_persisted": 0,
+  "partial_records_persisted": 0,
+  "rollback_confirmed": true
+}
