@@ -292,22 +292,24 @@ def list_questions(
         import random
         rnd = random.random()
 
-        # 1ª Consulta: random_rank >= rnd (indexável via B-Tree)
+        # 1ª Consulta: random_rank >= rnd (indexável via B-Tree com desempate determinístico por id ASC)
         query_first = (
             statement.where(ExamQuestion.random_rank >= rnd)
-            .order_by(ExamQuestion.random_rank.asc())
+            .order_by(ExamQuestion.random_rank.asc(), ExamQuestion.id.asc())
             .limit(quantidade)
         )
         first_batch = list(db.scalars(query_first).all())
 
         remaining_needed = quantidade - len(first_batch)
         if remaining_needed > 0:
-            # 2ª Consulta (wrap-around circular): random_rank < rnd
+            # 2ª Consulta (wrap-around circular): random_rank < rnd com desempate determinístico por id ASC
             selected_ids = [q.id for q in first_batch]
             query_second = statement.where(ExamQuestion.random_rank < rnd)
             if selected_ids:
                 query_second = query_second.where(ExamQuestion.id.not_in(selected_ids))
-            query_second = query_second.order_by(ExamQuestion.random_rank.asc()).limit(remaining_needed)
+            query_second = query_second.order_by(
+                ExamQuestion.random_rank.asc(), ExamQuestion.id.asc()
+            ).limit(remaining_needed)
             second_batch = list(db.scalars(query_second).all())
             selected_items = first_batch + second_batch
         else:

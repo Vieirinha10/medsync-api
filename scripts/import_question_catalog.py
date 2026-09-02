@@ -216,9 +216,10 @@ def validate_and_normalize_record(
     subtema_clean = clean_opt(rec.get("subtema"))
     assunto_clean = tema_clean or esp_clean
 
-    # Rank determinístico para amostragem O(1)
-    h_int = int(calc_content_hash_plain[:12], 16)
-    random_rank = (h_int % 1_000_000) / 1_000_000.0
+    # Rank determinístico de alta resolução (52 bits do SHA-256 / mantissa IEEE 754 float64)
+    # 13 dígitos hexadecimais = 52 bits exatos (espaço amostral > 4,5 quatrilhões de posições)
+    h_int_52 = int(calc_content_hash_plain[:13], 16)
+    random_rank = h_int_52 / float(1 << 52)
 
     cleaned_record = {
         "source_id": source_id,

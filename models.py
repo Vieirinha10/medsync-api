@@ -358,10 +358,11 @@ class ExamQuestion(Base):
     __tablename__ = "exam_questions"
     __table_args__ = (
         Index(
-            "ix_exam_questions_catalog_status_rank",
+            "ix_exam_questions_catalog_status_rank_id",
             "catalog_version",
             "status",
             "random_rank",
+            "id",
         ),
     )
 

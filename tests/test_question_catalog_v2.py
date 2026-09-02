@@ -167,7 +167,10 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
         }
         assert expected_cols.issubset(cols_up), f"Faltam colunas: {expected_cols - cols_up}"
         indexes_up = {i["name"] for i in insp.get_indexes("exam_questions")}
-        assert "ix_exam_questions_catalog_status_rank" in indexes_up, f"Índice composto não encontrado no upgrade: {indexes_up}"
+        assert "ix_exam_questions_catalog_status_rank_id" in indexes_up, f"Índice composto não encontrado no upgrade: {indexes_up}"
+        assert "ix_exam_questions_random_rank" not in indexes_up, "Índice isolado ix_exam_questions_random_rank NÃO deve existir no upgrade!"
+        comp_idx = next(i for i in insp.get_indexes("exam_questions") if i["name"] == "ix_exam_questions_catalog_status_rank_id")
+        assert comp_idx["column_names"] == ["catalog_version", "status", "random_rank", "id"]
 
         # 2. Downgrade para 20260827_15
         command.downgrade(cfg, "20260827_15")
@@ -177,7 +180,8 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
         assert "tema" not in cols_down
         assert "content_hash_plain" not in cols_down
         indexes_down = {i["name"] for i in insp_down.get_indexes("exam_questions")}
-        assert "ix_exam_questions_catalog_status_rank" not in indexes_down, "Índice composto não removido no downgrade!"
+        assert "ix_exam_questions_catalog_status_rank_id" not in indexes_down, "Índice composto não removido no downgrade!"
+        assert "ix_exam_questions_random_rank" not in indexes_down, "Índice isolado não deve existir no downgrade!"
 
         # 3. Novo upgrade para head
         command.upgrade(cfg, "head")
@@ -186,7 +190,8 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
         cols_reup = {c["name"] for c in insp_reup.get_columns("exam_questions")}
         assert expected_cols.issubset(cols_reup)
         indexes_reup = {i["name"] for i in insp_reup.get_indexes("exam_questions")}
-        assert "ix_exam_questions_catalog_status_rank" in indexes_reup, "Índice composto não recriado no re-upgrade!"
+        assert "ix_exam_questions_catalog_status_rank_id" in indexes_reup, "Índice composto não recriado no re-upgrade!"
+        assert "ix_exam_questions_random_rank" not in indexes_reup, "Índice isolado NÃO deve existir no re-upgrade!"
 
         test_engine.dispose()
     finally:
@@ -1144,5 +1149,193 @@ def test_12_circular_selection_deterministic_scenarios(isolated_db, client, auth
             os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
         else:
             os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
+
+def test_13_v15_deterministic_tiebreak_and_rank_resolution(isolated_db, client):
+    """
+    Testes comprobatórios específicos dos bloqueadores v1.5:
+    1. Inexistência de ix_exam_questions_random_rank na tabela exam_questions.
+    2. Alta resolução dos ranks:
+       - Ranks gerados a partir de 52 bits do SHA-256 (h_int_52 / 2^52).
+       - Precisão total da mantissa IEEE 754 (float64).
+       - Todos os 100 ranks dos registros importados são estritamente distintos (zero colisões).
+       - Incompatibilidade comprovada com a discretização legada de 1.000.000 posições.
+    3. Ordenação por random_rank ASC, id ASC nas consultas circulares (inspeção estrutural do SQL).
+    4. Desempate determinístico por id ASC quando dois registros possuem exatamente o mesmo rank.
+    5. Wrap-around circular determinístico garantindo ausência absoluta de duplicatas.
+    """
+    engine = isolated_db["engine"]
+    db = isolated_db["SessionLocal"]()
+
+    # 1. Comprovar inexistência de ix_exam_questions_random_rank e presença do índice composto com id
+    insp = inspect(engine)
+    idx_dict = {i["name"]: i for i in insp.get_indexes("exam_questions")}
+    assert "ix_exam_questions_random_rank" not in idx_dict, (
+        "BLOQUEADOR v1.5: O índice isolado ix_exam_questions_random_rank NÃO deve existir!"
+    )
+    assert "ix_exam_questions_catalog_status_rank_id" in idx_dict, (
+        "Índice composto ix_exam_questions_catalog_status_rank_id DEVE existir!"
+    )
+    comp_cols = idx_dict["ix_exam_questions_catalog_status_rank_id"]["column_names"]
+    assert comp_cols == ["catalog_version", "status", "random_rank", "id"], (
+        f"Colunas do índice composto incorretas: {comp_cols}"
+    )
+
+    # 2. Alta resolução dos ranks nos 100 registros
+    v2_questions = list(db.scalars(
+        select(ExamQuestion).where(ExamQuestion.catalog_version == "v2")
+    ).all())
+    if len(v2_questions) < 100:
+        import_catalog(db, FIXTURE_PATH, catalog_version="v2")
+        v2_questions = list(db.scalars(
+            select(ExamQuestion).where(ExamQuestion.catalog_version == "v2")
+        ).all())
+
+    assert len(v2_questions) == 100
+    ranks = [q.random_rank for q in v2_questions]
+    assert all(0.0 <= r < 1.0 for r in ranks), "Todos os ranks devem estar em [0.0, 1.0)"
+    assert len(set(ranks)) == 100, "Todos os 100 ranks devem ser distintos com 52 bits!"
+
+    # Comprovar alta resolução: valor * 2^52 é inteiro
+    scale_52 = float(1 << 52)
+    assert all(abs((r * scale_52) - round(r * scale_52)) < 1e-6 for r in ranks), (
+        "Ranks devem ser gerados com precisão de 52 bits do SHA-256!"
+    )
+    # Comprovar eliminação da discretização legada de 1.000.000
+    old_mod_diffs = [abs((r * 1_000_000) - round(r * 1_000_000)) for r in ranks]
+    assert any(diff > 1e-4 for diff in old_mod_diffs), (
+        "Ranks NÃO podem usar discretização antiga de 1.000.000 posições!"
+    )
+
+    # 3. Ordenação por random_rank ASC, id ASC nas consultas do sorteio
+    test_user_13 = User(
+        nome="Auditor TieBreak",
+        email=f"auditor_tiebreak_{uuid.uuid4().hex[:8]}@medsync.com.br",
+        password_hash=hash_password("Password123!"),
+        email_verified_at=datetime.now(UTC),
+        terms_accepted_at=datetime.now(UTC),
+        terms_version="2026-08-11",
+        privacy_version="2026-08-11",
+    )
+    db.add(test_user_13)
+    db.commit()
+    db.refresh(test_user_13)
+    token_13 = create_access_token(test_user_13.id, test_user_13.auth_version)
+    headers_13 = {"Authorization": f"Bearer {token_13}"}
+
+    captured_queries = []
+
+    def capture_sql(conn, cursor, statement, parameters, context, executemany):
+        if "exam_questions" in statement.lower() and "select" in statement.lower():
+            captured_queries.append(statement)
+
+    event.listen(engine, "before_cursor_execute", capture_sql)
+    old_active = os.environ.get("QUESTION_CATALOG_ACTIVE_VERSION")
+    try:
+        os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v2"
+        captured_queries.clear()
+        with patch("random.random", return_value=0.999):
+            res_wrap = client.get("/questoes?quantidade=10", headers=headers_13)
+            assert res_wrap.status_code == status.HTTP_200_OK
+
+        list_queries = [q for q in captured_queries if "order by" in q.lower()]
+        assert len(list_queries) >= 2, f"Wrap-around deve ter gerado 2 queries, gerou {len(list_queries)}"
+        q1_sql = list_queries[-2].lower()
+        q2_sql = list_queries[-1].lower()
+
+        # Comprovações estruturais de ORDER BY random_rank ASC, id ASC
+        assert "random_rank" in q1_sql and ("exam_questions.id asc" in q1_sql or "id asc" in q1_sql), (
+            f"1ª consulta deve conter ORDER BY random_rank ASC, id ASC: {q1_sql}"
+        )
+        assert "random_rank" in q2_sql and ("exam_questions.id asc" in q2_sql or "id asc" in q2_sql), (
+            f"2ª consulta deve conter ORDER BY random_rank ASC, id ASC: {q2_sql}"
+        )
+
+        # 4. Desempate determinístico quando dois registros possuem o mesmo rank
+        fixed_rank = 0.777777777777
+        unique_spec = f"TieBreak_{uuid.uuid4().hex[:6]}"
+        q_first = ExamQuestion(
+            ano=2025,
+            instituicao="TieBreak Hospital A",
+            cabecalho="Cabecalho TB A",
+            especialidade=unique_spec,
+            assunto="TB Assunto",
+            enunciado="Enunciado da primeira questão com mesmo rank",
+            statement_plain="Enunciado da primeira questão com mesmo rank",
+            statement_rich_html="<p>Enunciado da primeira questão com mesmo rank</p>",
+            alternativas=[{"id": "A", "texto": "Opcao A"}, {"id": "B", "texto": "Opcao B"}],
+            alternativa_correta_id="A",
+            fingerprint=f"tb_a_{uuid.uuid4().hex[:8]}",
+            media_classification="text_only",
+            image_rights_status="not_applicable",
+            content_hash_plain="1" * 64,
+            content_hash_rich="2" * 64,
+            answer_binding_hash="3" * 64,
+            random_rank=fixed_rank,
+            status="publicada",
+            catalog_version="v2",
+        )
+        q_second = ExamQuestion(
+            ano=2025,
+            instituicao="TieBreak Hospital B",
+            cabecalho="Cabecalho TB B",
+            especialidade=unique_spec,
+            assunto="TB Assunto",
+            enunciado="Enunciado da segunda questão com mesmo rank",
+            statement_plain="Enunciado da segunda questão com mesmo rank",
+            statement_rich_html="<p>Enunciado da segunda questão com mesmo rank</p>",
+            alternativas=[{"id": "A", "texto": "Opcao A"}, {"id": "B", "texto": "Opcao B"}],
+            alternativa_correta_id="B",
+            fingerprint=f"tb_b_{uuid.uuid4().hex[:8]}",
+            media_classification="text_only",
+            image_rights_status="not_applicable",
+            content_hash_plain="4" * 64,
+            content_hash_rich="5" * 64,
+            answer_binding_hash="6" * 64,
+            random_rank=fixed_rank,
+            status="publicada",
+            catalog_version="v2",
+        )
+        db.add_all([q_first, q_second])
+        db.commit()
+        db.refresh(q_first)
+        db.refresh(q_second)
+        assert q_first.id < q_second.id
+        assert q_first.random_rank == q_second.random_rank
+
+        # Repetir 5 vezes a consulta comprovando que a ordem é estritamente estável por id ASC
+        for _ in range(5):
+            with patch("random.random", return_value=fixed_rank):
+                res_tb = client.get(
+                    f"/questoes?especialidade={unique_spec}&quantidade=2",
+                    headers=headers_13
+                )
+                assert res_tb.status_code == status.HTTP_200_OK
+                tb_items = res_tb.json()
+                assert len(tb_items) == 2
+                assert tb_items[0]["id"] == q_first.id, (
+                    f"Desempate determinístico falhou: esperava id menor {q_first.id}, obteve {tb_items[0]['id']}"
+                )
+                assert tb_items[1]["id"] == q_second.id, (
+                    f"Desempate determinístico falhou: esperava id maior {q_second.id}, obteve {tb_items[1]['id']}"
+                )
+
+        # 5. Wrap-around circular determinístico sem duplicatas (7 acima de 0.92 + 3 abaixo = 10)
+        with patch("random.random", return_value=0.92):
+            res_circ = client.get("/questoes?quantidade=10", headers=headers_13)
+            assert res_circ.status_code == status.HTTP_200_OK
+            circ_items = res_circ.json()
+            assert len(circ_items) == 10
+            circ_ids = [item["id"] for item in circ_items]
+            assert len(set(circ_ids)) == 10, "Wrap-around NUNCA deve conter duplicatas!"
+
+    finally:
+        event.remove(engine, "before_cursor_execute", capture_sql)
+        if old_active is not None:
+            os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
+        else:
+            os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+        db.close()
+
 
 
