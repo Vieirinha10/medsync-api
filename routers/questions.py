@@ -121,17 +121,22 @@ def serialize_question(question: ExamQuestion) -> dict:
         "especialidade": question.especialidade,
         "assunto": question.assunto,
         "enunciado": question.enunciado,
+        "statement_rich_html": question.statement_rich_html or question.enunciado,
         "alternativas": question.alternativas,
+        "catalog_version": question.catalog_version,
         "explicacao_disponivel": question.explicacao is not None,
     }
 
 
-def facet(db: Session, column) -> list[dict[str, object]]:
+def facet(db: Session, column, catalog_version: str = "v1") -> list[dict[str, object]]:
     return [
         {"valor": str(value), "total": int(total)}
         for value, total in db.execute(
             select(column, func.count(ExamQuestion.id))
-            .where(ExamQuestion.status == "publicada")
+            .where(
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == catalog_version,
+            )
             .group_by(column)
             .order_by(func.count(ExamQuestion.id).desc(), column)
         ).all()
@@ -140,6 +145,7 @@ def facet(db: Session, column) -> list[dict[str, object]]:
 
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
 def question_metadata(
+    catalog_version: str = Query(default="v1"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -148,14 +154,15 @@ def question_metadata(
     return {
         "total_questoes": db.scalar(
             select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.status == "publicada"
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == catalog_version,
             )
         )
         or 0,
-        "especialidades": facet(db, ExamQuestion.especialidade),
-        "assuntos": facet(db, ExamQuestion.assunto),
-        "anos": facet(db, ExamQuestion.ano),
-        "instituicoes": facet(db, ExamQuestion.instituicao),
+        "especialidades": facet(db, ExamQuestion.especialidade, catalog_version),
+        "assuntos": facet(db, ExamQuestion.assunto, catalog_version),
+        "anos": facet(db, ExamQuestion.ano, catalog_version),
+        "instituicoes": facet(db, ExamQuestion.instituicao, catalog_version),
         "premium_ativo": premium,
         "limite_diario": None if premium else FREE_DAILY_LIMIT,
         "respondidas_hoje": used,
@@ -169,6 +176,7 @@ def list_questions(
     assunto: str | None = None,
     ano: int | None = None,
     instituicao: str | None = None,
+    catalog_version: str = Query(default="v1"),
     quantidade: int = Query(default=10, ge=1, le=30),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -181,7 +189,10 @@ def list_questions(
     if quantidade == 0:
         return []
 
-    statement = select(ExamQuestion).where(ExamQuestion.status == "publicada")
+    statement = select(ExamQuestion).where(
+        ExamQuestion.status == "publicada",
+        ExamQuestion.catalog_version == catalog_version,
+    )
     if especialidade:
         statement = statement.where(ExamQuestion.especialidade == especialidade)
     if assunto:
@@ -195,11 +206,18 @@ def list_questions(
         QuestionAttempt.id_usuario == current_user.id,
         QuestionAttempt.created_at >= start_of_local_day(),
     )
-    statement = (
-        statement.where(ExamQuestion.id.not_in(recently_answered))
-        .order_by(func.random())
-        .limit(quantidade)
-    )
+    statement = statement.where(ExamQuestion.id.not_in(recently_answered))
+
+    if catalog_version == "v2":
+        import random
+        rnd = random.random()
+        statement = statement.order_by(
+            case((ExamQuestion.random_rank >= rnd, 0), else_=1),
+            ExamQuestion.random_rank,
+        ).limit(quantidade)
+    else:
+        statement = statement.order_by(func.random()).limit(quantidade)
+
     return [serialize_question(item) for item in db.scalars(statement).all()]
 
 
@@ -240,12 +258,21 @@ def answer_question(
 
     correct = payload.alternativa_id == question.alternativa_correta_id
     explanation = question.explicacao
-    if explanation is None:
+    explanation_status = "PENDING"
+
+    if question.catalog_version == "v2":
+        # ZERO SYNAPSE para o novo catálogo v2: Não chama gerador de IA, preserva comentário pendente
+        explanation = None
+        explanation_status = "PENDING"
+    elif explanation is None:
         generated = generate_question_explanation(question)
         explanation = generated.model_dump(mode="json")
         if generated.fonte != "resumo_automatico":
             question.explicacao = explanation
             question.explicacao_status = "gerada"
+        explanation_status = question.explicacao_status
+    else:
+        explanation_status = "PUBLISHED"
 
     db.add(
         QuestionAttempt(
@@ -270,6 +297,7 @@ def answer_question(
         "correta": correct,
         "alternativa_correta_id": question.alternativa_correta_id,
         "explicacao": explanation,
+        "explanation_status": explanation_status,
         "distribuicao_alternativas": distribution,
         "total_respondentes": total_respondents,
         "respondidas_hoje": used_after,
@@ -289,6 +317,11 @@ def retry_question_explanation(
     question = db.get(ExamQuestion, question_id)
     if question is None or question.status != "publicada":
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
+    if question.catalog_version == "v2":
+        raise HTTPException(
+            status_code=400,
+            detail="Comentário editorial em preparação pela equipe do MedSync.",
+        )
     attempted = db.scalar(
         select(QuestionAttempt.id)
         .where(
