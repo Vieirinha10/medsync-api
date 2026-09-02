@@ -386,7 +386,10 @@ class ExamQuestion(Base):
     image_rights_status: Mapped[str] = mapped_column(
         String(40), default="NONE_REQUIRED"
     )
-    content_hash: Mapped[str | None] = mapped_column(
+    content_hash_plain: Mapped[str | None] = mapped_column(
+        String(64), index=True, nullable=True
+    )
+    content_hash_rich: Mapped[str | None] = mapped_column(
         String(64), index=True, nullable=True
     )
     answer_binding_hash: Mapped[str | None] = mapped_column(
@@ -394,7 +397,10 @@ class ExamQuestion(Base):
     )
     banca: Mapped[str | None] = mapped_column(String(120), nullable=True)
     finalidade: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    region: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    regiao: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    tema: Mapped[str | None] = mapped_column(String(160), index=True, nullable=True)
+    subtema: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    tipo_prova: Mapped[str | None] = mapped_column(String(60), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
@@ -426,7 +432,9 @@ class QuestionSourceAlias(Base):
     ano: Mapped[int | None] = mapped_column(Integer, nullable=True)
     instituicao: Mapped[str | None] = mapped_column(String(255), nullable=True)
     banca: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    content_hash: Mapped[str] = mapped_column(String(64), index=True)
+    regiao: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    content_hash_plain: Mapped[str] = mapped_column(String(64), index=True)
+    content_hash_rich: Mapped[str] = mapped_column(String(64), index=True)
     answer_binding_hash: Mapped[str] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)

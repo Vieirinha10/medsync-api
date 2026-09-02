@@ -1,11 +1,11 @@
 from logging.config import fileConfig
 
 from alembic import context
-from database import DATABASE_URL
+import database
 from models import Base
 
 config = context.config
-config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
+config.set_main_option("sqlalchemy.url", database.DATABASE_URL.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -28,7 +28,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     from sqlalchemy import create_engine
 
-    connectable = create_engine(DATABASE_URL, pool_pre_ping=True)
+    connectable = create_engine(database.DATABASE_URL, pool_pre_ping=True)
     with connectable.connect() as connection:
         context.configure(
             connection=connection,

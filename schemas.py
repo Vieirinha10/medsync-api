@@ -589,6 +589,8 @@ class QuestionListItem(BaseModel):
     cabecalho: str
     especialidade: str
     assunto: str
+    tema: str | None = None
+    regiao: str | None = None
     enunciado: str
     statement_rich_html: str | None = None
     alternativas: list[QuestionAlternative]

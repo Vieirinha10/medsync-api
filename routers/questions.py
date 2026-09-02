@@ -112,7 +112,26 @@ def question_answer_distribution(
     return distribution, total_respondents
 
 
+SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
+
+
+def validate_catalog_version(catalog_version: str) -> str:
+    if catalog_version not in SUPPORTED_CATALOG_VERSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Versão de catálogo '{catalog_version}' não suportada. Versões válidas: 'v1' e 'v2'.",
+        )
+    return catalog_version
+
+
 def serialize_question(question: ExamQuestion) -> dict:
+    safe_alts = []
+    for alt in (question.alternativas or []):
+        safe_alts.append({
+            "id": alt.get("id") or alt.get("letter"),
+            "texto": alt.get("texto") or alt.get("body_plain") or alt.get("body") or "",
+            "html": alt.get("html") or alt.get("body_rich_html") or alt.get("texto") or alt.get("body_plain") or "",
+        })
     return {
         "id": question.id,
         "ano": question.ano,
@@ -120,9 +139,11 @@ def serialize_question(question: ExamQuestion) -> dict:
         "cabecalho": question.cabecalho,
         "especialidade": question.especialidade,
         "assunto": question.assunto,
+        "tema": getattr(question, "tema", None),
+        "regiao": getattr(question, "regiao", None),
         "enunciado": question.enunciado,
         "statement_rich_html": question.statement_rich_html or question.enunciado,
-        "alternativas": question.alternativas,
+        "alternativas": safe_alts,
         "catalog_version": question.catalog_version,
         "explicacao_disponivel": question.explicacao is not None,
     }
@@ -149,6 +170,7 @@ def question_metadata(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    validate_catalog_version(catalog_version)
     premium = is_premium(current_user) or is_admin_email(current_user.email)
     used = answered_today(db, current_user.id)
     return {
@@ -181,6 +203,7 @@ def list_questions(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    validate_catalog_version(catalog_version)
     premium = is_premium(current_user) or is_admin_email(current_user.email)
     if not premium:
         quantidade = min(
