@@ -291,14 +291,32 @@ def list_questions(
     if effective_version == "v2":
         import random
         rnd = random.random()
-        statement = statement.order_by(
-            case((ExamQuestion.random_rank >= rnd, 0), else_=1),
-            ExamQuestion.random_rank,
-        ).limit(quantidade)
+
+        # 1ª Consulta: random_rank >= rnd (indexável via B-Tree)
+        query_first = (
+            statement.where(ExamQuestion.random_rank >= rnd)
+            .order_by(ExamQuestion.random_rank.asc())
+            .limit(quantidade)
+        )
+        first_batch = list(db.scalars(query_first).all())
+
+        remaining_needed = quantidade - len(first_batch)
+        if remaining_needed > 0:
+            # 2ª Consulta (wrap-around circular): random_rank < rnd
+            selected_ids = [q.id for q in first_batch]
+            query_second = statement.where(ExamQuestion.random_rank < rnd)
+            if selected_ids:
+                query_second = query_second.where(ExamQuestion.id.not_in(selected_ids))
+            query_second = query_second.order_by(ExamQuestion.random_rank.asc()).limit(remaining_needed)
+            second_batch = list(db.scalars(query_second).all())
+            selected_items = first_batch + second_batch
+        else:
+            selected_items = first_batch
+
+        return [serialize_question(item) for item in selected_items]
     else:
         statement = statement.order_by(func.random()).limit(quantidade)
-
-    return [serialize_question(item) for item in db.scalars(statement).all()]
+        return [serialize_question(item) for item in db.scalars(statement).all()]
 
 
 @router.post("/questoes/{question_id}/responder", response_model=QuestionAnswerResponse)

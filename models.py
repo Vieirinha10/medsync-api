@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -355,6 +356,14 @@ class VisualChallenge(Base):
 
 class ExamQuestion(Base):
     __tablename__ = "exam_questions"
+    __table_args__ = (
+        Index(
+            "ix_exam_questions_catalog_status_rank",
+            "catalog_version",
+            "status",
+            "random_rank",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ano: Mapped[int] = mapped_column(Integer, index=True)
@@ -379,7 +388,7 @@ class ExamQuestion(Base):
     )
     statement_plain: Mapped[str | None] = mapped_column(Text, nullable=True)
     statement_rich_html: Mapped[str | None] = mapped_column(Text, nullable=True)
-    random_rank: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    random_rank: Mapped[float] = mapped_column(Float, default=0.0)
     media_classification: Mapped[str] = mapped_column(
         String(40), default="NO_VISUAL_DEPENDENCY"
     )

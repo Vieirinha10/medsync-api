@@ -4,7 +4,9 @@
   "source_id": "4000000002",
   "active_catalog_version": "v2",
   "api_endpoint_retrieval": "GET /questoes?quantidade=30 (sem catalog_version)",
-  "api_endpoint_answering": "POST /questoes/{id}/responder",
+  "api_endpoint_answering": "POST /questoes/{question_id}/responder",
+  "capture_methodology": "Renderização controlada com CSS de produção e payload reconciliado",
+  "staging_e2e_status": "Integração E2E com navegador real, API e PostgreSQL ativos pendente para validação em ambiente Staging",
   "statement_text": "Paciente de 21 anos, procura a maternidade com história de atraso menstrual de 3 meses, associado a pequeno sangramento vaginal. Refere ainda que os enjoos cessaram. Ao exame físico: paciente encontra-se em bom estado geral, PA = 100 x 70 mmHg. Ao toque vaginal: colo fechado, útero amolecido e 3 cm acima da sínfise púbica. A ultrassonografia revelou presença de embrião com comprimento cabeça nádegas (CCN) de 31 mm, ausência de batimentos cardíacos fetais em gestação de 10 semanas. O diagnóstico compatível com o quadro é:",
   "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
   "fixture_statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
@@ -145,7 +147,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (alternativa B confirmada)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa B confirmada)",
       "active_version": "v2",
       "ui_state": "Badge RESPOSTA CORRETA; gabarito B; distribuição de respostas; banner editorial pendente",
       "content_reconciliation": "MATCH_IDENTICAL",
@@ -167,7 +169,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (alternativa B confirmada)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa B confirmada)",
       "active_version": "v2",
       "ui_state": "Badge RESPOSTA CORRETA; gabarito B; distribuição de respostas; banner editorial pendente",
       "content_reconciliation": "MATCH_IDENTICAL",
@@ -189,7 +191,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (alternativa A confirmada)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa A confirmada)",
       "active_version": "v2",
       "ui_state": "Badge RESPOSTA INCORRETA; gabarito B revelado; distribuição; banner editorial pendente",
       "content_reconciliation": "MATCH_IDENTICAL",
@@ -211,7 +213,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (alternativa A confirmada)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa A confirmada)",
       "active_version": "v2",
       "ui_state": "Badge RESPOSTA INCORRETA; gabarito B revelado; distribuição; banner editorial pendente",
       "content_reconciliation": "MATCH_IDENTICAL",
@@ -233,7 +235,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (foco no banner editorial)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (foco no banner editorial)",
       "active_version": "v2",
       "ui_state": "Closeup no banner 'Comentário detalhado em preparação pela equipe editorial do MedSync'",
       "content_reconciliation": "MATCH_IDENTICAL",
@@ -255,7 +257,7 @@
         "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
         "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
       },
-      "endpoint_used": "POST /questoes/{id}/responder (foco no banner editorial)",
+      "endpoint_used": "POST /questoes/{question_id}/responder (foco no banner editorial)",
       "active_version": "v2",
       "ui_state": "Closeup no banner 'Comentário detalhado em preparação pela equipe editorial do MedSync'",
       "content_reconciliation": "MATCH_IDENTICAL",

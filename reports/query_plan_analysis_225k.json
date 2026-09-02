@@ -1,36 +1,34 @@
 {
   "target_universe_records": 225873,
-  "analysis_date": "2026-09-02T18:42:00Z",
+  "analysis_date": "2026-09-02T19:00:00Z",
   "index_specification": {
     "index_name": "ix_exam_questions_catalog_status_rank",
-    "columns": ["catalog_version", "status", "random_rank"],
+    "columns": [
+      "catalog_version",
+      "status",
+      "random_rank"
+    ],
     "index_type": "B-Tree",
-    "target_table": "exam_questions"
+    "target_table": "exam_questions",
+    "created_in_migration": "alembic/versions/20260902_16_question_catalog_v2.py",
+    "declared_in_model": "models.ExamQuestion.__table_args__"
   },
-  "comparison": {
-    "legacy_random_approach": {
-      "sql_clause": "ORDER BY func.random() LIMIT :limit",
-      "postgres_plan": "Limit -> Top-N Heapsort -> Seq Scan on exam_questions",
-      "scanned_rows": 225873,
-      "estimated_cost": 15798.80,
-      "estimated_latency_ms": "45ms - 140ms",
-      "cpu_complexity": "O(N log N)",
-      "concurrency_risk": "Saturação de CPU e esgotamento do pool de conexões sob concorrência"
+  "algorithm": {
+    "name": "Sorteio Circular em Duas Consultas Indexáveis",
+    "step_1": {
+      "clause": "WHERE catalog_version = 'v2' AND status = 'publicada' AND random_rank >= :rnd ORDER BY random_rank ASC LIMIT :limit",
+      "purpose": "Busca o lote inicial a partir do ponto de partida aleatório :rnd gerado em [0.0, 1.0)."
     },
-    "optimized_random_rank_approach": {
-      "sql_clause": "ORDER BY CASE WHEN random_rank >= :rnd THEN 0 ELSE 1 END, random_rank LIMIT :limit",
-      "postgres_plan": "Limit -> Index Scan using ix_exam_questions_catalog_status_rank",
-      "scanned_rows": 10,
-      "estimated_cost": 8.45,
-      "estimated_latency_ms": "< 1ms",
-      "cpu_complexity": "O(log N + K)",
-      "concurrency_risk": "Mínimo (leituras de páginas de índice indexadas sem lock)"
+    "step_2_wrap_around": {
+      "clause": "WHERE catalog_version = 'v2' AND status = 'publicada' AND random_rank < :rnd AND id NOT IN (:selected_ids) ORDER BY random_rank ASC LIMIT :remaining",
+      "purpose": "Executada somente se o lote inicial retornar menos que a quantidade solicitada, completando o sorteio pelo início da distribuição (wrap-around)."
     }
   },
-  "distribution_properties": {
-    "rank_distribution": "Uniforme contínuo no intervalo [0.0, 1.0)",
-    "sampling_property": "Equiprovável e sem reposição na janela LIMIT",
-    "wrap_around_handling": "CASE WHEN random_rank >= rnd THEN 0 ELSE 1 END assegura continuidade toroidal"
-  },
-  "conclusion": "A seleção via effective_version == 'v2' utilizando random_rank indexado garante viabilidade operacional para os 225.873 registros sem degradação do banco de dados."
+  "prohibited_patterns_eliminated": [
+    "ORDER BY random() (proibido para v2)",
+    "ORDER BY CASE (proibido para v2 - pode forçar ordenação de tuplas calculadas)",
+    "Carregamento do catálogo em memória (proibido)"
+  ],
+  "staging_validation_status": "Estrutura preparada para validação com EXPLAIN ANALYZE no PostgreSQL de staging.",
+  "unverified_metrics_disclaimer": "Planos de execução específicos, custos estimados, tempos de latência e contagens exatas de buffers lidos NÃO foram aferidos localmente devido à ausência de instância PostgreSQL no host. Toda validação de performance será realizada exclusivamente em ambiente Staging com dados reais."
 }

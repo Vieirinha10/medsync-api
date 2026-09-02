@@ -1,20 +1,20 @@
 """
-Teste de Integração Frontend/API — Piloto de 100 Questões (v1.3)
+Integração da API, Banco Temporário e Importador — Piloto de 100 Questões (v1.4)
 Coordenação: Codex
 
-Atende rigorosamente ao Requisito 3 do Codex:
-- Inicializa banco temporário isolado;
+Atende rigorosamente aos requisitos do Codex v1.4:
+- Inicializa banco temporário isolado em tempfile;
 - Importa as 100 questões canônicas;
 - Configura QUESTION_CATALOG_ACTIVE_VERSION=v2;
 - Autentica um usuário de teste;
 - Consulta a questão pela API (sem query string de versão);
 - Confirma que o payload GET não contém gabarito;
-- Simula a resposta via endpoint POST /questoes/{id}/responder;
+- Simula a resposta via endpoint POST /questoes/{question_id}/responder;
 - Confirma acerto ou erro;
 - Exibe o gabarito;
 - Exibe explicação nula e comentário pendente;
 - Confirma zero chamadas à Synapse ou outra IA;
-- Gera o relatório oficial reports/integration_test_report.json.
+- Caminhos 100% portáteis derivados de __file__ e tempfile.
 """
 
 import json
@@ -42,7 +42,7 @@ from models import ExamQuestion, User
 from scripts.import_question_catalog import import_catalog
 from security import create_access_token, hash_password
 
-FIXTURE_PATH = pathlib.Path(r"C:\Users\rgust\.gemini\antigravity\scratch\medsync-api\tests\fixtures\pilot-100-import-ready.jsonl")
+FIXTURE_PATH = pathlib.Path(__file__).resolve().parent / "fixtures" / "pilot-100-import-ready.jsonl"
 
 
 def test_integration_frontend_api_flow():
@@ -135,6 +135,7 @@ def test_integration_frontend_api_flow():
         # 10. Gerar relatório oficial de integração
         integ_report = {
             "test_name": "test_integration_frontend_api_flow",
+            "test_classification": "Integração da API, banco temporário e importador",
             "executed_at": datetime.now(UTC).isoformat(),
             "status": "PASSED",
             "database_type": "SQLite efêmero isolado",
@@ -168,7 +169,8 @@ def test_integration_frontend_api_flow():
             )
         }
 
-        rep_dir = pathlib.Path(r"C:\Users\rgust\.gemini\antigravity\scratch\medsync-api\reports")
+        rep_dir_env = os.environ.get("MEDSYNC_REPORT_DIR")
+        rep_dir = pathlib.Path(rep_dir_env) if rep_dir_env else (API_ROOT / "reports")
         rep_dir.mkdir(parents=True, exist_ok=True)
         (rep_dir / "integration_test_report.json").write_text(
             json.dumps(integ_report, indent=2, ensure_ascii=False),

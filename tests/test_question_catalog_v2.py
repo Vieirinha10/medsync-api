@@ -25,6 +25,7 @@ import tempfile
 import uuid
 from datetime import UTC, datetime
 from typing import Any, Dict
+from unittest.mock import patch
 
 import pytest
 from alembic import command
@@ -165,6 +166,8 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
             "banca", "finalidade", "regiao", "tema", "subtema", "tipo_prova"
         }
         assert expected_cols.issubset(cols_up), f"Faltam colunas: {expected_cols - cols_up}"
+        indexes_up = {i["name"] for i in insp.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank" in indexes_up, f"Índice composto não encontrado no upgrade: {indexes_up}"
 
         # 2. Downgrade para 20260827_15
         command.downgrade(cfg, "20260827_15")
@@ -173,6 +176,8 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
         cols_down = {c["name"] for c in insp_down.get_columns("exam_questions")}
         assert "tema" not in cols_down
         assert "content_hash_plain" not in cols_down
+        indexes_down = {i["name"] for i in insp_down.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank" not in indexes_down, "Índice composto não removido no downgrade!"
 
         # 3. Novo upgrade para head
         command.upgrade(cfg, "head")
@@ -180,6 +185,8 @@ def test_01_migration_lifecycle_upgrade_downgrade_upgrade():
         assert "question_source_aliases" in insp_reup.get_table_names()
         cols_reup = {c["name"] for c in insp_reup.get_columns("exam_questions")}
         assert expected_cols.issubset(cols_reup)
+        indexes_reup = {i["name"] for i in insp_reup.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank" in indexes_reup, "Índice composto não recriado no re-upgrade!"
 
         test_engine.dispose()
     finally:
@@ -924,6 +931,7 @@ def test_11_lottery_selection_uses_effective_version_random_rank(isolated_db, cl
         order_clause_v2 = main_query_v2.split("order by")[1]
         assert "random_rank" in order_clause_v2, f"Esperava ordenação por random_rank, recebido: {order_clause_v2}"
         assert "random()" not in order_clause_v2, f"random() não deve ser utilizado no catálogo v2: {order_clause_v2}"
+        assert "case" not in order_clause_v2, f"ORDER BY CASE não deve ser utilizado no catálogo v2: {order_clause_v2}"
 
         # Caso 2: Catálogo v1 legado continua utilizando func.random()
         db = isolated_db["SessionLocal"]()
@@ -973,4 +981,168 @@ def test_11_lottery_selection_uses_effective_version_random_rank(isolated_db, cl
             os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
         else:
             os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
+
+# ---------------------------------------------------------------------------
+# Teste 12: Sorteio Circular Determinístico e Verificação Estrutural SQL (Item 3 do Codex v1.4)
+# ---------------------------------------------------------------------------
+def test_12_circular_selection_deterministic_scenarios(isolated_db, client, auth_headers):
+    """
+    Testa rigorosamente o Item 3 da auditoria Codex v1.4:
+    - rnd no início da distribuição (preenchimento direto pela 1ª query);
+    - rnd no meio;
+    - rnd depois do maior rank (forçando wrap-around na 2ª query);
+    - quantidade completada pela 2ª query;
+    - nenhuma duplicata em nenhuma das etapas;
+    - respeito estrito aos filtros;
+    - exclusão de questões respondidas recentemente;
+    - comportamento correto quando há menos registros disponíveis que o solicitado;
+    - catálogo ativo vindo estritamente de QUESTION_CATALOG_ACTIVE_VERSION;
+    - ausência de query string de versão;
+    - zero uso de random();
+    - zero uso de ORDER BY CASE;
+    - inspeção do SQL compilado comprovando comparações indexáveis simples:
+      random_rank >= :rnd, random_rank < :rnd e ORDER BY random_rank ASC.
+    """
+    engine = isolated_db["engine"]
+    captured_queries = []
+
+    def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        if "exam_questions" in statement.lower() and "select" in statement.lower():
+            captured_queries.append(statement)
+
+    event.listen(engine, "before_cursor_execute", before_cursor_execute)
+
+    old_active = os.environ.get("QUESTION_CATALOG_ACTIVE_VERSION")
+    try:
+        os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v2"
+
+        # Garantir presença das 100 questões v2 no banco isolado
+        db = isolated_db["SessionLocal"]()
+        v2_count = db.scalar(select(func.count(ExamQuestion.id)).where(ExamQuestion.catalog_version == "v2"))
+        if v2_count < 100:
+            import_catalog(db, FIXTURE_PATH, catalog_version="v2")
+
+        # Criar usuário isolado para test_12 sem histórico de tentativas prévias
+        fresh_user = User(
+            nome="Auditor Sorteio",
+            email=f"auditor_sorteio_{uuid.uuid4().hex[:8]}@medsync.com.br",
+            password_hash=hash_password("Password123!"),
+            email_verified_at=datetime.now(UTC),
+            terms_accepted_at=datetime.now(UTC),
+            terms_version="2026-08-11",
+            privacy_version="2026-08-11",
+        )
+        db.add(fresh_user)
+        db.commit()
+        db.refresh(fresh_user)
+        fresh_token = create_access_token(fresh_user.id, fresh_user.auth_version)
+        fresh_headers = {"Authorization": f"Bearer {fresh_token}"}
+        db.close()
+
+        # 1. rnd no início da distribuição (0.01) -> 1ª consulta preenche tudo
+        captured_queries.clear()
+        with patch("random.random", return_value=0.01):
+            res_start = client.get("/questoes?quantidade=10", headers=fresh_headers)
+            assert res_start.status_code == status.HTTP_200_OK
+            items_start = res_start.json()
+            assert len(items_start) == 10
+            # Nenhuma duplicata
+            ids_start = [item["id"] for item in items_start]
+            assert len(set(ids_start)) == 10
+            # Todos os itens têm random_rank >= 0.01
+            db = isolated_db["SessionLocal"]()
+            ranks_start = [db.get(ExamQuestion, iid).random_rank for iid in ids_start]
+            db.close()
+            assert all(r >= 0.01 for r in ranks_start)
+            # Ordenação estrita crescente de random_rank
+            assert ranks_start == sorted(ranks_start)
+
+        # 2. rnd no meio da distribuição (0.50)
+        captured_queries.clear()
+        with patch("random.random", return_value=0.50):
+            res_mid = client.get("/questoes?quantidade=10", headers=fresh_headers)
+            assert res_mid.status_code == status.HTTP_200_OK
+            items_mid = res_mid.json()
+            assert len(items_mid) == 10
+            ids_mid = [item["id"] for item in items_mid]
+            assert len(set(ids_mid)) == 10
+
+        # 3. rnd no fim da distribuição (0.999), forçando wrap-around para completar
+        captured_queries.clear()
+        with patch("random.random", return_value=0.999):
+            res_wrap = client.get("/questoes?quantidade=10", headers=fresh_headers)
+            assert res_wrap.status_code == status.HTTP_200_OK
+            items_wrap = res_wrap.json()
+            assert len(items_wrap) == 10
+            ids_wrap = [item["id"] for item in items_wrap]
+            # Nenhuma duplicata mesmo após wrap-around
+            assert len(set(ids_wrap)) == 10
+
+            # Inspeção estrutural do SQL compilado durante o wrap-around:
+            list_queries = [q for q in captured_queries if "order by" in q.lower()]
+            assert len(list_queries) >= 2, f"Wrap-around deve ter executado 2 queries, executou {len(list_queries)}"
+            q1_sql = list_queries[-2].lower()
+            q2_sql = list_queries[-1].lower()
+
+            # Comprovações da 1ª consulta: random_rank >= :param e ORDER BY random_rank ASC
+            assert "random_rank >=" in q1_sql or "random_rank >=" in q1_sql.replace(" ", "")
+            assert "random_rank asc" in q1_sql or "order by exam_questions.random_rank" in q1_sql
+            assert "case" not in q1_sql, "ORDER BY CASE não pode ser utilizado!"
+            assert "random()" not in q1_sql, "random() não pode ser utilizado!"
+
+            # Comprovações da 2ª consulta (wrap-around): random_rank < :param e ORDER BY random_rank ASC
+            assert "random_rank <" in q2_sql or "random_rank <" in q2_sql.replace(" ", "")
+            assert "random_rank asc" in q2_sql or "order by exam_questions.random_rank" in q2_sql
+            assert "case" not in q2_sql, "ORDER BY CASE não pode ser utilizado!"
+            assert "random()" not in q2_sql, "random() não pode ser utilizado!"
+
+        # 4. Respeito rigoroso aos filtros (ano e especialidade)
+        with patch("random.random", return_value=0.70):
+            res_filt = client.get("/questoes?ano=2017&especialidade=Obstetr%C3%ADcia&quantidade=5", headers=fresh_headers)
+            assert res_filt.status_code == status.HTTP_200_OK
+            items_filt = res_filt.json()
+            assert len(items_filt) > 0
+            for item in items_filt:
+                assert item["ano"] == 2017
+                assert item["especialidade"] == "Obstetrícia"
+            ids_filt = [item["id"] for item in items_filt]
+            assert len(set(ids_filt)) == len(items_filt)
+
+        # 5. Exclusão de questões respondidas recentemente
+        db = isolated_db["SessionLocal"]()
+        first_q = db.scalar(select(ExamQuestion).where(ExamQuestion.catalog_version == "v2").limit(1))
+        db.add(QuestionAttempt(
+            id_usuario=fresh_user.id,
+            id_questao=first_q.id,
+            alternativa_selecionada_id="B",
+            correta=True,
+            tempo_segundos=15,
+            created_at=datetime.now(UTC),
+        ))
+        db.commit()
+        db.close()
+
+        with patch("random.random", return_value=0.0):
+            res_recent = client.get("/questoes?quantidade=20", headers=fresh_headers)
+            assert res_recent.status_code == status.HTTP_200_OK
+            returned_ids = [item["id"] for item in res_recent.json()]
+            assert first_q.id not in returned_ids, "Questão respondida hoje não deve ser retornada!"
+
+        # 6. Comportamento com menos registros disponíveis que o solicitado (le=30)
+        with patch("random.random", return_value=0.50):
+            res_few = client.get("/questoes?ano=2021&quantidade=30", headers=fresh_headers)
+            assert res_few.status_code == status.HTTP_200_OK
+            items_few = res_few.json()
+            assert 0 < len(items_few) < 30
+            ids_few = [item["id"] for item in items_few]
+            assert len(set(ids_few)) == len(items_few)
+
+    finally:
+        event.remove(engine, "before_cursor_execute", before_cursor_execute)
+        if old_active is not None:
+            os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
+        else:
+            os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
 
