@@ -288,7 +288,7 @@ def list_questions(
     )
     statement = statement.where(ExamQuestion.id.not_in(recently_answered))
 
-    if catalog_version == "v2":
+    if effective_version == "v2":
         import random
         rnd = random.random()
         statement = statement.order_by(

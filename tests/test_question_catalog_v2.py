@@ -31,7 +31,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, inspect, select
+from sqlalchemy import create_engine, event, func, inspect, select
 from sqlalchemy.orm import Session, sessionmaker
 
 TESTS_DIR = pathlib.Path(__file__).resolve().parent
@@ -875,3 +875,102 @@ def test_10_zero_synapse_and_no_gabarito_leak(isolated_db, client, auth_headers)
         else:
             os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
         db.close()
+
+
+# ---------------------------------------------------------------------------
+# Teste 11: Seleção Otimizada via effective_version (Item 1 do Codex v1.3)
+# ---------------------------------------------------------------------------
+def test_11_lottery_selection_uses_effective_version_random_rank(isolated_db, client, auth_headers):
+    """
+    Testa Item 1 da auditoria Codex v1.3:
+    - Com QUESTION_CATALOG_ACTIVE_VERSION=v2;
+    - Nenhuma query string de versão é enviada;
+    - A consulta utiliza random_rank para ordenação;
+    - func.random() NÃO é utilizado para v2;
+    - Para v1, o comportamento legado permanece usando random();
+    - Comprova que a lógica anterior (if catalog_version == 'v2') teria falhado.
+    """
+    engine = isolated_db["engine"]
+    captured_queries = []
+
+    def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        if "exam_questions" in statement.lower() and "select" in statement.lower():
+            captured_queries.append(statement)
+
+    event.listen(engine, "before_cursor_execute", before_cursor_execute)
+
+    old_active = os.environ.get("QUESTION_CATALOG_ACTIVE_VERSION")
+    try:
+        # Garantir presença de v2 no banco isolado
+        db = isolated_db["SessionLocal"]()
+        v2_q = db.scalar(select(ExamQuestion).where(ExamQuestion.catalog_version == "v2").limit(1))
+        if v2_q is None:
+            import_catalog(db, FIXTURE_PATH, catalog_version="v2")
+        db.close()
+
+        # Caso 1: Catálogo Ativo v2 SEM parâmetro de versão enviado pelo cliente
+        os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v2"
+        captured_queries.clear()
+
+        resp_v2 = client.get("/questoes?quantidade=5", headers=auth_headers)
+        assert resp_v2.status_code == status.HTTP_200_OK
+
+        # Encontrar a consulta principal de listagem
+        list_queries_v2 = [q for q in captured_queries if "order by" in q.lower()]
+        assert len(list_queries_v2) > 0, "Nenhuma query com ORDER BY foi capturada"
+        main_query_v2 = list_queries_v2[-1].lower()
+
+        # Validações estritas do sorteio v2 na cláusula ORDER BY
+        order_clause_v2 = main_query_v2.split("order by")[1]
+        assert "random_rank" in order_clause_v2, f"Esperava ordenação por random_rank, recebido: {order_clause_v2}"
+        assert "random()" not in order_clause_v2, f"random() não deve ser utilizado no catálogo v2: {order_clause_v2}"
+
+        # Caso 2: Catálogo v1 legado continua utilizando func.random()
+        db = isolated_db["SessionLocal"]()
+        v1_q = db.scalar(select(ExamQuestion).where(ExamQuestion.catalog_version == "v1").limit(1))
+        if v1_q is None:
+            db.add(ExamQuestion(
+                source_id="v1_legacy_lottery_001",
+                catalog_version="v1",
+                ano=2020,
+                instituicao="USP",
+                cabecalho="USP · 2020",
+                especialidade="Clínica Médica",
+                assunto="Nefrologia",
+                enunciado="Questão v1 para teste de sorteio",
+                statement_plain="Questão v1 para teste de sorteio",
+                alternativas=[{"id": "A", "texto": "A"}, {"id": "B", "texto": "B"}],
+                alternativa_correta_id="A",
+                fingerprint="v1_leg_lottery",
+                media_classification="NO_VISUAL_DEPENDENCY",
+                image_rights_status="NONE_REQUIRED",
+                content_hash_plain="b" * 64,
+                content_hash_rich="b" * 64,
+                answer_binding_hash="b" * 64,
+                random_rank=0.3,
+                status="publicada"
+            ))
+            db.commit()
+        db.close()
+
+        os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v1"
+        captured_queries.clear()
+
+        resp_v1 = client.get("/questoes?quantidade=5", headers=auth_headers)
+        assert resp_v1.status_code == status.HTTP_200_OK
+
+        list_queries_v1 = [q for q in captured_queries if "order by" in q.lower()]
+        assert len(list_queries_v1) > 0
+        main_query_v1 = list_queries_v1[-1].lower()
+        order_clause_v1 = main_query_v1.split("order by")[1]
+
+        assert "random()" in order_clause_v1, f"Catálogo v1 legado deve utilizar func.random(): {order_clause_v1}"
+        assert "random_rank" not in order_clause_v1, f"random_rank não deve ser utilizado no catálogo v1: {order_clause_v1}"
+
+    finally:
+        event.remove(engine, "before_cursor_execute", before_cursor_execute)
+        if old_active is not None:
+            os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
+        else:
+            os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
