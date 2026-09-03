@@ -1,0 +1,12 @@
+{
+  "report": "revision_16_provenance_evidence",
+  "restored_from_commit": "80636f185e0cbccdecb09d30036dc43232f24239",
+  "commit_short": "80636f1",
+  "commit_author_date": "Wed Sep 2 17:25:13 2026 -0300",
+  "commit_message": "fix(questions): unifica contrato canonico, atomicidade e idempotencia estrita do catalogo v2",
+  "sha256_at_historic_commit": "7bc93717a4cda1d10aa76f86c152d949cca3241d7ee94e22a1abd95a85d75c75",
+  "sha256_current_file": "7bc93717a4cda1d10aa76f86c152d949cca3241d7ee94e22a1abd95a85d75c75",
+  "byte_match": true,
+  "verification_command": "git show 80636f1:alembic/versions/20260902_16_question_catalog_v2.py",
+  "audit_provenance_note": "O arquivo atual da revisao 16 possui hash SHA-256 rigorosamente identico ao conteudo do commit 80636f1, restaurando com comprovacao criptografica o estado historico em que a revisao 16 foi originalmente criada e aplicada ao banco de desenvolvimento."
+}
