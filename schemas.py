@@ -579,6 +579,7 @@ class AdminFinancialResponse(BaseModel):
 class QuestionAlternative(BaseModel):
     id: str
     texto: str
+    html: str | None = None
 
 
 class QuestionListItem(BaseModel):
@@ -588,8 +589,12 @@ class QuestionListItem(BaseModel):
     cabecalho: str
     especialidade: str
     assunto: str
+    tema: str | None = None
+    regiao: str | None = None
     enunciado: str
+    statement_rich_html: str | None = None
     alternativas: list[QuestionAlternative]
+    catalog_version: str = "v1"
     explicacao_disponivel: bool = False
 
 
@@ -643,7 +648,8 @@ class QuestionAlternativeSelectionStats(BaseModel):
 class QuestionAnswerResponse(BaseModel):
     correta: bool
     alternativa_correta_id: str
-    explicacao: QuestionExplanation
+    explicacao: QuestionExplanation | None = None
+    explanation_status: str = "PENDING"
     distribuicao_alternativas: list[QuestionAlternativeSelectionStats]
     total_respondentes: int
     respondidas_hoje: int

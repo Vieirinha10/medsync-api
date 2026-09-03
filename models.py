@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -355,6 +356,15 @@ class VisualChallenge(Base):
 
 class ExamQuestion(Base):
     __tablename__ = "exam_questions"
+    __table_args__ = (
+        Index(
+            "ix_exam_questions_catalog_status_rank_id",
+            "catalog_version",
+            "status",
+            "random_rank",
+            "id",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ano: Mapped[int] = mapped_column(Integer, index=True)
@@ -371,6 +381,36 @@ class ExamQuestion(Base):
         String(30), default="pendente", index=True
     )
     status: Mapped[str] = mapped_column(String(30), default="publicada", index=True)
+    catalog_version: Mapped[str] = mapped_column(
+        String(20), default="v1", index=True
+    )
+    source_id: Mapped[str | None] = mapped_column(
+        String(32), unique=True, index=True, nullable=True
+    )
+    statement_plain: Mapped[str | None] = mapped_column(Text, nullable=True)
+    statement_rich_html: Mapped[str | None] = mapped_column(Text, nullable=True)
+    random_rank: Mapped[float] = mapped_column(Float, default=0.0)
+    media_classification: Mapped[str] = mapped_column(
+        String(40), default="NO_VISUAL_DEPENDENCY"
+    )
+    image_rights_status: Mapped[str] = mapped_column(
+        String(40), default="NONE_REQUIRED"
+    )
+    content_hash_plain: Mapped[str | None] = mapped_column(
+        String(64), index=True, nullable=True
+    )
+    content_hash_rich: Mapped[str | None] = mapped_column(
+        String(64), index=True, nullable=True
+    )
+    answer_binding_hash: Mapped[str | None] = mapped_column(
+        String(64), index=True, nullable=True
+    )
+    banca: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    finalidade: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    regiao: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    tema: Mapped[str | None] = mapped_column(String(160), index=True, nullable=True)
+    subtema: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    tipo_prova: Mapped[str | None] = mapped_column(String(60), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
@@ -386,6 +426,31 @@ class ExamQuestion(Base):
     relatos: Mapped[list["QuestionReport"]] = relationship(
         back_populates="questao", cascade="all, delete-orphan"
     )
+    aliases: Mapped[list["QuestionSourceAlias"]] = relationship(
+        back_populates="questao_canonica", cascade="all, delete-orphan"
+    )
+
+
+class QuestionSourceAlias(Base):
+    __tablename__ = "question_source_aliases"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    canonical_question_id: Mapped[int] = mapped_column(
+        ForeignKey("exam_questions.id", ondelete="CASCADE"), index=True
+    )
+    duplicate_source_id: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    ano: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    instituicao: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    banca: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    regiao: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    content_hash_plain: Mapped[str] = mapped_column(String(64), index=True)
+    content_hash_rich: Mapped[str] = mapped_column(String(64), index=True)
+    answer_binding_hash: Mapped[str] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
+    questao_canonica: Mapped[ExamQuestion] = relationship(back_populates="aliases")
 
 
 class QuestionAttempt(Base):

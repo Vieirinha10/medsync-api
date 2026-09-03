@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-09-03T02:59:12.081584+00:00",
+  "fixture_file": "pilot-100-import-ready.jsonl",
+  "records_compared": 100,
+  "divergences_count": 0,
+  "divergences": [],
+  "null_counts_by_column": {
+    "tema": 49,
+    "subtema": 60,
+    "regiao": 9,
+    "banca": 0,
+    "finalidade": 0,
+    "tipo_prova": 0
+  },
+  "specialty_distribution": {
+    "Obstetrícia": 18,
+    "Pediatria": 14,
+    "Clínica Médica": 14,
+    "Cirurgia": 13,
+    "Outros": 15,
+    "Ginecologia": 13,
+    "Medicina Preventiva": 13
+  },
+  "theme_distribution": {
+    "Cardiologia": 2,
+    "Hematologia": 1,
+    "Puericultura": 4,
+    "Nefrologia": 3,
+    "Otorrinolaringologia": 4,
+    "Psiquiatria": 10,
+    "Endocrinologia": 3,
+    "Gastroenterologia": 2,
+    "Puerpério": 1,
+    "Oncologia ginecológica": 2,
+    "Intercorrências obstétricas /obstetrícia patológica": 2,
+    "Doenças associadas à gestação": 1,
+    "Hepatologia": 1,
+    "Ginecologia endócrina": 1,
+    "Infectologia": 2,
+    "Ortopedia": 1,
+    "Avaliação Pré-Operatória": 1,
+    "Sistema Único de Saúde (SUS)": 1,
+    "Pneumologia Pediátrica": 1,
+    "Obstetrícia fisiológica": 1,
+    "Mastologia": 2,
+    "Cirurgia Infantil": 1,
+    "Epidemiologia": 2,
+    "Urgências Abdominais": 1,
+    "Medicina fetal": 1
+  },
+  "correct_letter_distribution": {
+    "B": 24,
+    "A": 27,
+    "D": 18,
+    "C": 21,
+    "E": 10
+  },
+  "alternatives_count_distribution": {
+    "4": 20,
+    "5": 80
+  },
+  "zero_divergences_confirmed": true
+}

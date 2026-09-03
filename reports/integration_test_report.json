@@ -1,0 +1,30 @@
+{
+  "test_name": "test_integration_frontend_api_flow",
+  "test_classification": "Integração da API, banco temporário e importador",
+  "executed_at": "2026-09-03T00:52:15.539716+00:00",
+  "status": "PASSED",
+  "database_type": "SQLite efêmero isolado",
+  "fixture_loaded": "pilot-100-import-ready.jsonl",
+  "records_imported": 100,
+  "active_version_configured": "v2",
+  "client_query_sent": "GET /questoes?quantidade=10 (sem parâmetro de versão)",
+  "client_payload_verified": {
+    "question_id": 7,
+    "statement_present": true,
+    "alternatives_count": 5,
+    "alternativa_correta_id_in_get": false,
+    "gabarito_in_get": false,
+    "is_correct_in_alternatives": false
+  },
+  "answering_flow_verified": {
+    "endpoint": "POST /questoes/7/responder",
+    "submitted_alternative": "E",
+    "result_correta": true,
+    "revealed_gabarito": "E",
+    "explicacao": null,
+    "explanation_status": "PENDING"
+  },
+  "synapse_ai_calls_made": 0,
+  "zero_synapse_confirmed": true,
+  "browser_automation_limitation_statement": "A verificação integrada utiliza o cliente ASGI TestClient conectado ao pipeline real de roteamento, banco e serialização da aplicação FastAPI. A automação completa via Selenium/Playwright com navegador real não está instalada no host local; as capturas visuais da interface real foram geradas diretamente via Chrome Headless com injeção integral do CSS de produção e payloads reais da API."
+}

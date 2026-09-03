@@ -1,3 +1,4 @@
+import os
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
@@ -55,16 +56,18 @@ def start_of_local_day() -> datetime:
     return now.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(UTC)
 
 
-def answered_today(db: Session, user_id: int) -> int:
-    return int(
-        db.scalar(
-            select(func.count(distinct(QuestionAttempt.id_questao))).where(
-                QuestionAttempt.id_usuario == user_id,
-                QuestionAttempt.created_at >= start_of_local_day(),
-            )
+def answered_today(db: Session, user_id: int, catalog_version: str | None = None) -> int:
+    query = (
+        select(func.count(distinct(QuestionAttempt.id_questao)))
+        .join(ExamQuestion, ExamQuestion.id == QuestionAttempt.id_questao)
+        .where(
+            QuestionAttempt.id_usuario == user_id,
+            QuestionAttempt.created_at >= start_of_local_day(),
         )
-        or 0
     )
+    if catalog_version:
+        query = query.where(ExamQuestion.catalog_version == catalog_version)
+    return int(db.scalar(query) or 0)
 
 
 def question_answer_distribution(
@@ -112,7 +115,57 @@ def question_answer_distribution(
     return distribution, total_respondents
 
 
+SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
+
+
+def get_active_catalog_version() -> str:
+    ver = os.getenv("QUESTION_CATALOG_ACTIVE_VERSION", "v1").strip().lower()
+    if ver not in SUPPORTED_CATALOG_VERSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Configuração interna inválida para QUESTION_CATALOG_ACTIVE_VERSION: '{ver}'. Versões válidas: 'v1' e 'v2'.",
+        )
+    return ver
+
+
+def validate_catalog_version(catalog_version: str) -> str:
+    if catalog_version not in SUPPORTED_CATALOG_VERSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Versão de catálogo '{catalog_version}' não suportada. Versões válidas: 'v1' e 'v2'.",
+        )
+    return catalog_version
+
+
+def resolve_catalog_version(
+    requested_version: str | None,
+    current_user: User,
+) -> str:
+    active_version = get_active_catalog_version()
+    if requested_version is None or requested_version == "":
+        return active_version
+
+    # Parâmetro de override restrito a administradores
+    if requested_version != active_version:
+        if not is_admin_email(current_user.email):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acesso restrito ao catálogo ativo da plataforma.",
+            )
+        validate_catalog_version(requested_version)
+        return requested_version
+
+    return active_version
+
+
 def serialize_question(question: ExamQuestion) -> dict:
+    safe_alts = []
+    for alt in (question.alternativas or []):
+        safe_alts.append({
+            "id": alt.get("id") or alt.get("letter"),
+            "texto": alt.get("texto") or alt.get("body_plain") or alt.get("body") or "",
+            "html": alt.get("html") or alt.get("body_rich_html") or alt.get("texto") or alt.get("body_plain") or "",
+        })
     return {
         "id": question.id,
         "ano": question.ano,
@@ -120,18 +173,25 @@ def serialize_question(question: ExamQuestion) -> dict:
         "cabecalho": question.cabecalho,
         "especialidade": question.especialidade,
         "assunto": question.assunto,
+        "tema": getattr(question, "tema", None),
+        "regiao": getattr(question, "regiao", None),
         "enunciado": question.enunciado,
-        "alternativas": question.alternativas,
+        "statement_rich_html": question.statement_rich_html or question.enunciado,
+        "alternativas": safe_alts,
+        "catalog_version": question.catalog_version,
         "explicacao_disponivel": question.explicacao is not None,
     }
 
 
-def facet(db: Session, column) -> list[dict[str, object]]:
+def facet(db: Session, column, catalog_version: str = "v1") -> list[dict[str, object]]:
     return [
         {"valor": str(value), "total": int(total)}
         for value, total in db.execute(
             select(column, func.count(ExamQuestion.id))
-            .where(ExamQuestion.status == "publicada")
+            .where(
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == catalog_version,
+            )
             .group_by(column)
             .order_by(func.count(ExamQuestion.id).desc(), column)
         ).all()
@@ -140,22 +200,34 @@ def facet(db: Session, column) -> list[dict[str, object]]:
 
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
 def question_metadata(
+    catalog_version: str | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    premium = is_premium(current_user) or is_admin_email(current_user.email)
-    used = answered_today(db, current_user.id)
-    return {
-        "total_questoes": db.scalar(
+    effective_version = resolve_catalog_version(catalog_version, current_user)
+    total = (
+        db.scalar(
             select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.status == "publicada"
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == effective_version,
             )
         )
-        or 0,
-        "especialidades": facet(db, ExamQuestion.especialidade),
-        "assuntos": facet(db, ExamQuestion.assunto),
-        "anos": facet(db, ExamQuestion.ano),
-        "instituicoes": facet(db, ExamQuestion.instituicao),
+        or 0
+    )
+    if total == 0:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"O catálogo ativo ('{effective_version}') não possui questões publicadas disponíveis.",
+        )
+
+    premium = is_premium(current_user) or is_admin_email(current_user.email)
+    used = answered_today(db, current_user.id, catalog_version=effective_version)
+    return {
+        "total_questoes": total,
+        "especialidades": facet(db, ExamQuestion.especialidade, effective_version),
+        "assuntos": facet(db, ExamQuestion.assunto, effective_version),
+        "anos": facet(db, ExamQuestion.ano, effective_version),
+        "instituicoes": facet(db, ExamQuestion.instituicao, effective_version),
         "premium_ativo": premium,
         "limite_diario": None if premium else FREE_DAILY_LIMIT,
         "respondidas_hoje": used,
@@ -169,19 +241,38 @@ def list_questions(
     assunto: str | None = None,
     ano: int | None = None,
     instituicao: str | None = None,
+    catalog_version: str | None = Query(default=None),
     quantidade: int = Query(default=10, ge=1, le=30),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    premium = is_premium(current_user) or is_admin_email(current_user.email)
-    if not premium:
-        quantidade = min(
-            quantidade, max(0, FREE_DAILY_LIMIT - answered_today(db, current_user.id))
+    effective_version = resolve_catalog_version(catalog_version, current_user)
+    total_active = (
+        db.scalar(
+            select(func.count(ExamQuestion.id)).where(
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == effective_version,
+            )
         )
+        or 0
+    )
+    if total_active == 0:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"O catálogo ativo ('{effective_version}') não possui questões publicadas disponíveis.",
+        )
+
+    premium = is_premium(current_user) or is_admin_email(current_user.email)
+    used = answered_today(db, current_user.id, catalog_version=effective_version)
+    if not premium:
+        quantidade = min(quantidade, max(0, FREE_DAILY_LIMIT - used))
     if quantidade == 0:
         return []
 
-    statement = select(ExamQuestion).where(ExamQuestion.status == "publicada")
+    statement = select(ExamQuestion).where(
+        ExamQuestion.status == "publicada",
+        ExamQuestion.catalog_version == effective_version,
+    )
     if especialidade:
         statement = statement.where(ExamQuestion.especialidade == especialidade)
     if assunto:
@@ -195,12 +286,39 @@ def list_questions(
         QuestionAttempt.id_usuario == current_user.id,
         QuestionAttempt.created_at >= start_of_local_day(),
     )
-    statement = (
-        statement.where(ExamQuestion.id.not_in(recently_answered))
-        .order_by(func.random())
-        .limit(quantidade)
-    )
-    return [serialize_question(item) for item in db.scalars(statement).all()]
+    statement = statement.where(ExamQuestion.id.not_in(recently_answered))
+
+    if effective_version == "v2":
+        import random
+        rnd = random.random()
+
+        # 1ª Consulta: random_rank >= rnd (indexável via B-Tree com desempate determinístico por id ASC)
+        query_first = (
+            statement.where(ExamQuestion.random_rank >= rnd)
+            .order_by(ExamQuestion.random_rank.asc(), ExamQuestion.id.asc())
+            .limit(quantidade)
+        )
+        first_batch = list(db.scalars(query_first).all())
+
+        remaining_needed = quantidade - len(first_batch)
+        if remaining_needed > 0:
+            # 2ª Consulta (wrap-around circular): random_rank < rnd com desempate determinístico por id ASC
+            selected_ids = [q.id for q in first_batch]
+            query_second = statement.where(ExamQuestion.random_rank < rnd)
+            if selected_ids:
+                query_second = query_second.where(ExamQuestion.id.not_in(selected_ids))
+            query_second = query_second.order_by(
+                ExamQuestion.random_rank.asc(), ExamQuestion.id.asc()
+            ).limit(remaining_needed)
+            second_batch = list(db.scalars(query_second).all())
+            selected_items = first_batch + second_batch
+        else:
+            selected_items = first_batch
+
+        return [serialize_question(item) for item in selected_items]
+    else:
+        statement = statement.order_by(func.random()).limit(quantidade)
+        return [serialize_question(item) for item in db.scalars(statement).all()]
 
 
 @router.post("/questoes/{question_id}/responder", response_model=QuestionAnswerResponse)
@@ -240,12 +358,21 @@ def answer_question(
 
     correct = payload.alternativa_id == question.alternativa_correta_id
     explanation = question.explicacao
-    if explanation is None:
+    explanation_status = "PENDING"
+
+    if question.catalog_version == "v2":
+        # ZERO SYNAPSE para o novo catálogo v2: Não chama gerador de IA, preserva comentário pendente
+        explanation = None
+        explanation_status = "PENDING"
+    elif explanation is None:
         generated = generate_question_explanation(question)
         explanation = generated.model_dump(mode="json")
         if generated.fonte != "resumo_automatico":
             question.explicacao = explanation
             question.explicacao_status = "gerada"
+        explanation_status = question.explicacao_status
+    else:
+        explanation_status = "PUBLISHED"
 
     db.add(
         QuestionAttempt(
@@ -264,12 +391,13 @@ def answer_question(
         str(question.id),
     )
     db.commit()
-    used_after = answered_today(db, current_user.id)
+    used_after = answered_today(db, current_user.id, catalog_version=question.catalog_version)
     distribution, total_respondents = question_answer_distribution(db, question)
     return {
         "correta": correct,
         "alternativa_correta_id": question.alternativa_correta_id,
         "explicacao": explanation,
+        "explanation_status": explanation_status,
         "distribuicao_alternativas": distribution,
         "total_respondentes": total_respondents,
         "respondidas_hoje": used_after,
@@ -289,6 +417,11 @@ def retry_question_explanation(
     question = db.get(ExamQuestion, question_id)
     if question is None or question.status != "publicada":
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
+    if question.catalog_version == "v2":
+        raise HTTPException(
+            status_code=400,
+            detail="Comentário editorial em preparação pela equipe do MedSync.",
+        )
     attempted = db.scalar(
         select(QuestionAttempt.id)
         .where(
@@ -322,29 +455,40 @@ def retry_question_explanation(
 
 @router.get("/questoes/desempenho", response_model=QuestionPerformanceResponse)
 def question_performance(
+    catalog_version: str | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    effective_version = resolve_catalog_version(catalog_version, current_user)
     attempts = int(
         db.scalar(
-            select(func.count(QuestionAttempt.id)).where(
-                QuestionAttempt.id_usuario == current_user.id
+            select(func.count(QuestionAttempt.id))
+            .join(ExamQuestion, ExamQuestion.id == QuestionAttempt.id_questao)
+            .where(
+                QuestionAttempt.id_usuario == current_user.id,
+                ExamQuestion.catalog_version == effective_version,
             )
         )
         or 0
     )
     correct = int(
         db.scalar(
-            select(func.count(QuestionAttempt.id)).where(
+            select(func.count(QuestionAttempt.id))
+            .join(ExamQuestion, ExamQuestion.id == QuestionAttempt.id_questao)
+            .where(
                 QuestionAttempt.id_usuario == current_user.id,
+                ExamQuestion.catalog_version == effective_version,
                 QuestionAttempt.correta.is_(True),
             )
         )
         or 0
     )
     average_time = db.scalar(
-        select(func.avg(QuestionAttempt.tempo_segundos)).where(
+        select(func.avg(QuestionAttempt.tempo_segundos))
+        .join(ExamQuestion, ExamQuestion.id == QuestionAttempt.id_questao)
+        .where(
             QuestionAttempt.id_usuario == current_user.id,
+            ExamQuestion.catalog_version == effective_version,
             QuestionAttempt.tempo_segundos.is_not(None),
         )
     )
@@ -355,7 +499,10 @@ def question_performance(
             func.sum(case((QuestionAttempt.correta.is_(True), 1), else_=0)),
         )
         .join(QuestionAttempt, QuestionAttempt.id_questao == ExamQuestion.id)
-        .where(QuestionAttempt.id_usuario == current_user.id)
+        .where(
+            QuestionAttempt.id_usuario == current_user.id,
+            ExamQuestion.catalog_version == effective_version,
+        )
         .group_by(ExamQuestion.assunto)
         .order_by(func.count(QuestionAttempt.id).desc())
     ).all()

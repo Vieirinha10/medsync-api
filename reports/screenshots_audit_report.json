@@ -1,0 +1,132 @@
+{
+  "generated_at": "2026-09-02T18:22:00Z",
+  "total_screenshots": 10,
+  "all_approved": true,
+  "criteria": {
+    "min_variance": 300.0,
+    "min_file_size_kb": 20.0,
+    "min_entropy": 6.0
+  },
+  "screenshots": {
+    "01_desktop_unanswered.png": {
+      "width": 1280,
+      "height": 800,
+      "expected_width": 1280,
+      "expected_height": 800,
+      "dimension_match": true,
+      "file_size_kb": 81.38,
+      "pixel_variance": 1123.64,
+      "shannon_entropy": 7.973,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "01_mobile_unanswered.png": {
+      "width": 375,
+      "height": 812,
+      "expected_width": 375,
+      "expected_height": 812,
+      "dimension_match": true,
+      "file_size_kb": 40.68,
+      "pixel_variance": 1878.14,
+      "shannon_entropy": 7.978,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "02_desktop_selected.png": {
+      "width": 1280,
+      "height": 800,
+      "expected_width": 1280,
+      "expected_height": 800,
+      "dimension_match": true,
+      "file_size_kb": 73.07,
+      "pixel_variance": 1061.94,
+      "shannon_entropy": 7.963,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "02_mobile_selected.png": {
+      "width": 375,
+      "height": 812,
+      "expected_width": 375,
+      "expected_height": 812,
+      "dimension_match": true,
+      "file_size_kb": 42.36,
+      "pixel_variance": 1975.18,
+      "shannon_entropy": 7.981,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "03_desktop_correct.png": {
+      "width": 1280,
+      "height": 800,
+      "expected_width": 1280,
+      "expected_height": 800,
+      "dimension_match": true,
+      "file_size_kb": 94.8,
+      "pixel_variance": 1332.27,
+      "shannon_entropy": 7.97,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "03_mobile_correct.png": {
+      "width": 375,
+      "height": 812,
+      "expected_width": 375,
+      "expected_height": 812,
+      "dimension_match": true,
+      "file_size_kb": 55.6,
+      "pixel_variance": 2428.69,
+      "shannon_entropy": 7.985,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "04_desktop_incorrect.png": {
+      "width": 1280,
+      "height": 800,
+      "expected_width": 1280,
+      "expected_height": 800,
+      "dimension_match": true,
+      "file_size_kb": 64.16,
+      "pixel_variance": 934.76,
+      "shannon_entropy": 7.941,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "04_mobile_incorrect.png": {
+      "width": 375,
+      "height": 812,
+      "expected_width": 375,
+      "expected_height": 812,
+      "dimension_match": true,
+      "file_size_kb": 57.24,
+      "pixel_variance": 2578.52,
+      "shannon_entropy": 7.986,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "05_desktop_banner_closeup.png": {
+      "width": 1280,
+      "height": 800,
+      "expected_width": 1280,
+      "expected_height": 800,
+      "dimension_match": true,
+      "file_size_kb": 57.02,
+      "pixel_variance": 789.26,
+      "shannon_entropy": 7.871,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    },
+    "05_mobile_banner_closeup.png": {
+      "width": 375,
+      "height": 812,
+      "expected_width": 375,
+      "expected_height": 812,
+      "dimension_match": true,
+      "file_size_kb": 45.09,
+      "pixel_variance": 2136.78,
+      "shannon_entropy": 7.977,
+      "non_uniform_confirmed": true,
+      "status": "APPROVED"
+    }
+  }
+}

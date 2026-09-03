@@ -1,0 +1,35 @@
+{
+  "target_universe_records": 225873,
+  "analysis_date": "2026-09-02T19:00:00Z",
+  "index_specification": {
+    "index_name": "ix_exam_questions_catalog_status_rank_id",
+    "columns": [
+      "catalog_version",
+      "status",
+      "random_rank",
+      "id"
+    ],
+    "index_type": "B-Tree",
+    "target_table": "exam_questions",
+    "created_in_migration": "alembic/versions/20260902_17_question_catalog_v2_fix_index.py",
+    "declared_in_model": "models.ExamQuestion.__table_args__"
+  },
+  "algorithm": {
+    "name": "Sorteio Circular em Duas Consultas Indexáveis com Desempate Determinístico",
+    "step_1": {
+      "clause": "WHERE catalog_version = 'v2' AND status = 'publicada' AND random_rank >= :rnd ORDER BY random_rank ASC, id ASC LIMIT :limit",
+      "purpose": "Busca o lote inicial a partir do ponto de partida aleatório :rnd gerado em [0.0, 1.0) com desempate determinístico por id ASC."
+    },
+    "step_2_wrap_around": {
+      "clause": "WHERE catalog_version = 'v2' AND status = 'publicada' AND random_rank < :rnd AND id NOT IN (:selected_ids) ORDER BY random_rank ASC, id ASC LIMIT :remaining",
+      "purpose": "Executada somente se o lote inicial retornar menos que a quantidade solicitada, completando o sorteio pelo início da distribuição (wrap-around) com desempate por id ASC."
+    }
+  },
+  "prohibited_patterns_eliminated": [
+    "ORDER BY random() (proibido para v2)",
+    "ORDER BY CASE (proibido para v2 - pode forçar ordenação de tuplas calculadas)",
+    "Carregamento do catálogo em memória (proibido)"
+  ],
+  "staging_validation_status": "Estrutura preparada para validação com EXPLAIN ANALYZE no PostgreSQL de staging.",
+  "unverified_metrics_disclaimer": "Planos de execução específicos, custos estimados, tempos de latência e contagens exatas de buffers lidos NÃO foram aferidos localmente devido à ausência de instância PostgreSQL no host. Toda validação de performance será realizada exclusivamente em ambiente Staging com dados reais."
+}

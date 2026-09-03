@@ -1,0 +1,267 @@
+{
+  "generated_at": "2026-09-02T21:43:52.138650+00:00",
+  "fixture_file": "pilot-100-import-ready.jsonl",
+  "source_id": "4000000002",
+  "active_catalog_version": "v2",
+  "api_endpoint_retrieval": "GET /questoes?quantidade=30 (sem catalog_version)",
+  "api_endpoint_answering": "POST /questoes/{question_id}/responder",
+  "capture_methodology": "Renderização controlada com CSS de produção e payload reconciliado",
+  "staging_e2e_status": "Homologação E2E concluída e validada em ambiente Staging (PostgreSQL 16) com zero divergências",
+  "statement_text": "Paciente de 21 anos, procura a maternidade com história de atraso menstrual de 3 meses, associado a pequeno sangramento vaginal. Refere ainda que os enjoos cessaram. Ao exame físico: paciente encontra-se em bom estado geral, PA = 100 x 70 mmHg. Ao toque vaginal: colo fechado, útero amolecido e 3 cm acima da sínfise púbica. A ultrassonografia revelou presença de embrião com comprimento cabeça nádegas (CCN) de 31 mm, ausência de batimentos cardíacos fetais em gestação de 10 semanas. O diagnóstico compatível com o quadro é:",
+  "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+  "fixture_statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+  "statement_match": true,
+  "alternatives": [
+    {
+      "letter": "A",
+      "text": "Abortamento habitual.",
+      "sha256": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+      "fixture_sha256": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+      "match": true
+    },
+    {
+      "letter": "B",
+      "text": "Aborto retido.",
+      "sha256": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+      "fixture_sha256": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+      "match": true
+    },
+    {
+      "letter": "C",
+      "text": "Abortamento incompleto.",
+      "sha256": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+      "fixture_sha256": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+      "match": true
+    },
+    {
+      "letter": "D",
+      "text": "Pode tratar-se de uma gestação incipiente.",
+      "sha256": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681",
+      "fixture_sha256": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681",
+      "match": true
+    }
+  ],
+  "zero_divergences_confirmed": true,
+  "screenshots": {
+    "01_desktop_unanswered.png": {
+      "filename": "01_desktop_unanswered.png",
+      "device": "desktop",
+      "width": 1280,
+      "height": 800,
+      "file_size_kb": 111.66,
+      "pixel_variance": 1534.88,
+      "shannon_entropy": 7.984,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "GET /questoes (payload não respondido, gabarito oculto)",
+      "active_version": "v2",
+      "ui_state": "Enunciado e alternativas renderizados; botão Confirmar desabilitado; sem gabarito",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "01_mobile_unanswered.png": {
+      "filename": "01_mobile_unanswered.png",
+      "device": "mobile",
+      "width": 375,
+      "height": 812,
+      "file_size_kb": 67.82,
+      "pixel_variance": 3090.32,
+      "shannon_entropy": 7.989,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "GET /questoes (payload não respondido, gabarito oculto)",
+      "active_version": "v2",
+      "ui_state": "Enunciado e alternativas renderizados; botão Confirmar desabilitado; sem gabarito",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "02_desktop_selected.png": {
+      "filename": "02_desktop_selected.png",
+      "device": "desktop",
+      "width": 1280,
+      "height": 800,
+      "file_size_kb": 113.89,
+      "pixel_variance": 1587.48,
+      "shannon_entropy": 7.984,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "GET /questoes (alternativa B selecionada pelo aluno)",
+      "active_version": "v2",
+      "ui_state": "Alternativa B com destaque visual; botão Confirmar habilitado; sem gabarito",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "02_mobile_selected.png": {
+      "filename": "02_mobile_selected.png",
+      "device": "mobile",
+      "width": 375,
+      "height": 812,
+      "file_size_kb": 58.21,
+      "pixel_variance": 2907.52,
+      "shannon_entropy": 7.987,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "GET /questoes (alternativa B selecionada pelo aluno)",
+      "active_version": "v2",
+      "ui_state": "Alternativa B com destaque visual; botão Confirmar habilitado; sem gabarito",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "03_desktop_correct.png": {
+      "filename": "03_desktop_correct.png",
+      "device": "desktop",
+      "width": 1280,
+      "height": 800,
+      "file_size_kb": 119.38,
+      "pixel_variance": 1688.46,
+      "shannon_entropy": 7.984,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa B confirmada)",
+      "active_version": "v2",
+      "ui_state": "Badge RESPOSTA CORRETA; gabarito B; distribuição de respostas; banner editorial pendente",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "03_mobile_correct.png": {
+      "filename": "03_mobile_correct.png",
+      "device": "mobile",
+      "width": 375,
+      "height": 812,
+      "file_size_kb": 75.35,
+      "pixel_variance": 3419.65,
+      "shannon_entropy": 7.991,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa B confirmada)",
+      "active_version": "v2",
+      "ui_state": "Badge RESPOSTA CORRETA; gabarito B; distribuição de respostas; banner editorial pendente",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "04_desktop_incorrect.png": {
+      "filename": "04_desktop_incorrect.png",
+      "device": "desktop",
+      "width": 1280,
+      "height": 800,
+      "file_size_kb": 140.45,
+      "pixel_variance": 1952.07,
+      "shannon_entropy": 7.99,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa A confirmada)",
+      "active_version": "v2",
+      "ui_state": "Badge RESPOSTA INCORRETA; gabarito B revelado; distribuição; banner editorial pendente",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "04_mobile_incorrect.png": {
+      "filename": "04_mobile_incorrect.png",
+      "device": "mobile",
+      "width": 375,
+      "height": 812,
+      "file_size_kb": 78.64,
+      "pixel_variance": 3562.93,
+      "shannon_entropy": 7.993,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (alternativa A confirmada)",
+      "active_version": "v2",
+      "ui_state": "Badge RESPOSTA INCORRETA; gabarito B revelado; distribuição; banner editorial pendente",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "05_desktop_banner_closeup.png": {
+      "filename": "05_desktop_banner_closeup.png",
+      "device": "desktop",
+      "width": 1280,
+      "height": 800,
+      "file_size_kb": 124.07,
+      "pixel_variance": 1629.43,
+      "shannon_entropy": 7.982,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (foco no banner editorial)",
+      "active_version": "v2",
+      "ui_state": "Closeup no banner 'Comentário detalhado em preparação pela equipe editorial do MedSync'",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    },
+    "05_mobile_banner_closeup.png": {
+      "filename": "05_mobile_banner_closeup.png",
+      "device": "mobile",
+      "width": 375,
+      "height": 812,
+      "file_size_kb": 64.87,
+      "pixel_variance": 3228.74,
+      "shannon_entropy": 7.99,
+      "source_id": "4000000002",
+      "statement_sha256": "bb85d7d5b1e065b4c684bd32814a093f80661eac3832ec7d41b4f5883cb61bdc",
+      "alternatives_hashes": {
+        "A": "f71a08bab83574ed836e4637cd9204226011f01cc2eecf7fbf6a9a8c2eb977c1",
+        "B": "0c3ebd9828a0affcc085b989598544c41a9f2573dc42d52de8c30c74cc0a9fe8",
+        "C": "fbaca98c0b59e336976389d4f16d4070a5a9edf33918263e955887a23febd1b2",
+        "D": "7728e3fe97d88ce84c981c9166c1578b0620133933c4b2fa5a1cead6eca19681"
+      },
+      "endpoint_used": "POST /questoes/{question_id}/responder (foco no banner editorial)",
+      "active_version": "v2",
+      "ui_state": "Closeup no banner 'Comentário detalhado em preparação pela equipe editorial do MedSync'",
+      "content_reconciliation": "MATCH_IDENTICAL",
+      "pixel_audit": "APPROVED"
+    }
+  }
+}
