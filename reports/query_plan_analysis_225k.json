@@ -11,7 +11,7 @@
     ],
     "index_type": "B-Tree",
     "target_table": "exam_questions",
-    "created_in_migration": "alembic/versions/20260902_16_question_catalog_v2.py",
+    "created_in_migration": "alembic/versions/20260902_17_question_catalog_v2_fix_index.py",
     "declared_in_model": "models.ExamQuestion.__table_args__"
   },
   "algorithm": {

@@ -1339,15 +1339,14 @@ def test_13_v15_deterministic_tiebreak_and_rank_resolution(isolated_db, client):
 
 
 def test_14_v16_migration_scenarios_and_data_preservation():
-    """Valida exaustivamente os cenários de migração da v1.6 (Cenário B):
-    1. Banco que já recebeu a revisão 16:
-       - Preservação integral das 2.811 questões v1 e 100 questões v2;
-       - Preservação de QuestionAttempt relacionado;
-       - 16 -> 17: cria ix_exam_questions_catalog_status_rank_id e remove ix_exam_questions_random_rank;
-       - 17 -> 16: reverte para o estado histórico exato da revisão 16;
-       - 16 -> 17: re-upgrade idempotente com preservação de dados.
-    2. Instalação limpa percorrendo 15 -> 16 -> 17:
-       - Confirma que a cadeia de migrações 15 -> 16 -> 17 produz o schema final correto.
+    """Valida exaustivamente os cenários de migração da v1.6/v1.7 (Cenário B):
+    Totalmente independente e reproduzível, sem dependência de bancos locais ou arquivos não rastreados.
+    1. Cria banco temporário isolado e executa migrações até a revisão 16;
+    2. Popula com exatamente 2.811 registros sintéticos v1 e 100 registros sintéticos v2 + QuestionAttempt;
+    3. 16 -> 17: cria ix_exam_questions_catalog_status_rank_id e remove ix_exam_questions_random_rank;
+    4. 17 -> 16: reverte para o estado histórico exato da revisão 16;
+    5. 16 -> 17: re-upgrade idempotente com preservação total de v1, v2 e attempts;
+    6. Instalação limpa percorrendo 15 -> 16 -> 17 resultando no schema final com índice composto de 4 colunas.
     """
     import shutil
     import sqlite3
@@ -1357,44 +1356,94 @@ def test_14_v16_migration_scenarios_and_data_preservation():
     from pathlib import Path
 
     api_dir = Path(__file__).parent.parent
-    backup_path = api_dir / "medsync.db.backup_pre_staging_v1.bak"
     alembic_ini = api_dir / "alembic.ini"
 
-    assert backup_path.exists(), "Backup do banco original deve existir para o teste de migração!"
-
     temp_dir = Path(tempfile.mkdtemp(prefix="test_mig_14_"))
+    old_env = os.environ.get("DATABASE_URL")
+    old_db_url = database.DATABASE_URL
     try:
-        # Cenário 1: Banco existente com 16 aplicada
-        disposable_db = temp_dir / "disposable.db"
-        shutil.copy2(backup_path, disposable_db)
+        # Cenário 1: Banco temporário novo migrado até a revisão 16
+        disposable_db = temp_dir / "disposable_16.db"
         db_url = f"sqlite:///{disposable_db.as_posix()}"
 
-        old_env = os.environ.get("DATABASE_URL")
-        old_db_url = database.DATABASE_URL
         os.environ["DATABASE_URL"] = db_url
         database.DATABASE_URL = db_url
-
-        # Inserir QuestionAttempt para comprovar zero perda
-        with sqlite3.connect(disposable_db) as con:
-            cur = con.cursor()
-            v1_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
-            v2_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
-            first_q = cur.execute("SELECT id FROM exam_questions LIMIT 1").fetchone()[0]
-            first_u = cur.execute("SELECT id FROM users LIMIT 1").fetchone()[0]
-            cur.execute(
-                "INSERT INTO question_attempts (id_usuario, id_questao, alternativa_selecionada_id, correta, tempo_segundos, created_at) "
-                "VALUES (?, ?, 'A', 1, 10, '2026-09-02 21:00:00')",
-                (first_u, first_q)
-            )
-            con.commit()
-            attempts_init = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
-
-        assert v1_init == 2811, f"Esperava 2.811 questões v1, obteve {v1_init}"
-        assert v2_init == 100, f"Esperava 100 questões v2, obteve {v2_init}"
 
         cfg = Config(str(alembic_ini))
         cfg.set_main_option("sqlalchemy.url", db_url)
         cfg.set_main_option("script_location", str(api_dir / "alembic"))
+
+        # Migrar até a revisão 16
+        command.upgrade(cfg, "20260902_16")
+
+        # Inserir dados sintéticos representativos: exatamente 2.811 v1 e 100 v2 + usuário + QuestionAttempt
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            cur.execute(
+                "INSERT INTO users (nome, email, password_hash, created_at) "
+                "VALUES ('Test User', 'user14@medsync.test', 'hash', '2026-09-02 20:00:00')"
+            )
+            u_id = cur.lastrowid
+
+            v1_rows = [
+                (
+                    2020 + (i % 5), "USP", f"Cabecalho v1 {i}", "Geral", "Cirurgia", f"Enunciado v1 {i}",
+                    '[{"id": "A", "texto": "Opt A"}]', "A", f"fp_v1_{i}", "pendente", "publicada",
+                    "v1", "2026-09-02 20:00:00", "2026-09-02 20:00:00"
+                )
+                for i in range(2811)
+            ]
+            cur.executemany(
+                "INSERT INTO exam_questions ("
+                "ano, instituicao, cabecalho, especialidade, assunto, enunciado, alternativas, alternativa_correta_id, "
+                "fingerprint, explicacao_status, status, catalog_version, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                v1_rows
+            )
+
+            v2_rows = [
+                (
+                    2024, "UNICAMP", f"Cabecalho v2 {i}", "Pediatria", "Neonatologia", f"Enunciado v2 {i}",
+                    '[{"id": "A", "texto": "Opt A"}]', "A", f"fp_v2_{i}", "pendente", "publicada",
+                    "v2", f"4000000{i:03d}", i / 100.0, "NONE_REQUIRED", "NO_VISUAL_DEPENDENCY",
+                    f"plain_{i}", f"rich_{i}", f"binding_{i}", "banca", "revalida", "sudeste", "tema", "subtema", "objetiva",
+                    "2026-09-02 20:00:00", "2026-09-02 20:00:00"
+                )
+                for i in range(100)
+            ]
+            cur.executemany(
+                "INSERT INTO exam_questions ("
+                "ano, instituicao, cabecalho, especialidade, assunto, enunciado, alternativas, alternativa_correta_id, "
+                "fingerprint, explicacao_status, status, catalog_version, source_id, random_rank, image_rights_status, "
+                "media_classification, content_hash_plain, content_hash_rich, answer_binding_hash, "
+                "banca, finalidade, regiao, tema, subtema, tipo_prova, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                v2_rows
+            )
+
+            first_q = cur.execute("SELECT id FROM exam_questions LIMIT 1").fetchone()[0]
+            cur.execute(
+                "INSERT INTO question_attempts (id_usuario, id_questao, alternativa_selecionada_id, correta, tempo_segundos, created_at) "
+                "VALUES (?, ?, 'A', 1, 10, '2026-09-02 21:00:00')",
+                (u_id, first_q)
+            )
+            con.commit()
+
+            v1_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
+            v2_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
+            attempts_init = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
+
+        assert v1_init == 2811, f"Esperava 2.811 questões v1, obteve {v1_init}"
+        assert v2_init == 100, f"Esperava 100 questões v2, obteve {v2_init}"
+        assert attempts_init == 1
+
+        # Verificar índices no estado da revisão 16
+        test_eng = create_engine(db_url)
+        insp_16_init = inspect(test_eng)
+        idx_16_init = {i["name"]: i for i in insp_16_init.get_indexes("exam_questions")}
+        assert "ix_exam_questions_random_rank" in idx_16_init, "Revisão 16 histórica deve conter ix_exam_questions_random_rank"
+        assert "ix_exam_questions_catalog_status_rank_id" not in idx_16_init, "Revisão 16 NÃO deve conter ix_exam_questions_catalog_status_rank_id"
+        test_eng.dispose()
 
         # Passo 1: 16 -> 17
         command.upgrade(cfg, "20260902_17")
