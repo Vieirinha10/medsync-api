@@ -1,7 +1,7 @@
 {
   "test_name": "test_integration_frontend_api_flow",
   "test_classification": "Integração da API, banco temporário e importador",
-  "executed_at": "2026-09-02T22:22:11.872639+00:00",
+  "executed_at": "2026-09-03T00:42:27.463844+00:00",
   "status": "PASSED",
   "database_type": "SQLite efêmero isolado",
   "fixture_loaded": "pilot-100-import-ready.jsonl",
@@ -9,18 +9,18 @@
   "active_version_configured": "v2",
   "client_query_sent": "GET /questoes?quantidade=10 (sem parâmetro de versão)",
   "client_payload_verified": {
-    "question_id": 55,
+    "question_id": 7,
     "statement_present": true,
-    "alternatives_count": 4,
+    "alternatives_count": 5,
     "alternativa_correta_id_in_get": false,
     "gabarito_in_get": false,
     "is_correct_in_alternatives": false
   },
   "answering_flow_verified": {
-    "endpoint": "POST /questoes/55/responder",
-    "submitted_alternative": "C",
+    "endpoint": "POST /questoes/7/responder",
+    "submitted_alternative": "E",
     "result_correta": true,
-    "revealed_gabarito": "C",
+    "revealed_gabarito": "E",
     "explicacao": null,
     "explanation_status": "PENDING"
   },

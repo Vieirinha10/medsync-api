@@ -1338,4 +1338,160 @@ def test_13_v15_deterministic_tiebreak_and_rank_resolution(isolated_db, client):
         db.close()
 
 
+def test_14_v16_migration_scenarios_and_data_preservation():
+    """Valida exaustivamente os cenários de migração da v1.6 (Cenário B):
+    1. Banco que já recebeu a revisão 16:
+       - Preservação integral das 2.811 questões v1 e 100 questões v2;
+       - Preservação de QuestionAttempt relacionado;
+       - 16 -> 17: cria ix_exam_questions_catalog_status_rank_id e remove ix_exam_questions_random_rank;
+       - 17 -> 16: reverte para o estado histórico exato da revisão 16;
+       - 16 -> 17: re-upgrade idempotente com preservação de dados.
+    2. Instalação limpa percorrendo 15 -> 16 -> 17:
+       - Confirma que a cadeia de migrações 15 -> 16 -> 17 produz o schema final correto.
+    """
+    import shutil
+    import sqlite3
+    import tempfile
+    from alembic.config import Config
+    from alembic import command
+    from pathlib import Path
+
+    api_dir = Path(__file__).parent.parent
+    backup_path = api_dir / "medsync.db.backup_pre_staging_v1.bak"
+    alembic_ini = api_dir / "alembic.ini"
+
+    assert backup_path.exists(), "Backup do banco original deve existir para o teste de migração!"
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="test_mig_14_"))
+    try:
+        # Cenário 1: Banco existente com 16 aplicada
+        disposable_db = temp_dir / "disposable.db"
+        shutil.copy2(backup_path, disposable_db)
+        db_url = f"sqlite:///{disposable_db.as_posix()}"
+
+        old_env = os.environ.get("DATABASE_URL")
+        old_db_url = database.DATABASE_URL
+        os.environ["DATABASE_URL"] = db_url
+        database.DATABASE_URL = db_url
+
+        # Inserir QuestionAttempt para comprovar zero perda
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            v1_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
+            v2_init = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
+            first_q = cur.execute("SELECT id FROM exam_questions LIMIT 1").fetchone()[0]
+            first_u = cur.execute("SELECT id FROM users LIMIT 1").fetchone()[0]
+            cur.execute(
+                "INSERT INTO question_attempts (id_usuario, id_questao, alternativa_selecionada_id, correta, tempo_segundos, created_at) "
+                "VALUES (?, ?, 'A', 1, 10, '2026-09-02 21:00:00')",
+                (first_u, first_q)
+            )
+            con.commit()
+            attempts_init = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
+
+        assert v1_init == 2811, f"Esperava 2.811 questões v1, obteve {v1_init}"
+        assert v2_init == 100, f"Esperava 100 questões v2, obteve {v2_init}"
+
+        cfg = Config(str(alembic_ini))
+        cfg.set_main_option("sqlalchemy.url", db_url)
+        cfg.set_main_option("script_location", str(api_dir / "alembic"))
+
+        # Passo 1: 16 -> 17
+        command.upgrade(cfg, "20260902_17")
+        test_eng = create_engine(db_url)
+        insp_17 = inspect(test_eng)
+        idx_17 = {i["name"]: i for i in insp_17.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank_id" in idx_17
+        assert idx_17["ix_exam_questions_catalog_status_rank_id"]["column_names"] == ["catalog_version", "status", "random_rank", "id"]
+        assert "ix_exam_questions_random_rank" not in idx_17
+        test_eng.dispose()
+
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            v1_17 = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
+            v2_17 = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
+            att_17 = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
+            ver_17 = cur.execute("SELECT version_num FROM alembic_version").fetchone()[0]
+
+        assert ver_17 == "20260902_17"
+        assert v1_17 == 2811
+        assert v2_17 == 100
+        assert att_17 == attempts_init
+
+        # Passo 2: 17 -> 16
+        command.downgrade(cfg, "20260902_16")
+        test_eng = create_engine(db_url)
+        insp_16 = inspect(test_eng)
+        idx_16 = {i["name"]: i for i in insp_16.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank_id" not in idx_16
+        assert "ix_exam_questions_random_rank" in idx_16
+        test_eng.dispose()
+
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            v1_16 = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
+            v2_16 = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
+            att_16 = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
+            ver_16 = cur.execute("SELECT version_num FROM alembic_version").fetchone()[0]
+
+        assert ver_16 == "20260902_16"
+        assert v1_16 == 2811
+        assert v2_16 == 100
+        assert att_16 == attempts_init
+
+        # Passo 3: 16 -> 17 novamente
+        command.upgrade(cfg, "20260902_17")
+        test_eng = create_engine(db_url)
+        insp_re = inspect(test_eng)
+        idx_re = {i["name"]: i for i in insp_re.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank_id" in idx_re
+        assert "ix_exam_questions_random_rank" not in idx_re
+        test_eng.dispose()
+
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            v1_re = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v1' OR catalog_version IS NULL").fetchone()[0]
+            v2_re = cur.execute("SELECT count(id) FROM exam_questions WHERE catalog_version='v2'").fetchone()[0]
+            att_re = cur.execute("SELECT count(id) FROM question_attempts").fetchone()[0]
+            ver_re = cur.execute("SELECT version_num FROM alembic_version").fetchone()[0]
+
+        assert ver_re == "20260902_17"
+        assert v1_re == 2811
+        assert v2_re == 100
+        assert att_re == attempts_init
+
+        # Cenário 2: Instalação limpa 15 -> 16 -> 17
+        clean_db = temp_dir / "clean.db"
+        clean_url = f"sqlite:///{clean_db.as_posix()}"
+        os.environ["DATABASE_URL"] = clean_url
+        database.DATABASE_URL = clean_url
+
+        cfg_clean = Config(str(alembic_ini))
+        cfg_clean.set_main_option("sqlalchemy.url", clean_url)
+        cfg_clean.set_main_option("script_location", str(api_dir / "alembic"))
+
+        command.upgrade(cfg_clean, "20260827_15")
+        command.upgrade(cfg_clean, "head")
+
+        clean_eng = create_engine(clean_url)
+        insp_clean = inspect(clean_eng)
+        idx_clean = {i["name"]: i for i in insp_clean.get_indexes("exam_questions")}
+        assert "ix_exam_questions_catalog_status_rank_id" in idx_clean
+        assert idx_clean["ix_exam_questions_catalog_status_rank_id"]["column_names"] == ["catalog_version", "status", "random_rank", "id"]
+        assert "ix_exam_questions_random_rank" not in idx_clean
+        clean_eng.dispose()
+
+        with sqlite3.connect(clean_db) as con:
+            ver_clean = con.cursor().execute("SELECT version_num FROM alembic_version").fetchone()[0]
+        assert ver_clean == "20260902_17"
+
+    finally:
+        database.DATABASE_URL = old_db_url
+        if old_env is not None:
+            os.environ["DATABASE_URL"] = old_env
+        else:
+            os.environ.pop("DATABASE_URL", None)
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
 

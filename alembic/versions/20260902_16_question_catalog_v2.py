@@ -91,15 +91,12 @@ def upgrade() -> None:
         if "tipo_prova" not in existing_cols:
             batch_op.add_column(sa.Column("tipo_prova", sa.String(60), nullable=True))
 
-        if "ix_exam_questions_catalog_status_rank_id" not in existing_indexes:
-            batch_op.create_index(
-                "ix_exam_questions_catalog_status_rank_id",
-                ["catalog_version", "status", "random_rank", "id"],
-            )
         if "ix_exam_questions_catalog_version" not in existing_indexes:
             batch_op.create_index("ix_exam_questions_catalog_version", ["catalog_version"])
         if "ix_exam_questions_source_id" not in existing_indexes:
             batch_op.create_index("ix_exam_questions_source_id", ["source_id"], unique=True)
+        if "ix_exam_questions_random_rank" not in existing_indexes:
+            batch_op.create_index("ix_exam_questions_random_rank", ["random_rank"])
         if "ix_exam_questions_content_hash_plain" not in existing_indexes:
             batch_op.create_index("ix_exam_questions_content_hash_plain", ["content_hash_plain"])
         if "ix_exam_questions_tema" not in existing_indexes:
@@ -154,10 +151,9 @@ def downgrade() -> None:
     # 2. Reverter colunas e índices em exam_questions
     with op.batch_alter_table("exam_questions") as batch_op:
         for idx in [
-            "ix_exam_questions_catalog_status_rank_id",
-            "ix_exam_questions_catalog_status_rank",
             "ix_exam_questions_tema",
             "ix_exam_questions_content_hash_plain",
+            "ix_exam_questions_random_rank",
             "ix_exam_questions_source_id",
             "ix_exam_questions_catalog_version",
             "ix_exam_questions_content_hash",  # compatibilidade com schema intermediário
