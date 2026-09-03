@@ -1,0 +1,40 @@
+{
+  "report": "staging_homologation_validation",
+  "timestamp": "2026-09-03T03:08:07.168469+00:00",
+  "database_info": {
+    "engine": "PostgreSQL 16.15",
+    "environment": "Staging (Render Virginia)",
+    "alembic_revision": "20260902_17"
+  },
+  "indexes_audit": {
+    "composite_index": "ix_exam_questions_catalog_status_rank_id",
+    "composite_index_columns": [
+      "catalog_version",
+      "status",
+      "random_rank",
+      "id"
+    ],
+    "isolated_index_absent": true,
+    "status": "APPROVED"
+  },
+  "catalog_audit": {
+    "v2_questions_total": 100,
+    "v1_questions_total": 0,
+    "status": "APPROVED"
+  },
+  "explain_analyze_buffers": {
+    "query_1_node": "Index Scan",
+    "query_1_time_ms": 0.05,
+    "query_2_node": "Index Scan",
+    "query_2_time_ms": 0.055,
+    "status": "APPROVED"
+  },
+  "api_e2e_audit": {
+    "catalog_active_version": "v2",
+    "gabarito_protection_before_answer": "PASSED",
+    "correct_answer_flow": "PASSED",
+    "incorrect_answer_flow": "PASSED",
+    "pending_editorial_banner": "CONFIRMED",
+    "zero_synapse_zero_ai": "CONFIRMED_100_PERCENT"
+  }
+}
