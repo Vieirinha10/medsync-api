@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, inspect, select, text
 from sqlalchemy.orm import Session
 
@@ -75,4 +75,102 @@ def system_info(db: Session = Depends(get_db)):
         "total_v1": total_v1,
         "total_v2": total_v2,
     }
+
+
+
+@router.post("/sistema/catalogo/batch")
+async def sync_catalog_questions(
+    fastapi_request: Request,
+    db: Session = Depends(get_db),
+):
+    import gzip
+    import json
+    import os
+    from datetime import UTC, datetime
+    from models import ExamQuestion
+
+    secret = fastapi_request.headers.get("X-Migration-Secret")
+    expected = os.getenv(
+        "MIGRATION_SECRET_KEY", "medsync-secret-catalog-v2-sync-token-2026"
+    )
+    if not secret or secret != expected:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso não autorizado.",
+        )
+
+    raw_body = await fastapi_request.body()
+    if fastapi_request.headers.get("content-encoding") == "gzip":
+        try:
+            raw_body = gzip.decompress(raw_body)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Erro descompactando gzip: {e}",
+            )
+
+    try:
+        data = json.loads(raw_body.decode("utf-8"))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Erro decodificando JSON: {e}",
+        )
+
+    questions = data.get("questions", [])
+    if not questions:
+        return {"inserted": 0, "status": "empty"}
+
+    for q in questions:
+        if isinstance(q.get("alternativas"), str):
+            try:
+                q["alternativas"] = json.loads(q["alternativas"])
+            except Exception:
+                pass
+        if isinstance(q.get("explicacao"), str) and q["explicacao"]:
+            try:
+                q["explicacao"] = json.loads(q["explicacao"])
+            except Exception:
+                pass
+        for dt_col in ("created_at", "updated_at"):
+            val = q.get(dt_col)
+            if isinstance(val, str):
+                try:
+                    q[dt_col] = datetime.fromisoformat(val)
+                except Exception:
+                    q[dt_col] = datetime.now(UTC)
+            elif val is None:
+                q[dt_col] = datetime.now(UTC)
+
+    dialect = db.get_bind().dialect.name
+    if dialect == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+        stmt = pg_insert(ExamQuestion).values(questions)
+        stmt = stmt.on_conflict_do_nothing(index_elements=["id"])
+        db.execute(stmt)
+    else:
+        from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+        stmt = sqlite_insert(ExamQuestion).values(questions)
+        stmt = stmt.on_conflict_do_nothing(index_elements=["id"])
+        db.execute(stmt)
+
+    db.commit()
+
+    total_v2 = (
+        db.scalar(
+            select(func.count(ExamQuestion.id)).where(
+                ExamQuestion.catalog_version == "v2"
+            )
+        )
+        or 0
+    )
+
+    return {
+        "inserted": len(questions),
+        "total_v2_in_db": total_v2,
+        "status": "success",
+    }
+
 

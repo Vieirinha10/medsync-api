@@ -95,8 +95,13 @@ class SecurityAndObservabilityMiddleware(BaseHTTPMiddleware):
         call_next: RequestResponseEndpoint,
     ) -> Response:
         content_length = request.headers.get("content-length")
+        max_bytes = (
+            10_000_000
+            if request.url.path.startswith("/sistema/catalogo")
+            else MAX_REQUEST_BODY_BYTES
+        )
         if content_length and content_length.isdigit():
-            if int(content_length) > MAX_REQUEST_BODY_BYTES:
+            if int(content_length) > max_bytes:
                 return JSONResponse(
                     status_code=413,
                     content={
