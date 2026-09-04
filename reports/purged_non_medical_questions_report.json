@@ -1,0 +1,22 @@
+{
+  "status": "PURGE_SUCCESSFUL",
+  "catalog_version": "v2",
+  "total_purged": 5642,
+  "attempts_removed": 5,
+  "reports_removed": 0,
+  "aliases_removed": 0,
+  "breakdown": {
+    "Direito": 2551,
+    "Língua Portuguesa (Português)": 802,
+    "USMLE": 738,
+    "Informática": 450,
+    "Outros": 440,
+    "Raciocínio Lógico": 363,
+    "Inglês": 150,
+    "Maus tratos à crianças e adolescentes": 54,
+    "Matemática": 39,
+    "Atualidades": 28,
+    "Sexualidade": 24,
+    "Formação Geral - ENADE": 3
+  }
+}

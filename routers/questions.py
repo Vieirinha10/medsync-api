@@ -1,4 +1,8 @@
+import collections
+import json
 import os
+import pathlib
+import re
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
@@ -158,6 +162,21 @@ def resolve_catalog_version(
     return active_version
 
 
+def sanitize_facet_label(val: object) -> str:
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if s.startswith("{") and ("'n':" in s or '"n":' in s):
+        m = re.search(r"['\"]n['\"]\s*:\s*['\"]([^'\"]+)['\"]", s)
+        if m:
+            return m.group(1).strip()
+    if "[$$]" in s:
+        parts = [p.strip() for p in s.split("[$$]") if p.strip()]
+        if parts:
+            return parts[-1]
+    return s
+
+
 def serialize_question(question: ExamQuestion) -> dict:
     safe_alts = []
     for alt in (question.alternativas or []):
@@ -171,9 +190,9 @@ def serialize_question(question: ExamQuestion) -> dict:
         "ano": question.ano,
         "instituicao": question.instituicao,
         "cabecalho": question.cabecalho,
-        "especialidade": question.especialidade,
-        "assunto": question.assunto,
-        "tema": getattr(question, "tema", None),
+        "especialidade": sanitize_facet_label(question.especialidade),
+        "assunto": sanitize_facet_label(question.assunto),
+        "tema": sanitize_facet_label(getattr(question, "tema", None)),
         "regiao": getattr(question, "regiao", None),
         "enunciado": question.enunciado,
         "statement_rich_html": question.statement_rich_html or question.enunciado,
@@ -184,17 +203,25 @@ def serialize_question(question: ExamQuestion) -> dict:
 
 
 def facet(db: Session, column, catalog_version: str = "v1") -> list[dict[str, object]]:
+    raw_facets = db.execute(
+        select(column, func.count(ExamQuestion.id))
+        .where(
+            ExamQuestion.status == "publicada",
+            ExamQuestion.catalog_version == catalog_version,
+        )
+        .group_by(column)
+        .order_by(func.count(ExamQuestion.id).desc(), column)
+    ).all()
+
+    aggregated = collections.defaultdict(int)
+    for value, total in raw_facets:
+        label = sanitize_facet_label(value)
+        if label:
+            aggregated[label] += int(total)
+
     return [
-        {"valor": str(value), "total": int(total)}
-        for value, total in db.execute(
-            select(column, func.count(ExamQuestion.id))
-            .where(
-                ExamQuestion.status == "publicada",
-                ExamQuestion.catalog_version == catalog_version,
-            )
-            .group_by(column)
-            .order_by(func.count(ExamQuestion.id).desc(), column)
-        ).all()
+        {"valor": label, "total": total}
+        for label, total in sorted(aggregated.items(), key=lambda x: x[1], reverse=True)
     ]
 
 
@@ -532,7 +559,8 @@ def report_question(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if db.get(ExamQuestion, question_id) is None:
+    question = db.get(ExamQuestion, question_id)
+    if question is None:
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
     existing_report = db.scalar(
         select(QuestionReport)
@@ -544,24 +572,55 @@ def report_question(
         .order_by(QuestionReport.created_at.desc())
         .limit(1)
     )
+    report_id = None
     if existing_report is not None:
         existing_report.motivo = payload.motivo
         existing_report.descricao = payload.descricao
         db.commit()
-        return {
-            "id": existing_report.id,
-            "message": "Seu relato aberto foi atualizado para revisão editorial.",
-        }
-    report = QuestionReport(
-        id_usuario=current_user.id,
-        id_questao=question_id,
-        motivo=payload.motivo,
-        descricao=payload.descricao,
-    )
-    db.add(report)
-    db.commit()
-    db.refresh(report)
-    return {"id": report.id, "message": "Relato enviado para revisão editorial."}
+        report_id = existing_report.id
+        msg = "Seu relato aberto foi atualizado para revisão editorial."
+    else:
+        report = QuestionReport(
+            id_usuario=current_user.id,
+            id_questao=question_id,
+            motivo=payload.motivo,
+            descricao=payload.descricao,
+        )
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+        report_id = report.id
+        msg = "Relato enviado para revisão editorial."
+
+    # Registro de controle imediato para o agente
+    try:
+        flag_file = pathlib.Path("reports/sinalizadas_para_revisao.json")
+        flag_file.parent.mkdir(parents=True, exist_ok=True)
+        items = []
+        if flag_file.exists():
+            try:
+                items = json.loads(flag_file.read_text(encoding="utf-8"))
+            except Exception:
+                items = []
+        # Evitar duplicatas do mesmo question_id
+        items = [i for i in items if i.get("question_id") != question_id]
+        items.append({
+            "report_id": report_id,
+            "question_id": question_id,
+            "source_id": question.source_id,
+            "enunciado": question.enunciado,
+            "instituicao": question.instituicao,
+            "ano": question.ano,
+            "motivo": payload.motivo,
+            "descricao": payload.descricao,
+            "user_email": current_user.email,
+            "timestamp": datetime.now(UTC).isoformat(),
+        })
+        flag_file.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+    return {"id": report_id, "message": msg}
 
 
 @router.get("/admin/questoes", response_model=AdminQuestionsResponse)

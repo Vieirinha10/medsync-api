@@ -5,7 +5,10 @@ __pycache__/
 .pytest_cache/
 .env
 *.db
+*.db-wal
+*.db-shm
 *.bak
+data/catalog_batches/
 
 # Estado local do Graphify. O grafo, o relatório, a análise e o manifesto são
 # versionados; cache, caminhos absolutos e custos permanecem locais.

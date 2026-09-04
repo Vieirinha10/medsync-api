@@ -81,12 +81,12 @@ def validate_and_normalize_record(
         raise ValueError(f"Linha {line_num} (source_id={source_id}): registro em quarentena: {quarantine}")
 
     media_class = rec.get("media_classification")
-    if media_class not in {"NO_VISUAL_DEPENDENCY", "VISUAL_TERM_CONTEXT_ONLY"}:
+    if media_class not in {"NO_VISUAL_DEPENDENCY", "VISUAL_TERM_CONTEXT_ONLY", "REQUIRES_IMAGE"}:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): media_classification '{media_class}' inválida.")
 
     rights_status = rec.get("image_rights_status")
-    if rights_status != "NONE_REQUIRED":
-        raise ValueError(f"Linha {line_num} (source_id={source_id}): image_rights_status '{rights_status}' não é NONE_REQUIRED.")
+    if rights_status not in {"NONE_REQUIRED", "EDITORIAL_EXAM_FAIR_USE", "PUBLIC_DOMAIN"}:
+        raise ValueError(f"Linha {line_num} (source_id={source_id}): image_rights_status '{rights_status}' inválido.")
 
     if rec.get("has_video") is not False:
         raise ValueError(f"Linha {line_num} (source_id={source_id}): has_video deve ser False.")
@@ -207,8 +207,8 @@ def validate_and_normalize_record(
         return s if s else None
 
     # Cabeçalho para interface legacy
-    inst_clean = clean_opt(rec.get("instituicao"))
-    cabecalho = f"{inst_clean} · {ano_val}" if inst_clean else f"Prova · {ano_val}"
+    inst_clean = clean_opt(rec.get("instituicao")) or clean_opt(rec.get("banca")) or "Prova Oficial"
+    cabecalho = f"{inst_clean} · {ano_val}"
 
     # Assunto / Tema sem preenchimento artificial
     esp_clean = clean_opt(rec.get("especialidade"))
@@ -475,11 +475,16 @@ def main():
                 json.dump(report, f, indent=2, ensure_ascii=False)
             print(f"Relatório gravado em {out_p}")
 
-        print(json.dumps(report, indent=2, ensure_ascii=False))
+        summary = {k: v for k, v in report.items() if k != "records"}
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
 
     finally:
         db.close()
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
     main()

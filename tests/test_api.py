@@ -17,6 +17,7 @@ from alembic import command
 TEST_DB = Path(tempfile.gettempdir()) / f"medsync-{uuid.uuid4().hex}.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB.as_posix()}"
 os.environ["JWT_SECRET_KEY"] = "test-secret-with-at-least-32-characters"
+os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v1"
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 command.upgrade(Config("alembic.ini"), "head")

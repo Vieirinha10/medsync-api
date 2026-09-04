@@ -1,3 +1,5 @@
+import json
+import pathlib
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,6 +11,8 @@ from database import get_db
 from models import Announcement, User, VisualChallenge
 from schemas import (
     AnnouncementResponse,
+    MessageResponse,
+    QuestionReportCreate,
     VisualChallengeAnswerRequest,
     VisualChallengeAnswerResponse,
 )
@@ -117,6 +121,42 @@ def answer_visual_challenge(
         "fonte_licenca": source_license,
         "fonte_url": source_url,
     }
+
+
+@router.post(
+    "/desafios-visuais/{challenge_id}/reportar",
+    response_model=MessageResponse,
+)
+def report_visual_challenge(
+    challenge_id: str,
+    payload: QuestionReportCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        flag_file = pathlib.Path("reports/desafios_sinalizados_para_revisao.json")
+        flag_file.parent.mkdir(parents=True, exist_ok=True)
+        items = []
+        if flag_file.exists():
+            try:
+                items = json.loads(flag_file.read_text(encoding="utf-8"))
+            except Exception:
+                items = []
+        items = [i for i in items if i.get("challenge_id") != challenge_id]
+        builtin_info = BUILTIN_CHALLENGE_ANSWERS.get(challenge_id)
+        items.append({
+            "challenge_id": challenge_id,
+            "diagnosis": builtin_info["diagnosis"] if builtin_info else None,
+            "motivo": payload.motivo,
+            "descricao": payload.descricao,
+            "user_email": current_user.email,
+            "timestamp": datetime.now(UTC).isoformat(),
+        })
+        flag_file.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+    return {"message": "Desafio visual sinalizado com sucesso para correção."}
 
 
 @router.get("/avisos", response_model=list[AnnouncementResponse])
