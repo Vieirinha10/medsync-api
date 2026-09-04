@@ -1346,7 +1346,7 @@ def test_14_v16_migration_scenarios_and_data_preservation():
     3. 16 -> 17: cria ix_exam_questions_catalog_status_rank_id e remove ix_exam_questions_random_rank;
     4. 17 -> 16: reverte para o estado histórico exato da revisão 16;
     5. 16 -> 17: re-upgrade idempotente com preservação total de v1, v2 e attempts;
-    6. Instalação limpa percorrendo 15 -> 16 -> 17 resultando no schema final com índice composto de 4 colunas.
+    6. Instalação limpa percorrendo 15 -> 16 -> 17 -> 18, mantendo o schema final com índice composto de 4 colunas.
     """
     import shutil
     import sqlite3
@@ -1532,7 +1532,7 @@ def test_14_v16_migration_scenarios_and_data_preservation():
 
         with sqlite3.connect(clean_db) as con:
             ver_clean = con.cursor().execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver_clean == "20260902_17"
+        assert ver_clean == "20260904_18"
 
     finally:
         database.DATABASE_URL = old_db_url
@@ -1541,6 +1541,5 @@ def test_14_v16_migration_scenarios_and_data_preservation():
         else:
             os.environ.pop("DATABASE_URL", None)
         shutil.rmtree(temp_dir, ignore_errors=True)
-
 
 
