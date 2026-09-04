@@ -21,6 +21,7 @@ from schemas import (
     QuestionAnswerRequest,
     QuestionAnswerResponse,
     QuestionExplanation,
+    QuestionFacetCount,
     QuestionListItem,
     QuestionMetadataResponse,
     QuestionPerformanceResponse,
@@ -121,6 +122,16 @@ def question_answer_distribution(
 
 SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
 
+# Primeira etapa da taxonomia navegável. No catálogo v2, Hematologia foi
+# importada como tema de Clínica Médica; para o aluno, ela deve se comportar
+# como especialidade e seus subtemas devem compor o filtro de assuntos.
+PROMOTED_SPECIALTIES = {
+    "Hematologia": {
+        "base_specialty": "Clínica Médica",
+        "theme": "Hematologia",
+    },
+}
+
 
 def get_active_catalog_version() -> str:
     ver = os.getenv("QUESTION_CATALOG_ACTIVE_VERSION", "v2").strip().lower()
@@ -185,14 +196,23 @@ def serialize_question(question: ExamQuestion) -> dict:
             "texto": alt.get("texto") or alt.get("body_plain") or alt.get("body") or "",
             "html": alt.get("html") or alt.get("body_rich_html") or alt.get("texto") or alt.get("body_plain") or "",
         })
+    specialty = sanitize_facet_label(question.especialidade)
+    subject = sanitize_facet_label(question.assunto)
+    theme = sanitize_facet_label(getattr(question, "tema", None))
+    subtheme = sanitize_facet_label(getattr(question, "subtema", None))
+    promoted = PROMOTED_SPECIALTIES.get(theme)
+    if promoted and specialty == promoted["base_specialty"]:
+        specialty = theme
+        subject = subtheme or "Geral"
+
     return {
         "id": question.id,
         "ano": question.ano,
         "instituicao": question.instituicao,
         "cabecalho": question.cabecalho,
-        "especialidade": sanitize_facet_label(question.especialidade),
-        "assunto": sanitize_facet_label(question.assunto),
-        "tema": sanitize_facet_label(getattr(question, "tema", None)),
+        "especialidade": specialty,
+        "assunto": subject,
+        "tema": theme,
         "regiao": getattr(question, "regiao", None),
         "enunciado": question.enunciado,
         "statement_rich_html": question.statement_rich_html or question.enunciado,
@@ -202,12 +222,37 @@ def serialize_question(question: ExamQuestion) -> dict:
     }
 
 
-def facet(db: Session, column, catalog_version: str = "v1") -> list[dict[str, object]]:
+def specialty_conditions(specialty: str) -> list:
+    promoted = PROMOTED_SPECIALTIES.get(specialty)
+    if promoted:
+        return [
+            ExamQuestion.especialidade == promoted["base_specialty"],
+            ExamQuestion.tema == promoted["theme"],
+        ]
+
+    conditions = [ExamQuestion.especialidade == specialty]
+    promoted_themes = [item["theme"] for item in PROMOTED_SPECIALTIES.values()]
+    if specialty in {
+        item["base_specialty"] for item in PROMOTED_SPECIALTIES.values()
+    }:
+        conditions.append(
+            or_(ExamQuestion.tema.is_(None), ExamQuestion.tema.not_in(promoted_themes))
+        )
+    return conditions
+
+
+def facet(
+    db: Session,
+    column,
+    catalog_version: str = "v1",
+    extra_conditions: tuple = (),
+) -> list[dict[str, object]]:
     raw_facets = db.execute(
         select(column, func.count(ExamQuestion.id))
         .where(
             ExamQuestion.status == "publicada",
             ExamQuestion.catalog_version == catalog_version,
+            *extra_conditions,
         )
         .group_by(column)
         .order_by(func.count(ExamQuestion.id).desc(), column)
@@ -229,6 +274,44 @@ CATALOG_METADATA_CACHE_FILE = (
     pathlib.Path(__file__).resolve().parent.parent / "data" / "catalog_metadata_cache.json"
 )
 _CATALOG_METADATA_MEMORY_CACHE: dict[str, dict] = {}
+_CATALOG_SUBJECT_MEMORY_CACHE: dict[tuple[str, str], list[dict[str, object]]] = {}
+
+
+def organize_filter_metadata(meta: dict) -> dict:
+    """Separa especialidades de assuntos sem alterar o cache canônico bruto."""
+    specialties = [dict(item) for item in meta.get("especialidades", [])]
+    subjects = [dict(item) for item in meta.get("assuntos", [])]
+
+    for promoted_name, promoted in PROMOTED_SPECIALTIES.items():
+        promoted_total = next(
+            (
+                int(item["total"])
+                for item in subjects
+                if sanitize_facet_label(item.get("valor")) == promoted["theme"]
+            ),
+            0,
+        )
+        if promoted_total and not any(
+            sanitize_facet_label(item.get("valor")) == promoted_name
+            for item in specialties
+        ):
+            specialties.append({"valor": promoted_name, "total": promoted_total})
+            for item in specialties:
+                if sanitize_facet_label(item.get("valor")) == promoted["base_specialty"]:
+                    item["total"] = max(0, int(item["total"]) - promoted_total)
+                    break
+
+    specialty_names = {
+        sanitize_facet_label(item.get("valor")) for item in specialties
+    }
+    subjects = [
+        item
+        for item in subjects
+        if sanitize_facet_label(item.get("valor")) not in specialty_names
+    ]
+    specialties.sort(key=lambda item: (-int(item["total"]), str(item["valor"])))
+
+    return {**meta, "especialidades": specialties, "assuntos": subjects}
 
 
 def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
@@ -289,8 +372,12 @@ def invalidate_catalog_metadata_cache(catalog_version: str | None = None) -> Non
     global _CATALOG_METADATA_MEMORY_CACHE
     if catalog_version:
         _CATALOG_METADATA_MEMORY_CACHE.pop(catalog_version, None)
+        for cache_key in list(_CATALOG_SUBJECT_MEMORY_CACHE):
+            if cache_key[0] == catalog_version:
+                _CATALOG_SUBJECT_MEMORY_CACHE.pop(cache_key, None)
     else:
         _CATALOG_METADATA_MEMORY_CACHE.clear()
+        _CATALOG_SUBJECT_MEMORY_CACHE.clear()
 
 
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
@@ -300,7 +387,9 @@ def question_metadata(
     db: Session = Depends(get_db),
 ):
     effective_version = resolve_catalog_version(catalog_version, current_user)
-    meta = get_cached_catalog_metadata(db, effective_version)
+    meta = organize_filter_metadata(
+        get_cached_catalog_metadata(db, effective_version)
+    )
     if meta.get("total", 0) == 0:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -320,6 +409,41 @@ def question_metadata(
         "respondidas_hoje": used,
         "restantes_hoje": None if premium else max(0, FREE_DAILY_LIMIT - used),
     }
+
+
+@router.get(
+    "/questoes/assuntos",
+    response_model=list[QuestionFacetCount],
+)
+def question_subjects(
+    especialidade: str = Query(min_length=1, max_length=160),
+    catalog_version: str | None = Query(default=None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retorna somente os assuntos pertencentes à especialidade escolhida."""
+    effective_version = resolve_catalog_version(catalog_version, current_user)
+    specialty = sanitize_facet_label(especialidade)
+    cache_key = (effective_version, specialty)
+    if cache_key in _CATALOG_SUBJECT_MEMORY_CACHE:
+        return _CATALOG_SUBJECT_MEMORY_CACHE[cache_key]
+
+    promoted = PROMOTED_SPECIALTIES.get(specialty)
+    subject_column = ExamQuestion.subtema if promoted else ExamQuestion.assunto
+    subjects = facet(
+        db,
+        subject_column,
+        effective_version,
+        tuple(specialty_conditions(specialty)),
+    )
+    excluded_labels = {specialty, *(PROMOTED_SPECIALTIES.keys())}
+    subjects = [
+        item
+        for item in subjects
+        if sanitize_facet_label(item.get("valor")) not in excluded_labels
+    ]
+    _CATALOG_SUBJECT_MEMORY_CACHE[cache_key] = subjects
+    return subjects
 
 
 @router.get("/questoes", response_model=list[QuestionListItem])
@@ -365,9 +489,11 @@ def list_questions(
         ExamQuestion.catalog_version == effective_version,
     )
     if especialidade:
-        statement = statement.where(ExamQuestion.especialidade == especialidade)
+        statement = statement.where(*specialty_conditions(especialidade))
     if assunto:
-        statement = statement.where(ExamQuestion.assunto == assunto)
+        promoted = PROMOTED_SPECIALTIES.get(especialidade or "")
+        subject_column = ExamQuestion.subtema if promoted else ExamQuestion.assunto
+        statement = statement.where(subject_column == assunto)
     if ano:
         statement = statement.where(ExamQuestion.ano == ano)
     if instituicao:

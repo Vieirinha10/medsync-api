@@ -1543,4 +1543,112 @@ def test_14_v16_migration_scenarios_and_data_preservation():
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
+def test_15_hematology_is_a_specialty_with_dependent_subjects(
+    isolated_db,
+    client,
+    auth_headers,
+):
+    """Hematologia deixa de aparecer como assunto e usa subtemas dependentes."""
+    from sqlalchemy import delete
+
+    from routers.questions import invalidate_catalog_metadata_cache
+
+    db: Session = isolated_db["SessionLocal"]()
+    question_ids = [9_900_001, 9_900_002, 9_900_003]
+
+    def make_question(
+        question_id: int,
+        theme: str,
+        subtheme: str,
+        fingerprint: str,
+        random_rank: float,
+    ) -> ExamQuestion:
+        return ExamQuestion(
+            id=question_id,
+            ano=2025,
+            instituicao="Instituição de teste",
+            cabecalho="Instituição de teste · 2025",
+            especialidade="Clínica Médica",
+            assunto=theme,
+            tema=theme,
+            subtema=subtheme,
+            enunciado=f"Questão de {subtheme}.",
+            alternativas=[
+                {"id": "A", "texto": "Correta", "is_correct": True},
+                {"id": "B", "texto": "Incorreta", "is_correct": False},
+            ],
+            alternativa_correta_id="A",
+            fingerprint=fingerprint,
+            status="publicada",
+            catalog_version="v2",
+            random_rank=random_rank,
+        )
+
+    questions = [
+        make_question(
+            question_ids[0],
+            "Hematologia",
+            "Anemias",
+            "test_filter_hematology_anemias",
+            0.000001,
+        ),
+        make_question(
+            question_ids[1],
+            "Hematologia",
+            "Leucemias",
+            "test_filter_hematology_leukemias",
+            0.000002,
+        ),
+        make_question(
+            question_ids[2],
+            "Cardiologia",
+            "Arritmias",
+            "test_filter_cardiology_arrhythmias",
+            0.000003,
+        ),
+    ]
+
+    old_active = os.environ.get("QUESTION_CATALOG_ACTIVE_VERSION")
+    os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v2"
+    try:
+        db.add_all(questions)
+        db.commit()
+        invalidate_catalog_metadata_cache("v2")
+
+        metadata_response = client.get("/questoes/meta", headers=auth_headers)
+        assert metadata_response.status_code == status.HTTP_200_OK
+        metadata = metadata_response.json()
+        specialty_names = {item["valor"] for item in metadata["especialidades"]}
+        global_subject_names = {item["valor"] for item in metadata["assuntos"]}
+        assert "Hematologia" in specialty_names
+        assert "Hematologia" not in global_subject_names
+
+        subjects_response = client.get(
+            "/questoes/assuntos?especialidade=Hematologia",
+            headers=auth_headers,
+        )
+        assert subjects_response.status_code == status.HTTP_200_OK
+        subject_names = {item["valor"] for item in subjects_response.json()}
+        assert {"Anemias", "Leucemias"}.issubset(subject_names)
+        assert "Arritmias" not in subject_names
+
+        list_response = client.get(
+            "/questoes?especialidade=Hematologia&assunto=Anemias&quantidade=10",
+            headers=auth_headers,
+        )
+        assert list_response.status_code == status.HTTP_200_OK
+        items = list_response.json()
+        assert [item["id"] for item in items] == [question_ids[0]]
+        assert items[0]["especialidade"] == "Hematologia"
+        assert items[0]["assunto"] == "Anemias"
+    finally:
+        db.execute(delete(ExamQuestion).where(ExamQuestion.id.in_(question_ids)))
+        db.commit()
+        db.close()
+        invalidate_catalog_metadata_cache("v2")
+        if old_active is not None:
+            os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
+        else:
+            os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
 
