@@ -1,0 +1,3096 @@
+{
+  "v1": {
+    "total": 2811,
+    "especialidades": [
+      {
+        "valor": "Cirurgia",
+        "total": 2811
+      }
+    ],
+    "assuntos": [
+      {
+        "valor": "Trauma e emergência",
+        "total": 1432
+      },
+      {
+        "valor": "Cirurgia torácica",
+        "total": 518
+      },
+      {
+        "valor": "Aparelho digestivo",
+        "total": 297
+      },
+      {
+        "valor": "Cirurgia geral",
+        "total": 164
+      },
+      {
+        "valor": "Urologia",
+        "total": 128
+      },
+      {
+        "valor": "Ortopedia",
+        "total": 127
+      },
+      {
+        "valor": "Neurocirurgia",
+        "total": 57
+      },
+      {
+        "valor": "Cirurgia pediátrica",
+        "total": 32
+      },
+      {
+        "valor": "Cirurgia vascular",
+        "total": 31
+      },
+      {
+        "valor": "Cabeça e pescoço",
+        "total": 21
+      },
+      {
+        "valor": "Transplantes",
+        "total": 3
+      },
+      {
+        "valor": "Perioperatório",
+        "total": 1
+      }
+    ],
+    "anos": [
+      {
+        "valor": "2019",
+        "total": 356
+      },
+      {
+        "valor": "2025",
+        "total": 345
+      },
+      {
+        "valor": "2020",
+        "total": 336
+      },
+      {
+        "valor": "2023",
+        "total": 306
+      },
+      {
+        "valor": "2022",
+        "total": 303
+      },
+      {
+        "valor": "2024",
+        "total": 273
+      },
+      {
+        "valor": "2021",
+        "total": 272
+      },
+      {
+        "valor": "2026",
+        "total": 270
+      },
+      {
+        "valor": "2018",
+        "total": 225
+      },
+      {
+        "valor": "2017",
+        "total": 125
+      }
+    ],
+    "instituicoes": [
+      {
+        "valor": "SES - DF",
+        "total": 51
+      },
+      {
+        "valor": "SUS - SP",
+        "total": 43
+      },
+      {
+        "valor": "SCMSP",
+        "total": 42
+      },
+      {
+        "valor": "UERN",
+        "total": 40
+      },
+      {
+        "valor": "UEPA - BELÉM",
+        "total": 34
+      },
+      {
+        "valor": "HUBFS - HUJBB",
+        "total": 33
+      },
+      {
+        "valor": "FESO",
+        "total": 33
+      },
+      {
+        "valor": "FMJ",
+        "total": 32
+      },
+      {
+        "valor": "AMP",
+        "total": 31
+      },
+      {
+        "valor": "PUC - SP",
+        "total": 29
+      },
+      {
+        "valor": "FAMERP",
+        "total": 29
+      },
+      {
+        "valor": "PUC - PR",
+        "total": 28
+      },
+      {
+        "valor": "HOS",
+        "total": 28
+      },
+      {
+        "valor": "HEJSN",
+        "total": 27
+      },
+      {
+        "valor": "SEMAD",
+        "total": 26
+      },
+      {
+        "valor": "HOA",
+        "total": 26
+      },
+      {
+        "valor": "REVALIDA INEP",
+        "total": 25
+      },
+      {
+        "valor": "HMMG",
+        "total": 25
+      },
+      {
+        "valor": "SCO",
+        "total": 24
+      },
+      {
+        "valor": "HOB - DF",
+        "total": 24
+      },
+      {
+        "valor": "ABC",
+        "total": 24
+      },
+      {
+        "valor": "HSJ - PR",
+        "total": 23
+      },
+      {
+        "valor": "HPEV",
+        "total": 23
+      },
+      {
+        "valor": "HEDA",
+        "total": 23
+      },
+      {
+        "valor": "CERMAM",
+        "total": 23
+      },
+      {
+        "valor": "UNESP",
+        "total": 22
+      },
+      {
+        "valor": "SES - PE",
+        "total": 22
+      },
+      {
+        "valor": "SCMRP",
+        "total": 22
+      },
+      {
+        "valor": "HSL - SP",
+        "total": 22
+      },
+      {
+        "valor": "HPP",
+        "total": 22
+      },
+      {
+        "valor": "HEVV",
+        "total": 22
+      },
+      {
+        "valor": "FAMEMA",
+        "total": 22
+      },
+      {
+        "valor": "SMA - VR",
+        "total": 21
+      },
+      {
+        "valor": "SCM - BM",
+        "total": 21
+      },
+      {
+        "valor": "HMASP",
+        "total": 21
+      },
+      {
+        "valor": "HAC - PR",
+        "total": 21
+      },
+      {
+        "valor": "UNICAMP",
+        "total": 20
+      },
+      {
+        "valor": "UFRJ",
+        "total": 20
+      },
+      {
+        "valor": "UFES",
+        "total": 20
+      },
+      {
+        "valor": "SESAP",
+        "total": 20
+      },
+      {
+        "valor": "SCMCG",
+        "total": 20
+      },
+      {
+        "valor": "ISCMSC",
+        "total": 20
+      },
+      {
+        "valor": "IO",
+        "total": 20
+      },
+      {
+        "valor": "UNOESTE",
+        "total": 19
+      },
+      {
+        "valor": "UDI",
+        "total": 19
+      },
+      {
+        "valor": "IGESP",
+        "total": 18
+      },
+      {
+        "valor": "CMC",
+        "total": 18
+      },
+      {
+        "valor": "AFAMCI",
+        "total": 18
+      },
+      {
+        "valor": "UERJ",
+        "total": 17
+      },
+      {
+        "valor": "SCML",
+        "total": 17
+      },
+      {
+        "valor": "UESPI",
+        "total": 16
+      },
+      {
+        "valor": "SUPREMA",
+        "total": 16
+      },
+      {
+        "valor": "SCMA - SP",
+        "total": 16
+      },
+      {
+        "valor": "PSU - MG",
+        "total": 16
+      },
+      {
+        "valor": "PMFI",
+        "total": 16
+      },
+      {
+        "valor": "HOG",
+        "total": 16
+      },
+      {
+        "valor": "HIAE",
+        "total": 16
+      },
+      {
+        "valor": "HA - AL",
+        "total": 16
+      },
+      {
+        "valor": "FUBOG",
+        "total": 16
+      },
+      {
+        "valor": "USP - SP",
+        "total": 15
+      },
+      {
+        "valor": "SCMSJC",
+        "total": 15
+      },
+      {
+        "valor": "SCMM",
+        "total": 15
+      },
+      {
+        "valor": "IFF",
+        "total": 15
+      },
+      {
+        "valor": "HUSE",
+        "total": 15
+      },
+      {
+        "valor": "HSJC - SP",
+        "total": 15
+      },
+      {
+        "valor": "HMAR",
+        "total": 15
+      },
+      {
+        "valor": "HCP",
+        "total": 15
+      },
+      {
+        "valor": "HASP",
+        "total": 15
+      },
+      {
+        "valor": "AMRIGS",
+        "total": 15
+      },
+      {
+        "valor": "UNITAU",
+        "total": 14
+      },
+      {
+        "valor": "UEVA",
+        "total": 14
+      },
+      {
+        "valor": "SES - GO",
+        "total": 14
+      },
+      {
+        "valor": "SCMMA",
+        "total": 14
+      },
+      {
+        "valor": "IPSEMG",
+        "total": 14
+      },
+      {
+        "valor": "HNMD",
+        "total": 14
+      },
+      {
+        "valor": "UNIMED - RJ",
+        "total": 13
+      },
+      {
+        "valor": "UNIFESP",
+        "total": 13
+      },
+      {
+        "valor": "UAM",
+        "total": 13
+      },
+      {
+        "valor": "SURCE",
+        "total": 13
+      },
+      {
+        "valor": "IBAP",
+        "total": 13
+      },
+      {
+        "valor": "HECI",
+        "total": 13
+      },
+      {
+        "valor": "ENARE",
+        "total": 13
+      },
+      {
+        "valor": "DASA",
+        "total": 13
+      },
+      {
+        "valor": "UNIRV",
+        "total": 12
+      },
+      {
+        "valor": "UNAERP",
+        "total": 12
+      },
+      {
+        "valor": "SMS - SP",
+        "total": 12
+      },
+      {
+        "valor": "PSU - AL",
+        "total": 12
+      },
+      {
+        "valor": "PRMMT",
+        "total": 12
+      },
+      {
+        "valor": "HFA",
+        "total": 12
+      },
+      {
+        "valor": "HCPA",
+        "total": 12
+      },
+      {
+        "valor": "HAOC",
+        "total": 12
+      },
+      {
+        "valor": "USP - RP",
+        "total": 11
+      },
+      {
+        "valor": "UFPI",
+        "total": 11
+      },
+      {
+        "valor": "UEL",
+        "total": 11
+      },
+      {
+        "valor": "SES - RO",
+        "total": 11
+      },
+      {
+        "valor": "IOVALE",
+        "total": 11
+      },
+      {
+        "valor": "HSRC",
+        "total": 11
+      },
+      {
+        "valor": "HCG",
+        "total": 11
+      },
+      {
+        "valor": "HA - SP",
+        "total": 11
+      },
+      {
+        "valor": "FMC",
+        "total": 11
+      },
+      {
+        "valor": "FBHC",
+        "total": 11
+      },
+      {
+        "valor": "EMCM",
+        "total": 11
+      },
+      {
+        "valor": "CCANSPS",
+        "total": 11
+      },
+      {
+        "valor": "UEM",
+        "total": 10
+      },
+      {
+        "valor": "REVALIDA - USP SP",
+        "total": 10
+      },
+      {
+        "valor": "INCA",
+        "total": 10
+      },
+      {
+        "valor": "IDOR",
+        "total": 10
+      },
+      {
+        "valor": "HUOL",
+        "total": 10
+      },
+      {
+        "valor": "HMDI",
+        "total": 10
+      },
+      {
+        "valor": "HC - UFPR",
+        "total": 10
+      },
+      {
+        "valor": "CVV - FJ",
+        "total": 10
+      },
+      {
+        "valor": "AMS - APUCARANA",
+        "total": 10
+      },
+      {
+        "valor": "USCS",
+        "total": 9
+      },
+      {
+        "valor": "UNCISAL",
+        "total": 9
+      },
+      {
+        "valor": "UFSC",
+        "total": 9
+      },
+      {
+        "valor": "UFGD",
+        "total": 9
+      },
+      {
+        "valor": "SCMV",
+        "total": 9
+      },
+      {
+        "valor": "PUC - RS",
+        "total": 9
+      },
+      {
+        "valor": "IOG",
+        "total": 9
+      },
+      {
+        "valor": "HSI - SE",
+        "total": 9
+      },
+      {
+        "valor": "HSA - GUARUJÁ",
+        "total": 9
+      },
+      {
+        "valor": "HEA",
+        "total": 9
+      },
+      {
+        "valor": "CEPOA",
+        "total": 9
+      },
+      {
+        "valor": "CEOQ",
+        "total": 9
+      },
+      {
+        "valor": "USP - HRAC",
+        "total": 8
+      },
+      {
+        "valor": "UFS",
+        "total": 8
+      },
+      {
+        "valor": "SMSCG",
+        "total": 8
+      },
+      {
+        "valor": "SMS - PR",
+        "total": 8
+      },
+      {
+        "valor": "SMS - PIRACICABA",
+        "total": 8
+      },
+      {
+        "valor": "SMS - JP",
+        "total": 8
+      },
+      {
+        "valor": "SCMSJRP",
+        "total": 8
+      },
+      {
+        "valor": "REVALIDA UFMT",
+        "total": 8
+      },
+      {
+        "valor": "IHOA",
+        "total": 8
+      },
+      {
+        "valor": "IAMSPE",
+        "total": 8
+      },
+      {
+        "valor": "FMP",
+        "total": 8
+      },
+      {
+        "valor": "FJG",
+        "total": 8
+      },
+      {
+        "valor": "FAMENE",
+        "total": 8
+      },
+      {
+        "valor": "AMS - LONDRINA",
+        "total": 8
+      },
+      {
+        "valor": "UNIRIO",
+        "total": 7
+      },
+      {
+        "valor": "UNIGRANRIO",
+        "total": 7
+      },
+      {
+        "valor": "UFT",
+        "total": 7
+      },
+      {
+        "valor": "UFPB",
+        "total": 7
+      },
+      {
+        "valor": "UFMA",
+        "total": 7
+      },
+      {
+        "valor": "UFCG",
+        "total": 7
+      },
+      {
+        "valor": "IDPC",
+        "total": 7
+      },
+      {
+        "valor": "HSL - RP",
+        "total": 7
+      },
+      {
+        "valor": "HSD - MA",
+        "total": 7
+      },
+      {
+        "valor": "HDG",
+        "total": 7
+      },
+      {
+        "valor": "HCB - SP",
+        "total": 7
+      },
+      {
+        "valor": "HAS",
+        "total": 7
+      },
+      {
+        "valor": "UVV",
+        "total": 6
+      },
+      {
+        "valor": "USS",
+        "total": 6
+      },
+      {
+        "valor": "UNICESUMAR",
+        "total": 6
+      },
+      {
+        "valor": "UNIATENAS",
+        "total": 6
+      },
+      {
+        "valor": "UFRN",
+        "total": 6
+      },
+      {
+        "valor": "UFCSPA",
+        "total": 6
+      },
+      {
+        "valor": "SUS - RR",
+        "total": 6
+      },
+      {
+        "valor": "SUS - BA",
+        "total": 6
+      },
+      {
+        "valor": "SMS - RJ",
+        "total": 6
+      },
+      {
+        "valor": "SMS - PATOS",
+        "total": 6
+      },
+      {
+        "valor": "SLMANDIC",
+        "total": 6
+      },
+      {
+        "valor": "SCMGO",
+        "total": 6
+      },
+      {
+        "valor": "SCMBH",
+        "total": 6
+      },
+      {
+        "valor": "SCMAS",
+        "total": 6
+      },
+      {
+        "valor": "PSU - GO",
+        "total": 6
+      },
+      {
+        "valor": "PMSO",
+        "total": 6
+      },
+      {
+        "valor": "INTO",
+        "total": 6
+      },
+      {
+        "valor": "HSM - DF",
+        "total": 6
+      },
+      {
+        "valor": "HSJ - MS",
+        "total": 6
+      },
+      {
+        "valor": "HEL",
+        "total": 6
+      },
+      {
+        "valor": "FMS - CG",
+        "total": 6
+      },
+      {
+        "valor": "FIPA",
+        "total": 6
+      },
+      {
+        "valor": "FHSTE",
+        "total": 6
+      },
+      {
+        "valor": "CCG",
+        "total": 6
+      },
+      {
+        "valor": "CADMO",
+        "total": 6
+      },
+      {
+        "valor": "UNIP",
+        "total": 5
+      },
+      {
+        "valor": "UNIFAI",
+        "total": 5
+      },
+      {
+        "valor": "UNESC - ES",
+        "total": 5
+      },
+      {
+        "valor": "UFSCAR",
+        "total": 5
+      },
+      {
+        "valor": "UFAL",
+        "total": 5
+      },
+      {
+        "valor": "REDE AMÉRICAS",
+        "total": 5
+      },
+      {
+        "valor": "PMF",
+        "total": 5
+      },
+      {
+        "valor": "MULTIVIX",
+        "total": 5
+      },
+      {
+        "valor": "IMS",
+        "total": 5
+      },
+      {
+        "valor": "HVL",
+        "total": 5
+      },
+      {
+        "valor": "HVC - SP",
+        "total": 5
+      },
+      {
+        "valor": "HST",
+        "total": 5
+      },
+      {
+        "valor": "HSR - MT",
+        "total": 5
+      },
+      {
+        "valor": "HSCSP",
+        "total": 5
+      },
+      {
+        "valor": "HC - ICC",
+        "total": 5
+      },
+      {
+        "valor": "CSNSC",
+        "total": 5
+      },
+      {
+        "valor": "UNIMED - TERESINA",
+        "total": 4
+      },
+      {
+        "valor": "UNB",
+        "total": 4
+      },
+      {
+        "valor": "UHG",
+        "total": 4
+      },
+      {
+        "valor": "UFMT",
+        "total": 4
+      },
+      {
+        "valor": "UFF",
+        "total": 4
+      },
+      {
+        "valor": "UEPA - SANTARÉM",
+        "total": 4
+      },
+      {
+        "valor": "SMS - SJRP",
+        "total": 4
+      },
+      {
+        "valor": "SISE - SUS",
+        "total": 4
+      },
+      {
+        "valor": "SGCH",
+        "total": 4
+      },
+      {
+        "valor": "SES - RJ",
+        "total": 4
+      },
+      {
+        "valor": "SES - MA",
+        "total": 4
+      },
+      {
+        "valor": "HSJC - SC",
+        "total": 4
+      },
+      {
+        "valor": "HRMS",
+        "total": 4
+      },
+      {
+        "valor": "HRD",
+        "total": 4
+      },
+      {
+        "valor": "HIS",
+        "total": 4
+      },
+      {
+        "valor": "HCMT",
+        "total": 4
+      },
+      {
+        "valor": "HCB - RO",
+        "total": 4
+      },
+      {
+        "valor": "HBM - SJRP",
+        "total": 4
+      },
+      {
+        "valor": "FMS",
+        "total": 4
+      },
+      {
+        "valor": "CLARETIANO",
+        "total": 4
+      },
+      {
+        "valor": "CEP - SE",
+        "total": 4
+      },
+      {
+        "valor": "UNIT - SE",
+        "total": 3
+      },
+      {
+        "valor": "UNIRG",
+        "total": 3
+      },
+      {
+        "valor": "UNIOESTE",
+        "total": 3
+      },
+      {
+        "valor": "UMC - MG",
+        "total": 3
+      },
+      {
+        "valor": "SMS - GO",
+        "total": 3
+      },
+      {
+        "valor": "SAFE",
+        "total": 3
+      },
+      {
+        "valor": "REVALIDA - UEPA",
+        "total": 3
+      },
+      {
+        "valor": "PRONTOBABY",
+        "total": 3
+      },
+      {
+        "valor": "IBR",
+        "total": 3
+      },
+      {
+        "valor": "HUSF",
+        "total": 3
+      },
+      {
+        "valor": "HRL - PR",
+        "total": 3
+      },
+      {
+        "valor": "HOA - AC",
+        "total": 3
+      },
+      {
+        "valor": "HNSC",
+        "total": 3
+      },
+      {
+        "valor": "HMMKB",
+        "total": 3
+      },
+      {
+        "valor": "HCB - AL",
+        "total": 3
+      },
+      {
+        "valor": "HC - AL",
+        "total": 3
+      },
+      {
+        "valor": "HBP - RP",
+        "total": 3
+      },
+      {
+        "valor": "FELUMA",
+        "total": 3
+      },
+      {
+        "valor": "CESUPA",
+        "total": 3
+      },
+      {
+        "valor": "APEC",
+        "total": 3
+      },
+      {
+        "valor": "UNIVAG",
+        "total": 2
+      },
+      {
+        "valor": "UNIMED - JP",
+        "total": 2
+      },
+      {
+        "valor": "UFU",
+        "total": 2
+      },
+      {
+        "valor": "UFJ",
+        "total": 2
+      },
+      {
+        "valor": "UEMA",
+        "total": 2
+      },
+      {
+        "valor": "SPMIP",
+        "total": 2
+      },
+      {
+        "valor": "SMS - LRV",
+        "total": 2
+      },
+      {
+        "valor": "SES - PB",
+        "total": 2
+      },
+      {
+        "valor": "PRONTOMED",
+        "total": 2
+      },
+      {
+        "valor": "PMM - PR",
+        "total": 2
+      },
+      {
+        "valor": "PMG",
+        "total": 2
+      },
+      {
+        "valor": "PASTEUR",
+        "total": 2
+      },
+      {
+        "valor": "ITPAC",
+        "total": 2
+      },
+      {
+        "valor": "IDOMED",
+        "total": 2
+      },
+      {
+        "valor": "ICRS",
+        "total": 2
+      },
+      {
+        "valor": "HZNL",
+        "total": 2
+      },
+      {
+        "valor": "HV - AL",
+        "total": 2
+      },
+      {
+        "valor": "HSFA - SP",
+        "total": 2
+      },
+      {
+        "valor": "HOG - SP",
+        "total": 2
+      },
+      {
+        "valor": "HOG - PR",
+        "total": 2
+      },
+      {
+        "valor": "HEUE",
+        "total": 2
+      },
+      {
+        "valor": "HECNG",
+        "total": 2
+      },
+      {
+        "valor": "HCE",
+        "total": 2
+      },
+      {
+        "valor": "EMESCAM",
+        "total": 2
+      },
+      {
+        "valor": "CSPSL",
+        "total": 2
+      },
+      {
+        "valor": "CHN",
+        "total": 2
+      },
+      {
+        "valor": "AFDM",
+        "total": 2
+      },
+      {
+        "valor": "VILA VERDE - JF",
+        "total": 1
+      },
+      {
+        "valor": "UNINOVE",
+        "total": 1
+      },
+      {
+        "valor": "UNIFAN",
+        "total": 1
+      },
+      {
+        "valor": "UFRB",
+        "total": 1
+      },
+      {
+        "valor": "UFMS",
+        "total": 1
+      },
+      {
+        "valor": "SMS - VITÓRIA",
+        "total": 1
+      },
+      {
+        "valor": "SMS - FLORIPA",
+        "total": 1
+      },
+      {
+        "valor": "SESAPI",
+        "total": 1
+      },
+      {
+        "valor": "SES - SC",
+        "total": 1
+      },
+      {
+        "valor": "SCMMR",
+        "total": 1
+      },
+      {
+        "valor": "SCMAPD",
+        "total": 1
+      },
+      {
+        "valor": "MEDSÊNIOR",
+        "total": 1
+      },
+      {
+        "valor": "ISJ",
+        "total": 1
+      },
+      {
+        "valor": "ISCMA",
+        "total": 1
+      },
+      {
+        "valor": "HSP - SP",
+        "total": 1
+      },
+      {
+        "valor": "HSM - MT",
+        "total": 1
+      },
+      {
+        "valor": "HSJA",
+        "total": 1
+      },
+      {
+        "valor": "HPM - MG",
+        "total": 1
+      },
+      {
+        "valor": "HMV",
+        "total": 1
+      },
+      {
+        "valor": "HMJLF",
+        "total": 1
+      },
+      {
+        "valor": "HIG - SP",
+        "total": 1
+      },
+      {
+        "valor": "HDV",
+        "total": 1
+      },
+      {
+        "valor": "HCOR - ASS",
+        "total": 1
+      },
+      {
+        "valor": "HCFM",
+        "total": 1
+      },
+      {
+        "valor": "FHEMIG",
+        "total": 1
+      },
+      {
+        "valor": "COC",
+        "total": 1
+      },
+      {
+        "valor": "CHC",
+        "total": 1
+      },
+      {
+        "valor": "CEPT",
+        "total": 1
+      },
+      {
+        "valor": "AMIL - SP",
+        "total": 1
+      }
+    ]
+  },
+  "v2": {
+    "total": 226792,
+    "especialidades": [
+      {
+        "valor": "Clínica Médica",
+        "total": 77690
+      },
+      {
+        "valor": "Cirurgia",
+        "total": 31922
+      },
+      {
+        "valor": "Medicina Preventiva",
+        "total": 31067
+      },
+      {
+        "valor": "Pediatria",
+        "total": 30494
+      },
+      {
+        "valor": "Ginecologia",
+        "total": 22433
+      },
+      {
+        "valor": "Obstetrícia",
+        "total": 19325
+      },
+      {
+        "valor": "Outros",
+        "total": 9028
+      },
+      {
+        "valor": "Psiquiatria",
+        "total": 1758
+      },
+      {
+        "valor": "Oftalmologia",
+        "total": 1313
+      },
+      {
+        "valor": "Otorrinolaringologia",
+        "total": 1309
+      },
+      {
+        "valor": "Ortopedia",
+        "total": 447
+      },
+      {
+        "valor": "Medicina Legal",
+        "total": 6
+      }
+    ],
+    "assuntos": [
+      {
+        "valor": "Cirurgia",
+        "total": 16837
+      },
+      {
+        "valor": "Pediatria",
+        "total": 15644
+      },
+      {
+        "valor": "Medicina Preventiva",
+        "total": 15229
+      },
+      {
+        "valor": "Infectologia",
+        "total": 12648
+      },
+      {
+        "valor": "Gastroenterologia",
+        "total": 11081
+      },
+      {
+        "valor": "Obstetrícia",
+        "total": 10820
+      },
+      {
+        "valor": "Cardiologia",
+        "total": 9902
+      },
+      {
+        "valor": "Ginecologia",
+        "total": 9338
+      },
+      {
+        "valor": "Endocrinologia",
+        "total": 7703
+      },
+      {
+        "valor": "Epidemiologia",
+        "total": 7383
+      },
+      {
+        "valor": "Pneumologia",
+        "total": 6346
+      },
+      {
+        "valor": "Nefrologia",
+        "total": 6286
+      },
+      {
+        "valor": "Neurologia",
+        "total": 6068
+      },
+      {
+        "valor": "Puericultura",
+        "total": 4857
+      },
+      {
+        "valor": "Hematologia",
+        "total": 4840
+      },
+      {
+        "valor": "Psiquiatria",
+        "total": 4654
+      },
+      {
+        "valor": "Sistema Único de Saúde (SUS)",
+        "total": 4236
+      },
+      {
+        "valor": "Ginecologia endócrina",
+        "total": 4048
+      },
+      {
+        "valor": "Hepatologia",
+        "total": 3964
+      },
+      {
+        "valor": "Reumatologia",
+        "total": 3734
+      },
+      {
+        "valor": "Dermatologia",
+        "total": 3314
+      },
+      {
+        "valor": "Trauma",
+        "total": 2764
+      },
+      {
+        "valor": "Neonatologia",
+        "total": 2675
+      },
+      {
+        "valor": "Oncologia ginecológica",
+        "total": 2578
+      },
+      {
+        "valor": "Intercorrências obstétricas /obstetrícia patológica",
+        "total": 2248
+      },
+      {
+        "valor": "Oftalmologia",
+        "total": 2238
+      },
+      {
+        "valor": "Mastologia",
+        "total": 2211
+      },
+      {
+        "valor": "Ortopedia",
+        "total": 2184
+      },
+      {
+        "valor": "Urgências Abdominais",
+        "total": 2143
+      },
+      {
+        "valor": "Doenças associadas à gestação",
+        "total": 2018
+      },
+      {
+        "valor": "Otorrinolaringologia",
+        "total": 2013
+      },
+      {
+        "valor": "Medicina de Família e Comunidade",
+        "total": 1899
+      },
+      {
+        "valor": "Clínica Médica",
+        "total": 1804
+      },
+      {
+        "valor": "Pneumologia Pediátrica",
+        "total": 1660
+      },
+      {
+        "valor": "Ginecologia geral",
+        "total": 1617
+      },
+      {
+        "valor": "Outros",
+        "total": 1501
+      },
+      {
+        "valor": "Medicina fetal",
+        "total": 1460
+      },
+      {
+        "valor": "Saúde do Trabalhador",
+        "total": 1423
+      },
+      {
+        "valor": "Infecções em ginecologia",
+        "total": 1403
+      },
+      {
+        "valor": "Cirurgia Infantil",
+        "total": 1343
+      },
+      {
+        "valor": "Emergências Pediátricas",
+        "total": 1265
+      },
+      {
+        "valor": "Parto",
+        "total": 1231
+      },
+      {
+        "valor": "Gastrologia Pediátrica",
+        "total": 1121
+      },
+      {
+        "valor": "Medicina Legal",
+        "total": 1067
+      },
+      {
+        "valor": "Cirurgia Vascular",
+        "total": 1057
+      },
+      {
+        "valor": "Infectologia Pediátrica",
+        "total": 1047
+      },
+      {
+        "valor": "Hérnias da Parede Abdominal",
+        "total": 981
+      },
+      {
+        "valor": "Ética Médica",
+        "total": 897
+      },
+      {
+        "valor": "Pré-natal",
+        "total": 829
+      },
+      {
+        "valor": "Reumatologia Pediátrica",
+        "total": 765
+      },
+      {
+        "valor": "Avaliação Pré-Operatória",
+        "total": 745
+      },
+      {
+        "valor": "Uroginecologia",
+        "total": 714
+      },
+      {
+        "valor": "Vesícula e Vias Biliares",
+        "total": 696
+      },
+      {
+        "valor": "Urologia",
+        "total": 650
+      },
+      {
+        "valor": "Complicações Pós-Operatórias",
+        "total": 566
+      },
+      {
+        "valor": "Cardiologia Pediátrica",
+        "total": 564
+      },
+      {
+        "valor": "Cirurgia Plástica",
+        "total": 530
+      },
+      {
+        "valor": "Ginecologia básica",
+        "total": 524
+      },
+      {
+        "valor": "Cirurgia de Cabeça e Pescoço",
+        "total": 492
+      },
+      {
+        "valor": "Puerpério",
+        "total": 470
+      },
+      {
+        "valor": "Nefrologia Pediátrica",
+        "total": 466
+      },
+      {
+        "valor": "Queimaduras e Trauma Elétrico",
+        "total": 460
+      },
+      {
+        "valor": "Proctologia",
+        "total": 445
+      },
+      {
+        "valor": "Temas Gerais em Cirurgia",
+        "total": 429
+      },
+      {
+        "valor": "Princípios da Anestesiologia",
+        "total": 379
+      },
+      {
+        "valor": "Cirurgia Torácica",
+        "total": 329
+      },
+      {
+        "valor": "Cicatrização de Feridas",
+        "total": 291
+      },
+      {
+        "valor": "Cirurgia Bariátrica e Metabólica",
+        "total": 282
+      },
+      {
+        "valor": "Nutrição em Cirurgia e Recuperação Pós-Operatória",
+        "total": 267
+      },
+      {
+        "valor": "Obstetrícia fisiológica",
+        "total": 249
+      },
+      {
+        "valor": "Endocrinologia pediátrica",
+        "total": 188
+      },
+      {
+        "valor": "Resposta Endócrino-Metabólica-Inflamatória ao Trauma (REMIT)",
+        "total": 172
+      },
+      {
+        "valor": "Ciclo Básico",
+        "total": 157
+      },
+      {
+        "valor": "Hematologia Pediátrica",
+        "total": 149
+      },
+      {
+        "valor": "Neuropediatria",
+        "total": 93
+      },
+      {
+        "valor": "Ostomias Intestinais",
+        "total": 55
+      },
+      {
+        "valor": "Formação Geral - ENADE",
+        "total": 47
+      },
+      {
+        "valor": "Megacólon Adquirido",
+        "total": 9
+      }
+    ],
+    "anos": [
+      {
+        "valor": "2021",
+        "total": 20819
+      },
+      {
+        "valor": "2025",
+        "total": 15690
+      },
+      {
+        "valor": "2026",
+        "total": 15649
+      },
+      {
+        "valor": "2023",
+        "total": 14758
+      },
+      {
+        "valor": "2019",
+        "total": 14738
+      },
+      {
+        "valor": "2024",
+        "total": 14560
+      },
+      {
+        "valor": "2018",
+        "total": 14330
+      },
+      {
+        "valor": "2020",
+        "total": 14316
+      },
+      {
+        "valor": "2017",
+        "total": 13570
+      },
+      {
+        "valor": "2022",
+        "total": 13211
+      },
+      {
+        "valor": "2016",
+        "total": 11767
+      },
+      {
+        "valor": "2015",
+        "total": 11304
+      },
+      {
+        "valor": "2014",
+        "total": 11045
+      },
+      {
+        "valor": "2013",
+        "total": 9027
+      },
+      {
+        "valor": "2012",
+        "total": 7486
+      },
+      {
+        "valor": "2011",
+        "total": 6350
+      },
+      {
+        "valor": "2010",
+        "total": 6275
+      },
+      {
+        "valor": "2009",
+        "total": 6010
+      },
+      {
+        "valor": "2007",
+        "total": 1758
+      },
+      {
+        "valor": "2008",
+        "total": 1648
+      },
+      {
+        "valor": "2006",
+        "total": 1607
+      },
+      {
+        "valor": "2005",
+        "total": 687
+      },
+      {
+        "valor": "2004",
+        "total": 187
+      }
+    ],
+    "instituicoes": [
+      {
+        "valor": "Estratégia MED",
+        "total": 7046
+      },
+      {
+        "valor": "SP - Universidade de São Paulo - USP - SP (Hospital das Clínicas da Faculdade de Medicina da USP - HC)",
+        "total": 5230
+      },
+      {
+        "valor": "DF - Secretaria de Saúde do Distrito Federal - SES DF",
+        "total": 4523
+      },
+      {
+        "valor": "Órgão",
+        "total": 4275
+      },
+      {
+        "valor": "Exame Nacional de Residência Médica EBSERH (ENARE) e Exame Nacional de Avaliação da Formação Médica (Enamed)",
+        "total": 3800
+      },
+      {
+        "valor": "SP - Universidade de São Paulo - USP - RP  (Hospital das Clínicas da Faculdade de Medicina de Ribeirão Preto da USP)",
+        "total": 3475
+      },
+      {
+        "valor": "SP - Universidade Estadual de Campinas - Unicamp (Faculdade de Ciências Médicas da Unicamp - FCM) (Hospital de Clínicas da Unicamp)",
+        "total": 3302
+      },
+      {
+        "valor": "RS - Associação Médica do Rio Grande do Sul - AMRIGS",
+        "total": 3136
+      },
+      {
+        "valor": "PE - Secretaria Estadual de Saúde do Estado de Pernambuco - SES PE",
+        "total": 2829
+      },
+      {
+        "valor": "PR - Associação Médica do Paraná - AMP",
+        "total": 2752
+      },
+      {
+        "valor": "SP - Universidade Federal de São Paulo - UNIFESP (Hospital Universitário da UNIFESP)",
+        "total": 2604
+      },
+      {
+        "valor": "RJ - Universidade Federal do Rio de Janeiro - UFRJ (Hospital Universitário Clementino Fraga Filho -- HUCFF)",
+        "total": 2541
+      },
+      {
+        "valor": "RS - Universidade Federal do Rio Grande do Sul - UFRGS (Hospital de Clínicas de Porto Alegre - HCPA)",
+        "total": 2528
+      },
+      {
+        "valor": "Título De Especialista em Medicina de Família e Comunidade (TEMFC)",
+        "total": 2504
+      },
+      {
+        "valor": "SP - Sistema Único de Saúde - SUS SP",
+        "total": 2416
+      },
+      {
+        "valor": "RJ - Universidade do Estado do Rio de Janeiro - UERJ (Hospital Universitário Pedro Ernesto - HUPE)",
+        "total": 2152
+      },
+      {
+        "valor": "PR - Universidade Federal do Paraná - UFPR (Complexo Hospital de Clínicas - CHC)",
+        "total": 2127
+      },
+      {
+        "valor": "MG - Processo Seletivo Unificado - PSU MG",
+        "total": 2077
+      },
+      {
+        "valor": "SP - Instituto de Assistência Médica ao Servidor Público Estadual - IAMSPE",
+        "total": 2052
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de São Paulo - SCMSP",
+        "total": 2002
+      },
+      {
+        "valor": "GO - Universidade Federal de Goiás - UFG (Hospital das Clínicas de Goiás - HC)",
+        "total": 1992
+      },
+      {
+        "valor": "SP - Hospital Israelita Albert Einstein - HIAE",
+        "total": 1870
+      },
+      {
+        "valor": "SP - Universidade Estadual Paulista - UNESP (Faculdade de Ciências Médicas e Biológicas de Botucatu - FCMBB) (Hospital das Clínicas da Faculdade de Medicina de Botucatu)",
+        "total": 1795
+      },
+      {
+        "valor": "AM - Comissão Estadual de Residência Médica do Amazonas - CERMAM",
+        "total": 1782
+      },
+      {
+        "valor": "PR - Universidade Estadual de Londrina - UEL (Hospital Universitário da UEL)",
+        "total": 1772
+      },
+      {
+        "valor": "RN - Universidade Federal do Rio Grande do Norte - UFRN (Hospital Universitário Onofre Lopes - HUOL)",
+        "total": 1751
+      },
+      {
+        "valor": "PR - Hospital Angelina Caron - HAC PR",
+        "total": 1721
+      },
+      {
+        "valor": "DF - Universidade de Brasília - UNB (Hospital Universitário de Brasília - HUB)",
+        "total": 1719
+      },
+      {
+        "valor": "PR - Aliança Saúde - PUC PR",
+        "total": 1712
+      },
+      {
+        "valor": "Conselho Brasileiro de Oftalmologia",
+        "total": 1700
+      },
+      {
+        "valor": "RJ - Secretaria Estadual de Saúde - SES RJ",
+        "total": 1689
+      },
+      {
+        "valor": "Revalida Nacional - Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (INEP)",
+        "total": 1688
+      },
+      {
+        "valor": "BA - Sistema Único de Saúde - SUS Bahia",
+        "total": 1681
+      },
+      {
+        "valor": "CE - Seleção Unificada para Residência Médica do Estado do Ceará - SURCE",
+        "total": 1597
+      },
+      {
+        "valor": "SP - Faculdade de Medicina do ABC",
+        "total": 1559
+      },
+      {
+        "valor": "SC - Universidade Federal de Santa Catarina - UFSC (Hospital Universitário Professor Polydoro Ernani de São Thiago)",
+        "total": 1512
+      },
+      {
+        "valor": "PA - Universidade Federal do Pará - UFPA (Hospital Universitário João Barros Barreto - HUJBB) (Hospital Universitário Bettina Ferro de Souza - HUBFS)",
+        "total": 1493
+      },
+      {
+        "valor": "GO - Secretaria de Estado da Saúde de Goiás - SES GO",
+        "total": 1480
+      },
+      {
+        "valor": "SP - Faculdade de Medicina de Jundiaí - FMJ (Hospital Universitário de Jundiaí)",
+        "total": 1453
+      },
+      {
+        "valor": "SP - Centro Médico de Campinas - CMC",
+        "total": 1442
+      },
+      {
+        "valor": "SP - Universidade de Taubaté - Unitau (Hospital Universitário de Taubaté)",
+        "total": 1431
+      },
+      {
+        "valor": "ES - Universidade Federal do Espírito Santo - UFES (Hospital Universitário Cassiano Antônio de Moraes - HUCAM)",
+        "total": 1423
+      },
+      {
+        "valor": "MG - Santa Casa de Misericórdia de Belo Horizonte - SCMBH",
+        "total": 1415
+      },
+      {
+        "valor": "SP - Hospital Municipal Dr. Mário Gatti - HMMG",
+        "total": 1388
+      },
+      {
+        "valor": "PA - Universidade do Estado do Pará - UEPA Belém",
+        "total": 1378
+      },
+      {
+        "valor": "SP - Faculdade de Medicina de São José do Rio Preto - FAMERP (Hospital de Base de São José do Rio Preto - HB)",
+        "total": 1350
+      },
+      {
+        "valor": "RJ - Faculdade de Medicina de Petrópolis - FMP - UNIFASE",
+        "total": 1341
+      },
+      {
+        "valor": "PB - Universidade Federal de Campina Grande - UFCG (Hospital Universitário Alcides Carneiro - HUAC)",
+        "total": 1340
+      },
+      {
+        "valor": "RS - Hospital São Lucas da PUC - RS",
+        "total": 1314
+      },
+      {
+        "valor": "RJ - Fundação João Goulart - FJG",
+        "total": 1297
+      },
+      {
+        "valor": "SP - Universidade de Ribeirão Preto - UNAERP (Hospital Electro Bonini - HEB)",
+        "total": 1288
+      },
+      {
+        "valor": "PI - Universidade Estadual do Piauí - UESPI",
+        "total": 1285
+      },
+      {
+        "valor": "SP - Hospital Municipal de São José dos Campos - HM (Hospital Municipal Dr. José de Carvalho Florence)",
+        "total": 1273
+      },
+      {
+        "valor": "MA - Universidade Federal do Maranhão - UFMA (Hospital Universitário Presidente Dutra)",
+        "total": 1257
+      },
+      {
+        "valor": "RJ - Universidade Federal do Estado do Rio de Janeiro - UNIRIO (Hospital Universitário Gaffrée e Guinle - HUGG)",
+        "total": 1249
+      },
+      {
+        "valor": "GO - Fundação Banco de Olhos de Goiás - FUBOG",
+        "total": 1244
+      },
+      {
+        "valor": "RJ - Faculdade de Medicina de Campos - FMC (Hospital Escola Álvaro Alvim)",
+        "total": 1224
+      },
+      {
+        "valor": "RJ - Secretaria Municipal de Administração de Macaé - SEMAD",
+        "total": 1196
+      },
+      {
+        "valor": "RN - Universidade do Estado do Rio Grande do Norte - UERN",
+        "total": 1155
+      },
+      {
+        "valor": "PR - Hospital Pequeno Príncipe - HPP",
+        "total": 1141
+      },
+      {
+        "valor": "RJ - Universidade Federal Fluminense - UFF (Hospital Universitário Antônio Pedro - HUAP)",
+        "total": 1117
+      },
+      {
+        "valor": "AC - Fundação Hospital Estadual do Acre - Fundhacre",
+        "total": 1094
+      },
+      {
+        "valor": "MG - Instituto de Previdência dos Servidores do Estado de Minas Gerais - IPSEMG",
+        "total": 1084
+      },
+      {
+        "valor": "GO - Unievangélica - Centro Universitário de Anápolis - UEVA",
+        "total": 1048
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de Limeira - SCML",
+        "total": 1030
+      },
+      {
+        "valor": "RJ - Centro Universitário Serra dos Órgãos - Unifeso (Hospital das Clínicas de Teresópolis Constantino Ottaviano - HCTCO )",
+        "total": 1023
+      },
+      {
+        "valor": "RJ - Instituto Fernandes Figueira - IFF",
+        "total": 1019
+      },
+      {
+        "valor": "SP - PUC Sorocaba",
+        "total": 996
+      },
+      {
+        "valor": "SE - Hospital de Urgência de Sergipe - HUSE - Hospital João Alves Filho",
+        "total": 995
+      },
+      {
+        "valor": "MG - Hospital e Maternidade Therezinha de Jesus - HMTJ",
+        "total": 993
+      },
+      {
+        "valor": "MG - Casa de Caridade de Alfenas NSP Socorro - CCANSPS",
+        "total": 981
+      },
+      {
+        "valor": "RR - Sistema Único de Saúde - SUS Roraima",
+        "total": 977
+      },
+      {
+        "valor": "TO - Fundação Universidade Federal do Tocantins - UFT",
+        "total": 970
+      },
+      {
+        "valor": "RS - Universidade Federal de Ciências da Saúde de Porto Alegre - UFCSPA",
+        "total": 957
+      },
+      {
+        "valor": "MT - Universidade Federal do Mato Grosso - UFMT (Hospital Universitário Júlio Müller - HUJM)",
+        "total": 951
+      },
+      {
+        "valor": "RJ - Instituto Nacional de Traumatologia e Ortopedia - INTO",
+        "total": 947
+      },
+      {
+        "valor": "RJ - Hospital Naval Marcílio Dias - HNMD",
+        "total": 945
+      },
+      {
+        "valor": "Revalida - Universidade Federal de Mato Grosso - UFMT",
+        "total": 929
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de Ribeirão Preto - SCMRP",
+        "total": 919
+      },
+      {
+        "valor": "SP - Hospital Professor Edmundo Vasconcelos - HPEV",
+        "total": 899
+      },
+      {
+        "valor": "SP - Hospital Oftalmológico de Sorocaba - HOS",
+        "total": 898
+      },
+      {
+        "valor": "RJ - Secretaria Municipal de Administração de Volta Redonda - SMA",
+        "total": 894
+      },
+      {
+        "valor": "PI - Universidade Federal do Piauí - UFPI (Hospital Universitário da UFPI)",
+        "total": 894
+      },
+      {
+        "valor": "PE - Universidade Federal de Pernambuco - UFPE (Hospital das Clínicas de Pernambuco - HC)",
+        "total": 892
+      },
+      {
+        "valor": "Fundação Getúlio Vargas - FGV",
+        "total": 878
+      },
+      {
+        "valor": "GO - Hospital de Olhos Aparecida - HOA",
+        "total": 860
+      },
+      {
+        "valor": "SP - Faculdade de Medicina de Marília - Famema (Hospital das Clínicas da Famema)",
+        "total": 844
+      },
+      {
+        "valor": "ES - Hospital Evangélico de Vila Velha - HEVV",
+        "total": 840
+      },
+      {
+        "valor": "AL - Santa Casa de Misericórdia de Maceió - SCMM",
+        "total": 825
+      },
+      {
+        "valor": "MS - Universidade Federal de Grande Dourados - UFGD (Hospital Universitário da UFGD - HU)",
+        "total": 817
+      },
+      {
+        "valor": "DF - Hospital Oftalmológico de Brasília - HOB",
+        "total": 816
+      },
+      {
+        "valor": "MG - Universidade Federal de Uberlândia - UFU (Hospital de Clínicas de Uberlândia - HCU)",
+        "total": 795
+      },
+      {
+        "valor": "SE - Universidade Federal de Sergipe - UFS (Hospital Universitário de Sergipe)",
+        "total": 789
+      },
+      {
+        "valor": "SE - Fundação de Beneficência Hospital de Cirurgia - FBHC",
+        "total": 789
+      },
+      {
+        "valor": "PR - Prefeitura Municipal de Foz do Iguaçu - PMFI",
+        "total": 785
+      },
+      {
+        "valor": "MA - UDI Hospital",
+        "total": 784
+      },
+      {
+        "valor": "SP - Hospital Militar de Área de São Paulo - HMASP",
+        "total": 756
+      },
+      {
+        "valor": "SP - Hospital Sírio-Libanês - HSL",
+        "total": 754
+      },
+      {
+        "valor": "DF - Hospital das Forças Armadas - HFA",
+        "total": 746
+      },
+      {
+        "valor": "GO - Instituto de Olhos de Goiânia - IOG",
+        "total": 735
+      },
+      {
+        "valor": "PI - Hospital Estadual Dirceu Arcoverde - HEDA",
+        "total": 732
+      },
+      {
+        "valor": "Título de especialista em dermatologia (TED) 1º fase",
+        "total": 720
+      },
+      {
+        "valor": "ES - Hospital Estadual Dr Jayme dos Santos Neves - HEJSN",
+        "total": 719
+      },
+      {
+        "valor": "MS - Santa Casa de Misericórdia de Campo Grande - SCMCG",
+        "total": 713
+      },
+      {
+        "valor": "SP - Irmandade da Santa Casa de Misericórdia de São Carlos - ISCMSC",
+        "total": 699
+      },
+      {
+        "valor": "SP - Hospital Regional de Presidente Prudente",
+        "total": 698
+      },
+      {
+        "valor": "GO - Centro de Reabilitação e Readaptação - CRER",
+        "total": 688
+      },
+      {
+        "valor": "Título de Especialista em Ginecologia e Obstetrícia (TEGO)",
+        "total": 679
+      },
+      {
+        "valor": "GO - Instituto e Hospital Oftalmológico de Anápolis - IHOA",
+        "total": 664
+      },
+      {
+        "valor": "PA - Centro Universitário do Estado do Pará - CESUPA",
+        "total": 660
+      },
+      {
+        "valor": "RJ - Hospital Adventista Silvestre - HAS",
+        "total": 659
+      },
+      {
+        "valor": "SP - Associação da Santa Casa de Misericórdia de Ourinhos - SCO",
+        "total": 657
+      },
+      {
+        "valor": "CE - Escola de Saúde Pública do Ceará - ESP/CE",
+        "total": 648
+      },
+      {
+        "valor": "RS - Universidade Católica de Pelotas - UCPEL (Hospital Universitário São Francisco de Paula - HUSFP)",
+        "total": 644
+      },
+      {
+        "valor": "RJ - Hospital Central do Exército - HCE",
+        "total": 638
+      },
+      {
+        "valor": "PB - Secretaria Municipal de Saúde de João Pessoa - SMS",
+        "total": 637
+      },
+      {
+        "valor": "ES - Hospital Evangélico de Cachoeira de Itapemirim - HECI",
+        "total": 627
+      },
+      {
+        "valor": "SC - Secretaria de Estado da Saúde de Santa Catarina - SES SC",
+        "total": 620
+      },
+      {
+        "valor": "PB - Universidade Federal da Paraíba - UFPB (Hospital Universitário Lauro Wanderley - HULW)",
+        "total": 619
+      },
+      {
+        "valor": "ES - Centro Universitário do Espírito Santo - UNESC",
+        "total": 619
+      },
+      {
+        "valor": "PR - Secretaria Municipal de Saúde de Curitiba - SMS",
+        "total": 617
+      },
+      {
+        "valor": "MA - Secretaria de Estado da Saúde do Maranhão - SES MA",
+        "total": 613
+      },
+      {
+        "valor": "TO - Centro Universitário UNIRG",
+        "total": 599
+      },
+      {
+        "valor": "RJ - Hospital Central da Polícia Militar - HCPM",
+        "total": 599
+      },
+      {
+        "valor": "PR - Hospital da Cruz Vermelha do Paraná - HCV PR",
+        "total": 599
+      },
+      {
+        "valor": "SP - Secretaria Municipal da Saúde de São Paulo - SMS",
+        "total": 598
+      },
+      {
+        "valor": "PR - Universidade Estadual do Oeste de Paraná - Unioeste (Hospital Universitário do Oeste do Paraná - HUOP)",
+        "total": 597
+      },
+      {
+        "valor": "RJ - Hospital Nacional do Câncer - INCA",
+        "total": 596
+      },
+      {
+        "valor": "GO - Hospital e Maternidade Dona Iris - HMDI",
+        "total": 595
+      },
+      {
+        "valor": "RJ - Santa Casa de Misericórdia de Barra Mansa - SCMBM",
+        "total": 593
+      },
+      {
+        "valor": "PR - Hospital San Julian HSJ PR",
+        "total": 592
+      },
+      {
+        "valor": "SC - Hospital São José de Joinville - HSJJ",
+        "total": 591
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de Marília - SCMMA",
+        "total": 588
+      },
+      {
+        "valor": "MS - Universidade Federal do Mato Grosso do Sul - UFMS  (Hospital Universitário Maria Aparecida Pedrossiam - HUMAP)",
+        "total": 588
+      },
+      {
+        "valor": "AL - Hospital do Açúcar - HA (Hospital Veredas)",
+        "total": 586
+      },
+      {
+        "valor": "SP - Hospital Alvorada - HA",
+        "total": 573
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de São José dos Campos - SCMSJC",
+        "total": 571
+      },
+      {
+        "valor": "AL - Hospital Memorial Arthur Ramos - HMAR",
+        "total": 568
+      },
+      {
+        "valor": "MG - Hospital da Polícia Militar - HPM MG",
+        "total": 556
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de Araçatuba - SCMA",
+        "total": 554
+      },
+      {
+        "valor": "AL - Universidade Federal de Alagoas - UFAL (Hospital Universitário Professor Alberto Antunes)",
+        "total": 554
+      },
+      {
+        "valor": "RJ - Hospital Unimed Rio",
+        "total": 548
+      },
+      {
+        "valor": "AL - Processo Seletivo Unificado - PSU",
+        "total": 520
+      },
+      {
+        "valor": "GO - Instituto Ortopédico de Goiânia - IOG",
+        "total": 518
+      },
+      {
+        "valor": "GO - Universidade de Rio Verde - UNIRV",
+        "total": 499
+      },
+      {
+        "valor": "RJ - Hospital Casa de Portugal HCP RJ",
+        "total": 497
+      },
+      {
+        "valor": "RJ - Casa de Saúde Nossa Senhora do Carmo - CSNSC",
+        "total": 497
+      },
+      {
+        "valor": "PR - Autarquia Municipal de Saúde de Apucarana - AMS Apucarana",
+        "total": 497
+      },
+      {
+        "valor": "PR - Secretaria Municipal de Saúde de São José dos Pinhais - SMS",
+        "total": 496
+      },
+      {
+        "valor": "MG - Fundação Hospitalar do Estado de Minas Gerais - FHEMIG",
+        "total": 496
+      },
+      {
+        "valor": "GO - Processo Seletivo unificado - PSU GO",
+        "total": 496
+      },
+      {
+        "valor": "DF - Hospital Santa Marta - HSM",
+        "total": 496
+      },
+      {
+        "valor": "MS - Hospital Regional do Mato Grosso do Sul - HRMS - Rosa Pedrossian",
+        "total": 495
+      },
+      {
+        "valor": "AM - Universidade Federal do Amazonas - UFAM (Hospital Universitário Getúlio Vargas - HUGV)",
+        "total": 495
+      },
+      {
+        "valor": "SP - Hospital da Aeronáutica de São Paulo - HASP",
+        "total": 493
+      },
+      {
+        "valor": "GO - Santa Casa de Misericórdia de Goiânia - SCMGO",
+        "total": 492
+      },
+      {
+        "valor": "PR - Universidade Estadual de Maringá - UEM (Hospital Universitário Regional de Maringá - HUM)",
+        "total": 491
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de Votuporanga - SCMV",
+        "total": 489
+      },
+      {
+        "valor": "AL - Fundação Universitária de Ciências da Saúde de Alagoas - UNCISAL",
+        "total": 476
+      },
+      {
+        "valor": "CE - Hospital do Câncer - Instituto do Câncer do Ceará - HC ICC",
+        "total": 470
+      },
+      {
+        "valor": "SP - Hospital Santo Amaro - Guarujá",
+        "total": 466
+      },
+      {
+        "valor": "RJ - Universidade de Vassouras (Universidade Severino Sombra) (Hospital Universitário Sul Fluminense) (Hospital Universitário de Vassouras)",
+        "total": 445
+      },
+      {
+        "valor": "SP - Secretaria Municipal de Saúde de Piracicaba - SMS",
+        "total": 444
+      },
+      {
+        "valor": "PB - Secretaria de Estado da Saúde - SES PB",
+        "total": 443
+      },
+      {
+        "valor": "RJ - Associação Fluminense de Assistência à Mulher, à Criança e ao Idoso - AFAMCI",
+        "total": 405
+      },
+      {
+        "valor": "MS - Secretaria Municipal de Saúde de Campo Grande - SMSCG",
+        "total": 404
+      },
+      {
+        "valor": "SP - Instituto de Cardiologia do Estado de São Paulo - Dante Pazzanese",
+        "total": 399
+      },
+      {
+        "valor": "MS - Hospital São Julião - HSJ",
+        "total": 398
+      },
+      {
+        "valor": "SP - Hospital Infantil Sabará - HIS",
+        "total": 397
+      },
+      {
+        "valor": "SP - Hospital Alemão Oswaldo Cruz - HAOC",
+        "total": 397
+      },
+      {
+        "valor": "PA - Universidade do Estado do Pará - UEPA Santarém",
+        "total": 396
+      },
+      {
+        "valor": "RJ - Fundação Educacional Dom André Arcoverde - FAA (Hospital Escola Luiz Gioseffi Jannuzzi - HELGJ)",
+        "total": 394
+      },
+      {
+        "valor": "MG - Santa Genoveva Complexo Hospitalar - SGCH",
+        "total": 392
+      },
+      {
+        "valor": "GO - Hospital Ortopédico de Goiânia - HOG",
+        "total": 390
+      },
+      {
+        "valor": "MS - Comissão Estadual de Residência Médica do Mato Grosso do Sul - CEREM",
+        "total": 385
+      },
+      {
+        "valor": "RS - Instituto de Cardiologia do Rio Grande do Sul - ICRS",
+        "total": 371
+      },
+      {
+        "valor": "RJ - Universidade do Grande Rio - UNIGRANRIO",
+        "total": 356
+      },
+      {
+        "valor": "BA - Hospital dos Olhos de Conquista LTDA - HOC",
+        "total": 356
+      },
+      {
+        "valor": "RJ - Hospital Pasteur",
+        "total": 354
+      },
+      {
+        "valor": "TO - Sistema Integrado de Saúde - Escola do SUS - SISE/SUS TO",
+        "total": 351
+      },
+      {
+        "valor": "MS - Clínica de Campo Grande - CCG",
+        "total": 347
+      },
+      {
+        "valor": "SP - Prefeitura Municipal de Sorocaba - PMSO",
+        "total": 346
+      },
+      {
+        "valor": "SP - Hospital de Reabilitação de Anomalias Craniofaciais - HRAC USP",
+        "total": 326
+      },
+      {
+        "valor": "BA - Centro Especializado Oftalmológico Queiroz LTDA - CEOQ",
+        "total": 324
+      },
+      {
+        "valor": "RS - Escola de Saúde Pública do Rio Grande do Sul - ESP",
+        "total": 319
+      },
+      {
+        "valor": "RJ - Hospital Santa Teresa - HST",
+        "total": 312
+      },
+      {
+        "valor": "RJ - Instituto Benjamin Constant - IBC",
+        "total": 300
+      },
+      {
+        "valor": "MG - Fundação Educacional Lucas Machado - FELUMA",
+        "total": 300
+      },
+      {
+        "valor": "Grupo OPTY (HOB, COSC e DayHORC)",
+        "total": 300
+      },
+      {
+        "valor": "RN - Universidade Federal do Rio Grande do Norte - UFRN (Escola Multicampi de Ciências Médicas - EMCM)",
+        "total": 299
+      },
+      {
+        "valor": "RJ - Hospital São João Batista de Volta Redonda - HSJBVR",
+        "total": 299
+      },
+      {
+        "valor": "RJ - Centro de Estudos e Pesquisas Oculistas Associados - CEPOA",
+        "total": 299
+      },
+      {
+        "valor": "CE - Instituto José Frota - IJF",
+        "total": 299
+      },
+      {
+        "valor": "RS - Universidade Luterana do Brasil - Ulbra (Hospital Universitário da ULBRA)",
+        "total": 298
+      },
+      {
+        "valor": "PB - Faculdade de Medicina Nova Esperança - FAMENE",
+        "total": 298
+      },
+      {
+        "valor": "MA - Hospital Geral Tarquino Lopes Filho - HTLF",
+        "total": 298
+      },
+      {
+        "valor": "MG - Centro Universitário Atenas - UNIATENAS",
+        "total": 297
+      },
+      {
+        "valor": "AP - Universidade Federal do Amapá - UNIFAP",
+        "total": 297
+      },
+      {
+        "valor": "SC - Processo Seletivo Unificado da Associação Catarinense de Medicina",
+        "total": 296
+      },
+      {
+        "valor": "CE - Universidade Federal do Ceará - UFC (Hospital Universitário Walter Cantídio - HUWC)",
+        "total": 296
+      },
+      {
+        "valor": "SP - Faculdade São Leopoldo Mandic",
+        "total": 288
+      },
+      {
+        "valor": "ES - Santa Casa de Misericórdia de Vitória - EMESCAM",
+        "total": 285
+      },
+      {
+        "valor": "SP - Hospital do Câncer de Barretos - HCB",
+        "total": 282
+      },
+      {
+        "valor": "SC - Secretaria Municipal de Saúde de Florianópolis - SMS",
+        "total": 278
+      },
+      {
+        "valor": "SC - Universidade Comunitária da Região de Chapecó - UNOCHAPECÓ",
+        "total": 273
+      },
+      {
+        "valor": "ES - Faculdade Brasileira - Multivix Vitória",
+        "total": 263
+      },
+      {
+        "valor": "MG - Hospital Vila Verde",
+        "total": 260
+      },
+      {
+        "valor": "RJ - Secretaria Municipal de Saúde do Rio de Janeiro - SMS RJ",
+        "total": 253
+      },
+      {
+        "valor": "MT - Hospital de Câncer de Mato Grosso - HCMT",
+        "total": 248
+      },
+      {
+        "valor": "MG - Hospital Dilson Godinho - HDG",
+        "total": 247
+      },
+      {
+        "valor": "MA - Hospital São Domingos - HSD",
+        "total": 247
+      },
+      {
+        "valor": "Processo Seletivo Unificado - PRMMT",
+        "total": 240
+      },
+      {
+        "valor": "Título de especialista em dermatologia (TED) 2º fase",
+        "total": 238
+      },
+      {
+        "valor": "MT - Centro Oftalmológico de Cáceres - COC",
+        "total": 238
+      },
+      {
+        "valor": "GO - Hospital Estadual de Urgências de Goiânia Dr. Valdemiro Cruz - HUGO",
+        "total": 237
+      },
+      {
+        "valor": "Exame Nacional de Desempenho dos Estudantes - ENADE",
+        "total": 236
+      },
+      {
+        "valor": "SP - Hospital São Lucas de Ribeirão Preto - HSLRP",
+        "total": 235
+      },
+      {
+        "valor": "SP - Hospital Pitangueiras - HP",
+        "total": 219
+      },
+      {
+        "valor": "RJ - UnitedHealth Group - UHG",
+        "total": 210
+      },
+      {
+        "valor": "PR - Autarquia Municipal de Saúde do Município de Londrina - AMS Londrina",
+        "total": 209
+      },
+      {
+        "valor": "MT - Secretaria Municipal de Saúde de SINOP",
+        "total": 208
+      },
+      {
+        "valor": "SP - Hospital São Camilo - HSCSP",
+        "total": 200
+      },
+      {
+        "valor": "SP - Centro Universitário de Rio Claro - Claretiano",
+        "total": 199
+      },
+      {
+        "valor": "RJ - Santa Casa de Misericórdia do Rio de Janeiro - SCMRJ",
+        "total": 199
+      },
+      {
+        "valor": "RJ - Oftalmoclínica São Gonçalo",
+        "total": 199
+      },
+      {
+        "valor": "PR - Hospital Nossa Senhora das Graças - HNSG",
+        "total": 199
+      },
+      {
+        "valor": "ES - Hospital Santa Rita de Cássia",
+        "total": 199
+      },
+      {
+        "valor": "DF - Hospital Santa Lúcia - HSL",
+        "total": 199
+      },
+      {
+        "valor": "SC - Hospital e Materinidade Marieta Konder Bornhausen - HMMKB",
+        "total": 198
+      },
+      {
+        "valor": "RS - Hospital Moinhos de Vento - HMV",
+        "total": 198
+      },
+      {
+        "valor": "PR - Secretaria Municipal de Foz do Iguaçu - SMS",
+        "total": 198
+      },
+      {
+        "valor": "GO - Hospital Santa Genoveva - HSG",
+        "total": 198
+      },
+      {
+        "valor": "ES - Instituto Capixaba de Ensino, Pesquisa e Inovação em Saúde - ICEPI",
+        "total": 198
+      },
+      {
+        "valor": "SP - Hospital Vera Cruz - HVC",
+        "total": 197
+      },
+      {
+        "valor": "SC - Hospital São José de Criciúma - HSJC",
+        "total": 197
+      },
+      {
+        "valor": "RN - Hospital Infantil Varela Santiago - HIVS",
+        "total": 197
+      },
+      {
+        "valor": "AC - Hospital Oftalmológico do Acre - HOA",
+        "total": 197
+      },
+      {
+        "valor": "RS - Universidade Federal de Pelotas - UFPEL Hospital Escola da Universidade Federal de Pelotas - HEUFPEL",
+        "total": 196
+      },
+      {
+        "valor": "PB - Hospital de Emergência e Trauma Sen. Humberto Lucena - HEETSHL",
+        "total": 196
+      },
+      {
+        "valor": "SC - Hospital Materno Infantil Dr. Jeser Amarante Faria - HJAF",
+        "total": 195
+      },
+      {
+        "valor": "RO - Hospital de Câncer de Barretos - HCB - RO",
+        "total": 195
+      },
+      {
+        "valor": "PR - Prefeitura Municipal de Cascavel - PMC",
+        "total": 193
+      },
+      {
+        "valor": "GO - Hospital Estadual Geral de Goiânia Dr. Alberto Rassi - HGG",
+        "total": 183
+      },
+      {
+        "valor": "BA - Fundação Estatal Saúde da Família - FESF SUS",
+        "total": 180
+      },
+      {
+        "valor": "SP - Rede de Saúde Integral e Completo - DASA",
+        "total": 179
+      },
+      {
+        "valor": "SP - Visão Laser Hospital Oftalmológico - HVL",
+        "total": 174
+      },
+      {
+        "valor": "RJ - Rede Dor",
+        "total": 160
+      },
+      {
+        "valor": "Centro  Brasileiro  de  Pesquisa  em Avaliação e Seleção e de Promoção de Eventos (Cebraspe)",
+        "total": 159
+      },
+      {
+        "valor": "CE - Secretaria Municipal de Saúde de Fortaleza - SMS",
+        "total": 159
+      },
+      {
+        "valor": "SP - Hospital de Olhos Grottone - HOG",
+        "total": 154
+      },
+      {
+        "valor": "Revalida - Universidade de São Paulo (Hospital das Clínicas da Faculdade de Medicina de Ribeirão Preto da USP) -  USP - RP",
+        "total": 150
+      },
+      {
+        "valor": "RS - Universidade Federal de Santa Maria - UFSM (Hospital Universitário de Santa Maria - HUSM)",
+        "total": 150
+      },
+      {
+        "valor": "RJ - Instituto Dor de Pesquisa e Ensino",
+        "total": 150
+      },
+      {
+        "valor": "Corpo de Saúde da Marinha - CSM",
+        "total": 150
+      },
+      {
+        "valor": "SP - Prefeitura Municipal de Franca - PMF",
+        "total": 149
+      },
+      {
+        "valor": "SP - Hospital Policlin",
+        "total": 149
+      },
+      {
+        "valor": "RJ - Hospital São Lucas Copacabana",
+        "total": 149
+      },
+      {
+        "valor": "RJ - Hospital São José do Avaí - HSJA",
+        "total": 149
+      },
+      {
+        "valor": "SP - Universidade Federal de São Carlos - UFSCAR (Hospital Universitário Prof. Dr. Horácio Carlos Panepucci)",
+        "total": 148
+      },
+      {
+        "valor": "SE - Hospital Santa Isabel - HSI - SE",
+        "total": 147
+      },
+      {
+        "valor": "SP - Irmandade da Santa Casa de Misericórdia de Santos - ISCMS",
+        "total": 146
+      },
+      {
+        "valor": "ES - Processo Seletivo Unificado - PSU ES",
+        "total": 146
+      },
+      {
+        "valor": "MT - Santa Casa de Misericórdia de Cuiabá - SCMCMT",
+        "total": 125
+      },
+      {
+        "valor": "SP - Santa Casa de Misericórdia de São José do Rio Preto - SCMSJRP",
+        "total": 121
+      },
+      {
+        "valor": "SP - Instituto de Olhos do Vale - IOVALE",
+        "total": 120
+      },
+      {
+        "valor": "RS - Fundação Hospitalar Santa Terezinha de Erechim - FHSTE",
+        "total": 120
+      },
+      {
+        "valor": "RJ - Universidade do Estado do Rio de Janeiro - (Pró-MFC) - UERJ (Hospital Universitário Pedro Ernesto - HUPE)",
+        "total": 120
+      },
+      {
+        "valor": "Curso de Adaptação de Médicos da Aeronáutica - CAMAR",
+        "total": 119
+      },
+      {
+        "valor": "Escola de Saúde e Formação Complementar do Exército - EsFCEx",
+        "total": 109
+      },
+      {
+        "valor": "TO - Fundação Escola de Saúde Pública - FESP PALMAS",
+        "total": 103
+      },
+      {
+        "valor": "Título de Especialista em Pediatria (TEP)",
+        "total": 100
+      },
+      {
+        "valor": "SP - Universidade Santo Amaro - UNISA",
+        "total": 100
+      },
+      {
+        "valor": "SP - Hospital Austa - Centro Médico Rio Preto - AUSTA",
+        "total": 100
+      },
+      {
+        "valor": "SC - Hospital Nossa Senhora da Conceição - HNSC",
+        "total": 100
+      },
+      {
+        "valor": "Revalida - Universidade do Estado do Pará - UEPA",
+        "total": 100
+      },
+      {
+        "valor": "PR - Hospital do Coração de Londrina - HC",
+        "total": 100
+      },
+      {
+        "valor": "PR - Hospital Psiquiátrico Nossa Senhora da Luz - HNSL",
+        "total": 100
+      },
+      {
+        "valor": "PA - Santa Casa de Misericórdia do Pará - SCMPA",
+        "total": 100
+      },
+      {
+        "valor": "MA - Secretaria Municipal de Saúde de Caxias - SMS",
+        "total": 100
+      },
+      {
+        "valor": "SC - Universidade do Planalto Catarinense - UNIPLAC",
+        "total": 99
+      },
+      {
+        "valor": "SC - Hospital Santa Isabel - HSI",
+        "total": 99
+      },
+      {
+        "valor": "RS - Hospital Ernesto Dornelles - HED",
+        "total": 99
+      },
+      {
+        "valor": "RN - Universidade Federal do Rio Grande do Norte - UFRN (Hospital Universitário Ana Bezerra - HUAB)",
+        "total": 99
+      },
+      {
+        "valor": "RJ - Sociedade Portuguesa de Beneficência de Campos - SPBC",
+        "total": 99
+      },
+      {
+        "valor": "PR - Hospital Universitário Evangélico de Curitiba - HUEC (Hospital Universitário Evangélico Mackenzie - HUEM)",
+        "total": 99
+      },
+      {
+        "valor": "PR - Hospital Universitário Cajuru - HUC",
+        "total": 99
+      },
+      {
+        "valor": "PI - Associação Piauiense de Combate ao Câncer - APCC",
+        "total": 99
+      },
+      {
+        "valor": "PA - Hospital Ofir Loyola - HOL",
+        "total": 99
+      },
+      {
+        "valor": "GO - Secretaria Municipal de Saúde de Goiânia - SMS",
+        "total": 99
+      },
+      {
+        "valor": "ES - Hospital Rio Doce de Linhares - HRD",
+        "total": 99
+      },
+      {
+        "valor": "SP - Hospital de Força Aérea de São Paulo – HFASP",
+        "total": 98
+      },
+      {
+        "valor": "SP - Hospital Santa Paula - HSP",
+        "total": 98
+      },
+      {
+        "valor": "SC - Hospital Regional Alto Vale - HRAV",
+        "total": 98
+      },
+      {
+        "valor": "PR - Hospital Evangélico de Londrina - HEL",
+        "total": 98
+      },
+      {
+        "valor": "SP - Instituto de Radiodiagnóstico Rio Preto - Ultra X",
+        "total": 97
+      },
+      {
+        "valor": "PI - Grupo Med Imagem",
+        "total": 97
+      },
+      {
+        "valor": "MG - Universidade de Uberaba - UNIUBE",
+        "total": 96
+      },
+      {
+        "valor": "PI - Clínica UDI 24 horas",
+        "total": 94
+      },
+      {
+        "valor": "SE - Universidade Tiradentes - UNIT",
+        "total": 90
+      },
+      {
+        "valor": "MT - Lucas do Rio Verde SMS LRV",
+        "total": 90
+      },
+      {
+        "valor": "RS - Fundação de Apoio da Universidade Federal do Rio Grande do Sul",
+        "total": 87
+      },
+      {
+        "valor": "SP - Secretaria Municipal de Saúde de São José do Rio Preto - SMS",
+        "total": 80
+      },
+      {
+        "valor": "SP - Irmandade da Santa Casa de Misericórdia de Araras - ISCMA",
+        "total": 79
+      },
+      {
+        "valor": "MG - Hospital Municipal José Lucas Filho - HMJLF",
+        "total": 75
+      },
+      {
+        "valor": "MG - Hospital Felício Rocho - HFR",
+        "total": 75
+      },
+      {
+        "valor": "RJ - Hospital Pró-Cardíaco",
+        "total": 74
+      },
+      {
+        "valor": "MG - Hospital Escola de Itajubá - FMIT (Hospital de Clínicas de Itajubá)",
+        "total": 71
+      },
+      {
+        "valor": "RJ - Complexo Hospitalar de Niterói CHN RJ",
+        "total": 69
+      },
+      {
+        "valor": "RJ - Prontobaby - Hospital da Criança",
+        "total": 60
+      },
+      {
+        "valor": "MT - Santa Casa de Rondonópolis",
+        "total": 60
+      },
+      {
+        "valor": "AL - Comissão Estadual de Residência Médica de Alagoas - CEREM",
+        "total": 60
+      },
+      {
+        "valor": "SP - Hospital do Servidor Público Municipal - HSPM",
+        "total": 59
+      },
+      {
+        "valor": "Associação Brasileira de Hematologia, Hemoterapia e Terapia Celular - ABHH",
+        "total": 59
+      },
+      {
+        "valor": "TO - Hospital Oswaldo Cruz - HOC TO",
+        "total": 50
+      },
+      {
+        "valor": "SP - Prefeitura da Estância Balneária de Praia Grande - SSP",
+        "total": 50
+      },
+      {
+        "valor": "SP - Hospital e Maternidade São Cristóvão - HMSC",
+        "total": 50
+      },
+      {
+        "valor": "SP - Hospital das Clínicas Luzia de Pinho Melo - HCLPM",
+        "total": 50
+      },
+      {
+        "valor": "SP - Hospital Cruz Azul - CRAZ",
+        "total": 50
+      },
+      {
+        "valor": "Revalida - Universidade de Gurupi - UNIRG",
+        "total": 50
+      },
+      {
+        "valor": "RS - Hospital Mãe de Deus - HMD",
+        "total": 50
+      },
+      {
+        "valor": "MG - Universidade Federal de Juiz de Fora - UFJF (Hospital Universitário da UFJF - HU)",
+        "total": 50
+      },
+      {
+        "valor": "MG - Universidade Estadual de Montes Claros - Unimontes (Hospital Universitário Clemente de Faria - HUCF)",
+        "total": 50
+      },
+      {
+        "valor": "GO - Instituto Goiano de Oncologia e Hematologia - INGOH",
+        "total": 50
+      },
+      {
+        "valor": "SC - Hospital Santo Antônio de Blumenau - HSAN",
+        "total": 49
+      },
+      {
+        "valor": "RJ - Hospital Barra Dor - HBD",
+        "total": 49
+      },
+      {
+        "valor": "PR - Centro Universitário Cesumar - UNICESUMAR",
+        "total": 49
+      },
+      {
+        "valor": "MT - Hospital Santa Rosa - HSR",
+        "total": 49
+      },
+      {
+        "valor": "PR - União Oeste Paranaense de Estudos e Combate ao Câncer - UOPCCAN",
+        "total": 48
+      },
+      {
+        "valor": "GO - Hospital Lúcio Rebelo - HLR",
+        "total": 48
+      },
+      {
+        "valor": "RJ - Instituto de Psiquiatria da Universidade Federal do Rio de Janeiro - IPUB",
+        "total": 46
+      },
+      {
+        "valor": "DF - Instituto Santa Marta de Ensino e Pesquisa - ISMEP",
+        "total": 44
+      },
+      {
+        "valor": "ALESE",
+        "total": 42
+      },
+      {
+        "valor": "SP - Secretaria Municipal de Saúde de Santos - SMS Santos",
+        "total": 40
+      },
+      {
+        "valor": "RS - Fundação de Saúde Pública de Novo Hamburgo",
+        "total": 40
+      },
+      {
+        "valor": "ES - Hospital Materno Infantil São Francisco de Assis -HIFA",
+        "total": 40
+      },
+      {
+        "valor": "Fundação Carlos Chagas (FCC)",
+        "total": 38
+      },
+      {
+        "valor": "RS - Universidade Federal da Fronteira Sul - UFFS",
+        "total": 36
+      },
+      {
+        "valor": "SC - Hospital e Maternidade Oase de Timbó - OASE",
+        "total": 34
+      },
+      {
+        "valor": "PR - Universidade Estadual de Ponta Grossa - UEPG (Hospital Universitário Regional dos Campos Gerais) (Hospital Wallace Thadeu de Mello e Silva)",
+        "total": 30
+      },
+      {
+        "valor": "SP - Instituto Suel Abujamra - ISA",
+        "total": 25
+      },
+      {
+        "valor": "SP - Secretaria Municipal de Saúde de Olímpia - SMS",
+        "total": 24
+      },
+      {
+        "valor": "AL - Hospital do Coração de Alagoas - HCAL",
+        "total": 24
+      },
+      {
+        "valor": "Empresa Brasileira de Serviços Hospitalares (EBSERH) - Nacional",
+        "total": 20
+      },
+      {
+        "valor": "Residência Médica",
+        "total": 1
+      }
+    ]
+  }
+}

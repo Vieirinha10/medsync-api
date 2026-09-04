@@ -225,6 +225,74 @@ def facet(db: Session, column, catalog_version: str = "v1") -> list[dict[str, ob
     ]
 
 
+CATALOG_METADATA_CACHE_FILE = (
+    pathlib.Path(__file__).resolve().parent.parent / "data" / "catalog_metadata_cache.json"
+)
+_CATALOG_METADATA_MEMORY_CACHE: dict[str, dict] = {}
+
+
+def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
+    """
+    Retorna metadados cacheados (total e facetas) do catálogo para garantir
+    resposta instantânea (< 5ms) e eliminar o timeout de requisição no frontend,
+    evitando 4 consultas GROUP BY sequenciais com varredura completa da tabela
+    em acervos com centenas de milhares de questões.
+    """
+    if catalog_version in _CATALOG_METADATA_MEMORY_CACHE:
+        return _CATALOG_METADATA_MEMORY_CACHE[catalog_version]
+
+    disk_data = None
+    if CATALOG_METADATA_CACHE_FILE.is_file():
+        try:
+            with open(CATALOG_METADATA_CACHE_FILE, encoding="utf-8") as f:
+                disk_data = json.load(f)
+        except Exception:
+            disk_data = None
+
+    db_total = (
+        db.scalar(
+            select(func.count(ExamQuestion.id)).where(
+                ExamQuestion.status == "publicada",
+                ExamQuestion.catalog_version == catalog_version,
+            )
+        )
+        or 0
+    )
+
+    if db_total == 0:
+        return {
+            "total": 0,
+            "especialidades": [],
+            "assuntos": [],
+            "anos": [],
+            "instituicoes": [],
+        }
+
+    if disk_data and catalog_version in disk_data and disk_data[catalog_version].get("total") == db_total:
+        cached_item = disk_data[catalog_version]
+        _CATALOG_METADATA_MEMORY_CACHE[catalog_version] = cached_item
+        return cached_item
+
+    computed = {
+        "total": db_total,
+        "especialidades": facet(db, ExamQuestion.especialidade, catalog_version),
+        "assuntos": facet(db, ExamQuestion.assunto, catalog_version),
+        "anos": facet(db, ExamQuestion.ano, catalog_version),
+        "instituicoes": facet(db, ExamQuestion.instituicao, catalog_version),
+    }
+    _CATALOG_METADATA_MEMORY_CACHE[catalog_version] = computed
+    return computed
+
+
+def invalidate_catalog_metadata_cache(catalog_version: str | None = None) -> None:
+    """Invalida o cache de metadados em memória."""
+    global _CATALOG_METADATA_MEMORY_CACHE
+    if catalog_version:
+        _CATALOG_METADATA_MEMORY_CACHE.pop(catalog_version, None)
+    else:
+        _CATALOG_METADATA_MEMORY_CACHE.clear()
+
+
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
 def question_metadata(
     catalog_version: str | None = Query(default=None),
@@ -232,16 +300,8 @@ def question_metadata(
     db: Session = Depends(get_db),
 ):
     effective_version = resolve_catalog_version(catalog_version, current_user)
-    total = (
-        db.scalar(
-            select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.status == "publicada",
-                ExamQuestion.catalog_version == effective_version,
-            )
-        )
-        or 0
-    )
-    if total == 0:
+    meta = get_cached_catalog_metadata(db, effective_version)
+    if meta.get("total", 0) == 0:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"O catálogo ativo ('{effective_version}') não possui questões publicadas disponíveis.",
@@ -250,11 +310,11 @@ def question_metadata(
     premium = is_premium(current_user) or is_admin_email(current_user.email)
     used = answered_today(db, current_user.id, catalog_version=effective_version)
     return {
-        "total_questoes": total,
-        "especialidades": facet(db, ExamQuestion.especialidade, effective_version),
-        "assuntos": facet(db, ExamQuestion.assunto, effective_version),
-        "anos": facet(db, ExamQuestion.ano, effective_version),
-        "instituicoes": facet(db, ExamQuestion.instituicao, effective_version),
+        "total_questoes": meta["total"],
+        "especialidades": meta["especialidades"],
+        "assuntos": meta["assuntos"],
+        "anos": meta["anos"],
+        "instituicoes": meta["instituicoes"],
         "premium_ativo": premium,
         "limite_diario": None if premium else FREE_DAILY_LIMIT,
         "respondidas_hoje": used,
@@ -274,15 +334,19 @@ def list_questions(
     db: Session = Depends(get_db),
 ):
     effective_version = resolve_catalog_version(catalog_version, current_user)
-    total_active = (
-        db.scalar(
-            select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.status == "publicada",
-                ExamQuestion.catalog_version == effective_version,
+    cached_meta = _CATALOG_METADATA_MEMORY_CACHE.get(effective_version)
+    if cached_meta and cached_meta.get("total", 0) > 0:
+        total_active = cached_meta["total"]
+    else:
+        total_active = (
+            db.scalar(
+                select(func.count(ExamQuestion.id)).where(
+                    ExamQuestion.status == "publicada",
+                    ExamQuestion.catalog_version == effective_version,
+                )
             )
+            or 0
         )
-        or 0
-    )
     if total_active == 0:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -779,6 +843,7 @@ def update_admin_question(
     for field, value in payload.model_dump(exclude_none=True).items():
         setattr(question, field, value)
     db.commit()
+    invalidate_catalog_metadata_cache(question.catalog_version)
     return {"message": "Questão atualizada."}
 
 

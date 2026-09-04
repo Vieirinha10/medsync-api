@@ -419,6 +419,11 @@ def import_catalog(
 
         # ÚNICO commit após todo o lote ser processado com sucesso absoluto
         db.commit()
+        try:
+            from routers.questions import invalidate_catalog_metadata_cache
+            invalidate_catalog_metadata_cache(catalog_version)
+        except Exception:
+            pass
         logger.info(
             f"Importação atômica concluída com sucesso: {inserted_count} inseridos, "
             f"{unchanged_count} inalterados (total: {total_records})."

@@ -286,5 +286,41 @@
     "descricao": "Detalhes atualizados.",
     "user_email": "questoes-fluxo@example.com",
     "timestamp": "2026-09-04T10:14:13.874769+00:00"
+  },
+  {
+    "report_id": 1,
+    "question_id": 330393,
+    "source_id": null,
+    "enunciado": "Pode-se afirmar, sobre a hipertensão intra-abdominal (HIA) e a síndrome compartimental abdominal (SCA), que:",
+    "instituicao": "UFRJ",
+    "ano": 2023,
+    "motivo": "gabarito",
+    "descricao": "Detalhes atualizados.",
+    "user_email": "questoes-fluxo@example.com",
+    "timestamp": "2026-09-04T14:04:04.803208+00:00"
+  },
+  {
+    "report_id": 1,
+    "question_id": 278158,
+    "source_id": null,
+    "enunciado": "Paciente vítima de atropelamento é atendida pelo SAMU. Ao chegar ao local, a equipe encontra paciente inconsciente, com fratura exposta na perna esquerda, além de um ferimento cortocontuso na face. A 1ª conduta a ser tomada dentre as alternativas abaixo é:",
+    "instituicao": "FHSTE",
+    "ano": 2021,
+    "motivo": "gabarito",
+    "descricao": "Detalhes atualizados.",
+    "user_email": "questoes-fluxo@example.com",
+    "timestamp": "2026-09-04T14:05:22.200963+00:00"
+  },
+  {
+    "report_id": 1,
+    "question_id": 401464,
+    "source_id": null,
+    "enunciado": "Paciente masculino, 28 anos de idade, foi vítima de ferimento por arma de fogo na região cervical durante assalto. Deu entrada no pronto atendimento apresentando dor intensa no local do ferimento e uma notável dificuldade em mover o lado direito do corpo. No exame físico, constatou-se que ele apresentava paralisia motora e perda de propriocepção no lado direito, enquanto que no lado esquerdo havia perda de sensibilidade à dor e à temperatura. A equipe médica levantou a suspeita de síndrome de Brown-Séquard, que é caracterizada por:",
+    "instituicao": "HSA - GUARUJÁ",
+    "ano": 2025,
+    "motivo": "gabarito",
+    "descricao": "Detalhes atualizados.",
+    "user_email": "questoes-fluxo@example.com",
+    "timestamp": "2026-09-04T14:10:07.520900+00:00"
   }
 ]
