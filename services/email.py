@@ -12,31 +12,74 @@ from settings import environment, frontend_url
 logger = logging.getLogger(__name__)
 
 
+class EmailDeliveryError(RuntimeError):
+    """Falha operacional no envio, sem expor credenciais ou destinatários."""
+
+
+def _deliver_email(*, payload: dict[str, object], purpose: str) -> None:
+    api_key = os.getenv("RESEND_API_KEY", "").strip()
+    if not api_key:
+        message = "RESEND_API_KEY não configurada para envio de e-mail."
+        if environment() == "production":
+            logger.error("email_delivery_not_configured purpose=%s", purpose)
+            raise EmailDeliveryError(message)
+        logger.warning("%s purpose=%s", message, purpose)
+        return
+
+    try:
+        response = httpx.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=10.0,
+        )
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        logger.error(
+            "email_delivery_rejected purpose=%s provider=resend status_code=%s",
+            purpose,
+            exc.response.status_code,
+        )
+        raise EmailDeliveryError(
+            f"O provedor de e-mail recusou o envio (HTTP {exc.response.status_code})."
+        ) from exc
+    except httpx.RequestError as exc:
+        logger.error(
+            "email_delivery_transport_error purpose=%s provider=resend error_type=%s",
+            purpose,
+            type(exc).__name__,
+        )
+        raise EmailDeliveryError("Falha de conexão com o provedor de e-mail.") from exc
+
+    message_id = None
+    try:
+        response_body = response.json()
+        if isinstance(response_body, dict):
+            message_id = response_body.get("id")
+    except (TypeError, ValueError):
+        pass
+    logger.info(
+        "email_delivery_succeeded purpose=%s provider=resend message_id=%s",
+        purpose,
+        message_id or "unavailable",
+    )
+
+
 def send_verification_email(*, email: str, nome: str, raw_token: str) -> None:
     """Envia o link de confirmação sem registrar o token em logs."""
 
-    api_key = os.getenv("RESEND_API_KEY", "").strip()
     sender = os.getenv("EMAIL_FROM", "MedSync <contato@medsync.com.br>").strip()
-    if not api_key:
-        if environment() == "production":
-            raise RuntimeError("RESEND_API_KEY não configurada para envio de e-mail.")
-        logger.warning(
-            "E-mail de verificação não enviado porque RESEND_API_KEY não está configurada."
-        )
-        return
-
     verification_url = (
         f"{frontend_url()}/verificar-email?{urlencode({'token': raw_token})}"
     )
     safe_name = html.escape(nome)
     safe_url = html.escape(verification_url, quote=True)
-    response = httpx.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
+    _deliver_email(
+        purpose="email_verification",
+        payload={
             "from": sender,
             "to": [email],
             "subject": "Confirme seu e-mail na MedSync",
@@ -51,9 +94,7 @@ def send_verification_email(*, email: str, nome: str, raw_token: str) -> None:
                 "<p>Se você não criou esta conta, ignore a mensagem.</p>"
             ),
         },
-        timeout=10.0,
     )
-    response.raise_for_status()
 
 
 def send_password_reset_email(
@@ -61,26 +102,13 @@ def send_password_reset_email(
 ) -> None:
     """Envia um link temporário de redefinição sem registrar o token em logs."""
 
-    api_key = os.getenv("RESEND_API_KEY", "").strip()
     sender = os.getenv("EMAIL_FROM", "MedSync <contato@medsync.com.br>").strip()
-    if not api_key:
-        if environment() == "production":
-            raise RuntimeError("RESEND_API_KEY não configurada para envio de e-mail.")
-        logger.warning(
-            "E-mail de recuperação não enviado porque RESEND_API_KEY não está configurada."
-        )
-        return
-
     reset_url = f"{frontend_url()}/redefinir-senha?{urlencode({'token': raw_token})}"
     safe_name = html.escape(nome)
     safe_url = html.escape(reset_url, quote=True)
-    response = httpx.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
+    _deliver_email(
+        purpose="password_reset",
+        payload={
             "from": sender,
             "to": [email],
             "subject": "Redefina sua senha da MedSync",
@@ -97,6 +125,4 @@ def send_password_reset_email(
                 "<p>Se você não fez esta solicitação, ignore a mensagem.</p>"
             ),
         },
-        timeout=10.0,
     )
-    response.raise_for_status()

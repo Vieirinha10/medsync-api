@@ -246,7 +246,7 @@ def recuperar_senha(
     db: Session = Depends(get_db),
 ):
     user = db.scalar(select(User).where(User.email == str(payload.email)))
-    if user is None or user.email_verified_at is None:
+    if user is None:
         return {"message": GENERIC_PASSWORD_RECOVERY_MESSAGE}
 
     now = datetime.now(UTC)
@@ -297,6 +297,13 @@ def redefinir_senha(
     user.password_reset_token_hash = None
     user.password_reset_expires_at = None
     user.password_reset_sent_at = None
+    # Usar o link recebido também comprova a posse do endereço de e-mail. Isso
+    # recupera contas legadas que ficaram pendentes de confirmação.
+    if user.email_verified_at is None:
+        user.email_verified_at = now
+        user.email_verification_token_hash = None
+        user.email_verification_expires_at = None
+        user.email_verification_sent_at = None
     user.auth_version += 1
     db.commit()
     return {

@@ -8,6 +8,10 @@ worker_class = "uvicorn.workers.UvicornWorker"
 timeout = int(os.getenv("WORKER_TIMEOUT_SECONDS", "90"))
 graceful_timeout = 30
 keepalive = 5
+accesslog = "-"
+errorlog = "-"
+capture_output = True
+loglevel = os.getenv("LOG_LEVEL", "info")
 
 
 def on_starting(server):
