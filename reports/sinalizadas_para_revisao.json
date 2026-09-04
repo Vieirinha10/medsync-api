@@ -274,5 +274,17 @@
     "descricao": "Detalhes atualizados.",
     "user_email": "questoes-fluxo@example.com",
     "timestamp": "2026-09-04T09:45:38.031086+00:00"
+  },
+  {
+    "report_id": 1,
+    "question_id": 250529,
+    "source_id": null,
+    "enunciado": "Paciente de 19 anos, vítima de trauma abdominal fechado é levado ao centro cirúrgico para exploração da cavidade abdominal. Durante a laparotomia, foi evidenciado sangramento ativo e intenso em região do fígado e de veia porta. Paciente fica hipotenso e pouco responsivo a administração de cristaloides. É realizado a tromboelastrometria (ROTEM) com a seguinte curva: A reposição mais adequada neste momento é de:",
+    "instituicao": "HCB - RO",
+    "ano": 2020,
+    "motivo": "gabarito",
+    "descricao": "Detalhes atualizados.",
+    "user_email": "questoes-fluxo@example.com",
+    "timestamp": "2026-09-04T10:14:13.874769+00:00"
   }
 ]

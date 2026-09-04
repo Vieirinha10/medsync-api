@@ -123,7 +123,7 @@ SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
 
 
 def get_active_catalog_version() -> str:
-    ver = os.getenv("QUESTION_CATALOG_ACTIVE_VERSION", "v1").strip().lower()
+    ver = os.getenv("QUESTION_CATALOG_ACTIVE_VERSION", "v2").strip().lower()
     if ver not in SUPPORTED_CATALOG_VERSIONS:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

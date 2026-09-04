@@ -45,3 +45,34 @@ def readiness_check(db: Session = Depends(get_db)):
             detail="Banco de dados aguardando migração.",
         )
     return {"status": "ready", "database": "ok"}
+
+
+@router.get("/sistema/info")
+def system_info(db: Session = Depends(get_db)):
+    from models import ExamQuestion
+    from routers.questions import get_active_catalog_version
+
+    dialect = db.get_bind().dialect.name
+    total_v1 = (
+        db.scalar(
+            select(func.count(ExamQuestion.id)).where(
+                ExamQuestion.catalog_version == "v1"
+            )
+        )
+        or 0
+    )
+    total_v2 = (
+        db.scalar(
+            select(func.count(ExamQuestion.id)).where(
+                ExamQuestion.catalog_version == "v2"
+            )
+        )
+        or 0
+    )
+    return {
+        "database_dialect": dialect,
+        "active_catalog": get_active_catalog_version(),
+        "total_v1": total_v1,
+        "total_v2": total_v2,
+    }
+
