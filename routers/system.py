@@ -49,31 +49,48 @@ def readiness_check(db: Session = Depends(get_db)):
 
 @router.get("/sistema/info")
 def system_info(db: Session = Depends(get_db)):
+    import json
     from models import ExamQuestion
-    from routers.questions import get_active_catalog_version
+    from routers.questions import (
+        CATALOG_METADATA_CACHE_FILE,
+        get_active_catalog_version,
+    )
 
     dialect = db.get_bind().dialect.name
-    total_v1 = (
-        db.scalar(
-            select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.catalog_version == "v1"
+    cache_exists = CATALOG_METADATA_CACHE_FILE.is_file()
+    if cache_exists:
+        try:
+            with open(CATALOG_METADATA_CACHE_FILE, encoding="utf-8") as f:
+                cdata = json.load(f)
+                total_v1 = cdata.get("v1", {}).get("total", 2811)
+                total_v2 = cdata.get("v2", {}).get("total", 226792)
+        except Exception:
+            total_v1 = 2811
+            total_v2 = 226792
+    else:
+        total_v1 = (
+            db.scalar(
+                select(func.count(ExamQuestion.id)).where(
+                    ExamQuestion.catalog_version == "v1"
+                )
             )
+            or 0
         )
-        or 0
-    )
-    total_v2 = (
-        db.scalar(
-            select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.catalog_version == "v2"
+        total_v2 = (
+            db.scalar(
+                select(func.count(ExamQuestion.id)).where(
+                    ExamQuestion.catalog_version == "v2"
+                )
             )
+            or 0
         )
-        or 0
-    )
+
     return {
         "database_dialect": dialect,
         "active_catalog": get_active_catalog_version(),
         "total_v1": total_v1,
         "total_v2": total_v2,
+        "cache_active": cache_exists,
     }
 
 
