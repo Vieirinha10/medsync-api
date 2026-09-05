@@ -166,11 +166,15 @@ def _json_value(value: Any) -> Any:
     return value
 
 
+def _emit_line(message: str) -> None:
+    print(message, flush=True)
+
+
 def run_question_catalog_audit(
     run_id: str,
     *,
     connect: Callable[[], Any] = engine.connect,
-    emit: Callable[[str], None] = logger.info,
+    emit: Callable[[str], None] = _emit_line,
 ) -> None:
     """Executa SELECTs agregados em uma transação marcada como somente leitura."""
     emit(f"QUESTION_CATALOG_AUDIT_START run_id={run_id}")
@@ -225,4 +229,3 @@ def start_requested_audit() -> bool:
         daemon=True,
     ).start()
     return True
-
