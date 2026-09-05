@@ -19,3 +19,10 @@ def on_starting(server):
     from services.database_bootstrap import prepare_database
 
     prepare_database()
+
+
+def post_worker_init(worker):
+    """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""
+    from services.question_catalog_audit import start_requested_audit
+
+    start_requested_audit()
