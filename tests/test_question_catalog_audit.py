@@ -16,6 +16,15 @@ def test_json_value_normalizes_postgres_decimal():
     assert audit._json_value(Decimal("1.25")) == 1.25
 
 
+def test_answer_audit_accepts_every_supported_text_representation():
+    sql = audit._ANSWER_INTEGRITY_BATCH_SQL
+    assert "NULLIF(BTRIM(option->>'texto'), '')" in sql
+    assert "option->>'body_plain'" in sql
+    assert "option->>'body'" in sql
+    assert "option->>'html'" in sql
+    assert "option->>'body_rich_html'" in sql
+
+
 class _Result:
     def __init__(self, rows=None):
         self.rows = [{"questions": 10}] if rows is None else rows

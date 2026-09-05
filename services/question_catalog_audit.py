@@ -155,7 +155,14 @@ SELECT
       AND EXISTS (
         SELECT 1 FROM json_array_elements(alternativas) option
         WHERE BTRIM(COALESCE(option->>'id', '')) = ''
-           OR BTRIM(COALESCE(option->>'texto', option->>'body_plain', option->>'body', '')) = ''
+           OR COALESCE(
+             NULLIF(BTRIM(option->>'texto'), ''),
+             NULLIF(BTRIM(option->>'body_plain'), ''),
+             NULLIF(BTRIM(option->>'body'), ''),
+             NULLIF(BTRIM(option->>'html'), ''),
+             NULLIF(BTRIM(option->>'body_rich_html'), ''),
+             ''
+           ) = ''
       )
   ) AS blank_option_fields
 FROM exam_questions
