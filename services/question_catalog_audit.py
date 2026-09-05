@@ -120,13 +120,15 @@ _QUERIES: tuple[tuple[str, str], ...] = (
     (
         "hematology_subjects",
         """
-        SELECT BTRIM(assunto) AS subject, COUNT(*) AS questions,
+        SELECT COALESCE(NULLIF(BTRIM(subtema), ''), 'Geral') AS subject,
+               COUNT(*) AS questions,
                COUNT(*) FILTER (WHERE tema IS NULL OR BTRIM(tema) = '') AS missing_theme,
                COUNT(*) FILTER (WHERE subtema IS NULL OR BTRIM(subtema) = '') AS missing_subtheme
         FROM exam_questions
         WHERE catalog_version = 'v2' AND status = 'publicada'
-          AND LOWER(BTRIM(especialidade)) = 'hematologia'
-        GROUP BY BTRIM(assunto)
+          AND LOWER(BTRIM(especialidade)) = 'clínica médica'
+          AND LOWER(BTRIM(tema)) = 'hematologia'
+        GROUP BY COALESCE(NULLIF(BTRIM(subtema), ''), 'Geral')
         ORDER BY questions DESC, subject
         """,
     ),
