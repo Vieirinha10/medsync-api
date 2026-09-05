@@ -1,5 +1,6 @@
 import pathlib
 import sys
+from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,6 +9,11 @@ if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
 
 from services import question_catalog_audit as audit
+
+
+def test_json_value_normalizes_postgres_decimal():
+    assert audit._json_value(Decimal("12")) == 12
+    assert audit._json_value(Decimal("1.25")) == 1.25
 
 
 class _Result:

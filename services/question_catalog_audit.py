@@ -9,6 +9,7 @@ import os
 import re
 import threading
 from collections.abc import Callable
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -162,6 +163,8 @@ WHERE catalog_version = 'v2' AND status = 'publicada'
 def _json_value(value: Any) -> Any:
     if hasattr(value, "isoformat"):
         return value.isoformat()
+    if isinstance(value, Decimal):
+        return int(value) if value == value.to_integral_value() else float(value)
     return value
 
 
