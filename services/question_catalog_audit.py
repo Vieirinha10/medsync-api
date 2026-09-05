@@ -20,7 +20,9 @@ from database import engine
 logger = logging.getLogger("medsync.question_catalog_audit")
 
 AUDIT_ENV = "QUESTION_CATALOG_AUDIT_RUN_ID"
+AUDIT_MODE_ENV = "QUESTION_CATALOG_AUDIT_MODE"
 _FALSE_VALUES = {"", "0", "false", "no", "off"}
+_SUPPORTED_MODES = {"full", "critical_details"}
 
 _QUERIES: tuple[tuple[str, str], ...] = (
     (
@@ -161,6 +163,79 @@ WHERE catalog_version = 'v2' AND status = 'publicada'
   AND id BETWEEN :start_id AND :end_id
 """
 
+_CONFLICTING_DUPLICATES_SQL = """
+WITH conflict_hashes AS (
+  SELECT content_hash_plain, COUNT(*) AS group_size,
+         COUNT(DISTINCT answer_binding_hash) AS answer_versions
+  FROM exam_questions
+  WHERE catalog_version = 'v2' AND status = 'publicada'
+    AND content_hash_plain IS NOT NULL
+  GROUP BY content_hash_plain
+  HAVING COUNT(*) > 1 AND COUNT(DISTINCT answer_binding_hash) > 1
+)
+SELECT conflicts.content_hash_plain, conflicts.group_size,
+       conflicts.answer_versions, questions.id, questions.source_id,
+       questions.ano AS year, questions.instituicao AS institution,
+       questions.banca AS examining_board,
+       questions.alternativa_correta_id AS correct_option_id,
+       questions.answer_binding_hash
+FROM conflict_hashes conflicts
+JOIN exam_questions questions
+  ON questions.content_hash_plain = conflicts.content_hash_plain
+WHERE questions.catalog_version = 'v2' AND questions.status = 'publicada'
+ORDER BY conflicts.content_hash_plain, questions.id
+"""
+
+_BLANK_OPTION_DETAILS_BATCH_SQL = """
+SELECT questions.id, questions.source_id, questions.ano AS year,
+       questions.instituicao AS institution,
+       questions.especialidade AS specialty, questions.assunto AS subject,
+       questions.tema AS theme, questions.subtema AS subtheme,
+       questions.alternativa_correta_id AS correct_option_id,
+       ARRAY_AGG(options.position ORDER BY options.position) FILTER (
+         WHERE BTRIM(COALESCE(options.value->>'id', '')) = ''
+       ) AS blank_id_positions,
+       ARRAY_AGG(options.position ORDER BY options.position) FILTER (
+         WHERE COALESCE(
+           NULLIF(BTRIM(options.value->>'texto'), ''),
+           NULLIF(BTRIM(options.value->>'body_plain'), ''),
+           NULLIF(BTRIM(options.value->>'body'), ''),
+           NULLIF(BTRIM(options.value->>'html'), ''),
+           NULLIF(BTRIM(options.value->>'body_rich_html'), ''),
+           ''
+         ) = ''
+       ) AS blank_text_positions,
+       BOOL_OR(
+         options.value->>'id' = questions.alternativa_correta_id
+         AND COALESCE(
+           NULLIF(BTRIM(options.value->>'texto'), ''),
+           NULLIF(BTRIM(options.value->>'body_plain'), ''),
+           NULLIF(BTRIM(options.value->>'body'), ''),
+           NULLIF(BTRIM(options.value->>'html'), ''),
+           NULLIF(BTRIM(options.value->>'body_rich_html'), ''),
+           ''
+         ) = ''
+       ) AS correct_option_blank
+FROM exam_questions questions
+CROSS JOIN LATERAL json_array_elements(questions.alternativas)
+  WITH ORDINALITY AS options(value, position)
+WHERE questions.catalog_version = 'v2' AND questions.status = 'publicada'
+  AND questions.id BETWEEN :start_id AND :end_id
+GROUP BY questions.id
+HAVING BOOL_OR(
+  BTRIM(COALESCE(options.value->>'id', '')) = ''
+  OR COALESCE(
+    NULLIF(BTRIM(options.value->>'texto'), ''),
+    NULLIF(BTRIM(options.value->>'body_plain'), ''),
+    NULLIF(BTRIM(options.value->>'body'), ''),
+    NULLIF(BTRIM(options.value->>'html'), ''),
+    NULLIF(BTRIM(options.value->>'body_rich_html'), ''),
+    ''
+  ) = ''
+)
+ORDER BY questions.id
+"""
+
 
 def _json_value(value: Any) -> Any:
     if hasattr(value, "isoformat"):
@@ -174,7 +249,35 @@ def _emit_line(message: str) -> None:
     print(message, flush=True)
 
 
-def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> None:
+def _emit_section(
+    run_id: str,
+    section: str,
+    rows: list[dict[str, Any]],
+    emit: Callable[[str], None],
+    *,
+    chunk_size: int = 50,
+) -> None:
+    chunks = [rows[index : index + chunk_size] for index in range(0, len(rows), chunk_size)]
+    if not chunks:
+        chunks = [[]]
+    for index, chunk in enumerate(chunks, start=1):
+        emit(
+            "QUESTION_CATALOG_AUDIT_SECTION "
+            + json.dumps(
+                {
+                    "run_id": run_id,
+                    "section": section,
+                    "chunk": index,
+                    "chunks": len(chunks),
+                    "rows": chunk,
+                },
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+        )
+
+
+def _catalog_id_bounds(connection: Any) -> tuple[int | None, int | None]:
     bounds = connection.execute(
         text(
             """
@@ -184,7 +287,18 @@ def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> Non
             """
         )
     ).mappings().one()
-    min_id, max_id = bounds["min_id"], bounds["max_id"]
+    return bounds["min_id"], bounds["max_id"]
+
+
+def _batch_size() -> int:
+    return max(
+        1_000,
+        min(int(os.getenv("QUESTION_CATALOG_AUDIT_BATCH_SIZE", "10000")), 25_000),
+    )
+
+
+def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> None:
+    min_id, max_id = _catalog_id_bounds(connection)
     totals = {
         "alternatives_not_array": 0,
         "fewer_than_two_options": 0,
@@ -192,10 +306,7 @@ def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> Non
         "blank_option_fields": 0,
     }
     if min_id is not None and max_id is not None:
-        batch_size = max(
-            1_000,
-            min(int(os.getenv("QUESTION_CATALOG_AUDIT_BATCH_SIZE", "10000")), 25_000),
-        )
+        batch_size = _batch_size()
         batch_number = 0
         for start_id in range(int(min_id), int(max_id) + 1, batch_size):
             batch_number += 1
@@ -211,24 +322,72 @@ def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> Non
                     f"section=answer_integrity batches={batch_number}"
                 )
 
-    emit(
-        "QUESTION_CATALOG_AUDIT_SECTION "
-        + json.dumps(
-            {"run_id": run_id, "section": "answer_integrity", "rows": [totals]},
-            ensure_ascii=False,
-            separators=(",", ":"),
-        )
+    _emit_section(run_id, "answer_integrity", [totals], emit)
+
+
+def _audit_critical_details(connection: Any, run_id: str, emit: Callable) -> None:
+    conflict_rows = connection.execute(text(_CONFLICTING_DUPLICATES_SQL)).mappings().all()
+    conflicts = [
+        {key: _json_value(value) for key, value in row.items()}
+        for row in conflict_rows
+    ]
+    _emit_section(run_id, "conflicting_duplicate_details", conflicts, emit, chunk_size=20)
+
+    min_id, max_id = _catalog_id_bounds(connection)
+    blank_questions: list[dict[str, Any]] = []
+    if min_id is not None and max_id is not None:
+        batch_size = _batch_size()
+        batch_number = 0
+        for start_id in range(int(min_id), int(max_id) + 1, batch_size):
+            batch_number += 1
+            rows = connection.execute(
+                text(_BLANK_OPTION_DETAILS_BATCH_SQL),
+                {"start_id": start_id, "end_id": start_id + batch_size - 1},
+            ).mappings().all()
+            blank_questions.extend(
+                {key: _json_value(value) for key, value in row.items()}
+                for row in rows
+            )
+            if batch_number % 5 == 0:
+                emit(
+                    f"QUESTION_CATALOG_AUDIT_PROGRESS run_id={run_id} "
+                    f"section=blank_option_details batches={batch_number}"
+                )
+
+    summary = {
+        "questions_with_blank_options": len(blank_questions),
+        "questions_with_blank_ids": sum(
+            bool(row["blank_id_positions"]) for row in blank_questions
+        ),
+        "questions_with_blank_text": sum(
+            bool(row["blank_text_positions"]) for row in blank_questions
+        ),
+        "questions_with_blank_correct_option": sum(
+            bool(row["correct_option_blank"]) for row in blank_questions
+        ),
+    }
+    _emit_section(run_id, "blank_option_summary", [summary], emit)
+    _emit_section(
+        run_id,
+        "blank_option_details",
+        blank_questions,
+        emit,
+        chunk_size=25,
     )
 
 
 def run_question_catalog_audit(
     run_id: str,
     *,
+    mode: str = "full",
     connect: Callable[[], Any] = engine.connect,
     emit: Callable[[str], None] = _emit_line,
 ) -> None:
     """Executa SELECTs agregados em uma transação marcada como somente leitura."""
-    emit(f"QUESTION_CATALOG_AUDIT_START run_id={run_id}")
+    if mode not in _SUPPORTED_MODES:
+        emit(f"QUESTION_CATALOG_AUDIT_REFUSED run_id={run_id} unsupported_mode={mode}")
+        return
+    emit(f"QUESTION_CATALOG_AUDIT_START run_id={run_id} mode={mode}")
     try:
         with connect() as connection:
             transaction = connection.begin()
@@ -236,21 +395,17 @@ def run_question_catalog_audit(
                 if connection.dialect.name == "postgresql":
                     connection.execute(text("SET TRANSACTION READ ONLY"))
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
-                for section, sql in _QUERIES:
-                    rows = connection.execute(text(sql)).mappings().all()
-                    payload = [
-                        {key: _json_value(value) for key, value in row.items()}
-                        for row in rows
-                    ]
-                    emit(
-                        "QUESTION_CATALOG_AUDIT_SECTION "
-                        + json.dumps(
-                            {"run_id": run_id, "section": section, "rows": payload},
-                            ensure_ascii=False,
-                            separators=(",", ":"),
-                        )
-                    )
-                _audit_answer_integrity(connection, run_id, emit)
+                if mode == "critical_details":
+                    _audit_critical_details(connection, run_id, emit)
+                else:
+                    for section, sql in _QUERIES:
+                        rows = connection.execute(text(sql)).mappings().all()
+                        payload = [
+                            {key: _json_value(value) for key, value in row.items()}
+                            for row in rows
+                        ]
+                        _emit_section(run_id, section, payload, emit)
+                    _audit_answer_integrity(connection, run_id, emit)
             finally:
                 transaction.rollback()
         emit(f"QUESTION_CATALOG_AUDIT_DONE run_id={run_id}")
@@ -264,8 +419,9 @@ def start_requested_audit() -> bool:
     if run_id.lower() in _FALSE_VALUES:
         return False
 
-    safe_id = re.sub(r"[^a-zA-Z0-9_.-]", "_", run_id)[:80]
-    digest = hashlib.sha256(run_id.encode("utf-8")).hexdigest()[:12]
+    mode = os.getenv(AUDIT_MODE_ENV, "full").strip().lower()
+    safe_id = re.sub(r"[^a-zA-Z0-9_.-]", "_", f"{run_id}-{mode}")[:80]
+    digest = hashlib.sha256(f"{run_id}:{mode}".encode()).hexdigest()[:12]
     lock_path = Path(f"/tmp/medsync-question-audit-{safe_id}-{digest}.lock")
     try:
         descriptor = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -277,6 +433,7 @@ def start_requested_audit() -> bool:
     threading.Thread(
         target=run_question_catalog_audit,
         args=(run_id,),
+        kwargs={"mode": mode},
         name=f"question-catalog-audit-{digest}",
         daemon=True,
     ).start()

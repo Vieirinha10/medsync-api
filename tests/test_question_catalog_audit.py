@@ -18,7 +18,7 @@ def test_json_value_normalizes_postgres_decimal():
 
 class _Result:
     def __init__(self, rows=None):
-        self.rows = rows or [{"questions": 10}]
+        self.rows = [{"questions": 10}] if rows is None else rows
 
     def mappings(self):
         return self
@@ -54,7 +54,7 @@ class _Connection:
     def begin(self):
         return self.transaction
 
-    def execute(self, statement):
+    def execute(self, statement, _parameters=None):
         self.statements.append(str(statement))
         if "MIN(id) AS min_id" in str(statement):
             return _Result([{"min_id": None, "max_id": None}])
@@ -74,6 +74,25 @@ def test_audit_enforces_read_only_transaction_and_emits_sections():
     assert len([item for item in messages if "_SECTION " in item]) == (
         len(audit._QUERIES) + 1
     )
+    sql = " ".join(connection.statements).upper()
+    assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
+
+
+def test_critical_details_mode_is_read_only_and_emits_empty_summary():
+    connection = _Connection()
+    messages = []
+
+    audit.run_question_catalog_audit(
+        "critical-test",
+        mode="critical_details",
+        connect=lambda: connection,
+        emit=messages.append,
+    )
+
+    assert connection.statements[0] == "SET TRANSACTION READ ONLY"
+    assert connection.transaction.rolled_back is True
+    assert any('"section":"conflicting_duplicate_details"' in item for item in messages)
+    assert any('"questions_with_blank_options":0' in item for item in messages)
     sql = " ".join(connection.statements).upper()
     assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
 
