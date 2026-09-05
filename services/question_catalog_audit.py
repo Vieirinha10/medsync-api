@@ -60,34 +60,6 @@ _QUERIES: tuple[tuple[str, str], ...] = (
         """,
     ),
     (
-        "answer_integrity",
-        """
-        SELECT
-          COUNT(*) FILTER (WHERE jsonb_typeof(alternativas::jsonb) <> 'array') AS alternatives_not_array,
-          COUNT(*) FILTER (
-            WHERE jsonb_typeof(alternativas::jsonb) = 'array'
-              AND jsonb_array_length(alternativas::jsonb) < 2
-          ) AS fewer_than_two_options,
-          COUNT(*) FILTER (
-            WHERE jsonb_typeof(alternativas::jsonb) = 'array'
-              AND NOT EXISTS (
-                SELECT 1 FROM jsonb_array_elements(alternativas::jsonb) option
-                WHERE option->>'id' = exam_questions.alternativa_correta_id
-              )
-          ) AS correct_option_not_found,
-          COUNT(*) FILTER (
-            WHERE jsonb_typeof(alternativas::jsonb) = 'array'
-              AND EXISTS (
-                SELECT 1 FROM jsonb_array_elements(alternativas::jsonb) option
-                WHERE BTRIM(COALESCE(option->>'id', '')) = ''
-                   OR BTRIM(COALESCE(option->>'texto', '')) = ''
-              )
-          ) AS blank_option_fields
-        FROM exam_questions
-        WHERE catalog_version = 'v2' AND status = 'publicada'
-        """,
-    ),
-    (
         "duplicate_integrity",
         """
         SELECT
@@ -159,6 +131,33 @@ _QUERIES: tuple[tuple[str, str], ...] = (
     ),
 )
 
+_ANSWER_INTEGRITY_BATCH_SQL = """
+SELECT
+  COUNT(*) FILTER (WHERE json_typeof(alternativas) IS DISTINCT FROM 'array') AS alternatives_not_array,
+  COUNT(*) FILTER (
+    WHERE json_typeof(alternativas) = 'array'
+      AND json_array_length(alternativas) < 2
+  ) AS fewer_than_two_options,
+  COUNT(*) FILTER (
+    WHERE json_typeof(alternativas) = 'array'
+      AND NOT EXISTS (
+        SELECT 1 FROM json_array_elements(alternativas) option
+        WHERE option->>'id' = exam_questions.alternativa_correta_id
+      )
+  ) AS correct_option_not_found,
+  COUNT(*) FILTER (
+    WHERE json_typeof(alternativas) = 'array'
+      AND EXISTS (
+        SELECT 1 FROM json_array_elements(alternativas) option
+        WHERE BTRIM(COALESCE(option->>'id', '')) = ''
+           OR BTRIM(COALESCE(option->>'texto', option->>'body_plain', option->>'body', '')) = ''
+      )
+  ) AS blank_option_fields
+FROM exam_questions
+WHERE catalog_version = 'v2' AND status = 'publicada'
+  AND id BETWEEN :start_id AND :end_id
+"""
+
 
 def _json_value(value: Any) -> Any:
     if hasattr(value, "isoformat"):
@@ -168,6 +167,53 @@ def _json_value(value: Any) -> Any:
 
 def _emit_line(message: str) -> None:
     print(message, flush=True)
+
+
+def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> None:
+    bounds = connection.execute(
+        text(
+            """
+            SELECT MIN(id) AS min_id, MAX(id) AS max_id
+            FROM exam_questions
+            WHERE catalog_version = 'v2' AND status = 'publicada'
+            """
+        )
+    ).mappings().one()
+    min_id, max_id = bounds["min_id"], bounds["max_id"]
+    totals = {
+        "alternatives_not_array": 0,
+        "fewer_than_two_options": 0,
+        "correct_option_not_found": 0,
+        "blank_option_fields": 0,
+    }
+    if min_id is not None and max_id is not None:
+        batch_size = max(
+            1_000,
+            min(int(os.getenv("QUESTION_CATALOG_AUDIT_BATCH_SIZE", "10000")), 25_000),
+        )
+        batch_number = 0
+        for start_id in range(int(min_id), int(max_id) + 1, batch_size):
+            batch_number += 1
+            row = connection.execute(
+                text(_ANSWER_INTEGRITY_BATCH_SQL),
+                {"start_id": start_id, "end_id": start_id + batch_size - 1},
+            ).mappings().one()
+            for key in totals:
+                totals[key] += int(row[key] or 0)
+            if batch_number % 5 == 0:
+                emit(
+                    f"QUESTION_CATALOG_AUDIT_PROGRESS run_id={run_id} "
+                    f"section=answer_integrity batches={batch_number}"
+                )
+
+    emit(
+        "QUESTION_CATALOG_AUDIT_SECTION "
+        + json.dumps(
+            {"run_id": run_id, "section": "answer_integrity", "rows": [totals]},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    )
 
 
 def run_question_catalog_audit(
@@ -199,6 +245,7 @@ def run_question_catalog_audit(
                             separators=(",", ":"),
                         )
                     )
+                _audit_answer_integrity(connection, run_id, emit)
             finally:
                 transaction.rollback()
         emit(f"QUESTION_CATALOG_AUDIT_DONE run_id={run_id}")

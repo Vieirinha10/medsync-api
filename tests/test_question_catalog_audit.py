@@ -11,11 +11,17 @@ from services import question_catalog_audit as audit
 
 
 class _Result:
+    def __init__(self, rows=None):
+        self.rows = rows or [{"questions": 10}]
+
     def mappings(self):
         return self
 
     def all(self):
-        return [{"questions": 10}]
+        return self.rows
+
+    def one(self):
+        return self.rows[0]
 
 
 class _Transaction:
@@ -44,6 +50,8 @@ class _Connection:
 
     def execute(self, statement):
         self.statements.append(str(statement))
+        if "MIN(id) AS min_id" in str(statement):
+            return _Result([{"min_id": None, "max_id": None}])
         return _Result()
 
 
@@ -57,8 +65,8 @@ def test_audit_enforces_read_only_transaction_and_emits_sections():
 
     assert connection.statements[0] == "SET TRANSACTION READ ONLY"
     assert connection.transaction.rolled_back is True
-    assert len([item for item in messages if "_SECTION " in item]) == len(
-        audit._QUERIES
+    assert len([item for item in messages if "_SECTION " in item]) == (
+        len(audit._QUERIES) + 1
     )
     sql = " ".join(connection.statements).upper()
     assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
