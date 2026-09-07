@@ -1,3 +1,5 @@
+import hashlib
+import json
 import pathlib
 import sys
 from decimal import Decimal
@@ -9,6 +11,25 @@ if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
 
 from services import question_catalog_audit as audit
+
+
+def test_pilot_export_roundtrip_and_bounded_queries():
+    class Connection(_Connection):
+        def execute(self, statement, _parameters=None):
+            self.statements.append(str(statement))
+            return _Result([{"id": 42, "statement_plain": "ação " * 1000}])
+
+    connection = Connection()
+    messages = []
+    audit._audit_pilot_export(connection, "pilot", messages.append)
+    pieces = [json.loads(m.split(" ", 1)[1]) for m in messages
+              if m.startswith("QUESTION_PILOT_EXPORT ")]
+    first = [p for p in pieces if p["cohort"] == "conflicts"]
+    payload = "".join(p["payload"] for p in first)
+    assert hashlib.sha256(payload.encode()).hexdigest() == first[0]["sha256"]
+    assert json.loads(payload)["id"] == 42
+    assert len(first) == first[0]["parts"]
+    assert all("LIMIT 100" in sql for sql in connection.statements[1:])
 
 
 def test_json_value_normalizes_postgres_decimal():

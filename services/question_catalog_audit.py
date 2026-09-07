@@ -22,7 +22,41 @@ logger = logging.getLogger("medsync.question_catalog_audit")
 AUDIT_ENV = "QUESTION_CATALOG_AUDIT_RUN_ID"
 AUDIT_MODE_ENV = "QUESTION_CATALOG_AUDIT_MODE"
 _FALSE_VALUES = {"", "0", "false", "no", "off"}
-_SUPPORTED_MODES = {"full", "critical_details"}
+_SUPPORTED_MODES = {"full", "critical_details", "pilot_export"}
+
+
+def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
+    """Exporta apenas os oito conflitos e 100 registros de cada estrato."""
+    columns = """id, source_id, ano, instituicao, banca, especialidade,
+        assunto, tema, subtema, statement_plain, statement_rich_html,
+        alternativas, alternativa_correta_id, content_hash_plain,
+        content_hash_rich, answer_binding_hash, media_classification,
+        image_rights_status"""
+    queries = [("conflicts", f"""SELECT {columns} FROM exam_questions
+        WHERE catalog_version = 'v2' AND id IN
+        (487699,487760,513939,519572,487698,487705,501940,502025)
+        ORDER BY id""")]
+    for name, condition in [("unclassified", "IS NULL"), ("classified", "IS NOT NULL")]:
+        queries.append((name, f"""SELECT {columns} FROM exam_questions
+            WHERE catalog_version = 'v2' AND status = 'publicada'
+              AND especialidade = 'Clínica Médica' AND tema = 'Hematologia'
+              AND NULLIF(BTRIM(subtema), '') {condition}
+            ORDER BY MD5(id::text || 'medsync-hema-pilot-v1'), id LIMIT 100"""))
+    counts = {}
+    for cohort, sql in queries:
+        rows = connection.execute(text(sql)).mappings().all()
+        counts[cohort] = len(rows)
+        for row in rows:
+            payload = json.dumps(dict(row), ensure_ascii=True, sort_keys=True)
+            digest = hashlib.sha256(payload.encode()).hexdigest()
+            parts = [payload[i:i + 1500] for i in range(0, len(payload), 1500)]
+            for index, part in enumerate(parts):
+                emit("QUESTION_PILOT_EXPORT " + json.dumps({
+                    "run_id": run_id, "cohort": cohort, "id": row["id"],
+                    "part": index, "parts": len(parts), "sha256": digest,
+                    "payload": part,
+                }, separators=(",", ":")))
+    _emit_section(run_id, "pilot_export_counts", [counts], emit)
 
 _QUERIES: tuple[tuple[str, str], ...] = (
     (
@@ -402,7 +436,9 @@ def run_question_catalog_audit(
                 if connection.dialect.name == "postgresql":
                     connection.execute(text("SET TRANSACTION READ ONLY"))
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
-                if mode == "critical_details":
+                if mode == "pilot_export":
+                    _audit_pilot_export(connection, run_id, emit)
+                elif mode == "critical_details":
                     _audit_critical_details(connection, run_id, emit)
                 else:
                     for section, sql in _QUERIES:
