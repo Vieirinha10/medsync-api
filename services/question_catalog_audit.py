@@ -22,7 +22,43 @@ logger = logging.getLogger("medsync.question_catalog_audit")
 AUDIT_ENV = "QUESTION_CATALOG_AUDIT_RUN_ID"
 AUDIT_MODE_ENV = "QUESTION_CATALOG_AUDIT_MODE"
 _FALSE_VALUES = {"", "0", "false", "no", "off"}
-_SUPPORTED_MODES = {"full", "critical_details", "pilot_export"}
+_SUPPORTED_MODES = {"full", "critical_details", "pilot_export", "text_integrity"}
+
+
+def _audit_text_integrity(connection: Any, run_id: str, emit: Callable) -> None:
+    """Bounded keyset scan. Emits IDs/signals, never full question content."""
+    from collections import Counter
+
+    from scripts.question_quality_review import inspect_row
+
+    counts = Counter()
+    scanned = flagged = last_id = 0
+    while True:
+        rows = connection.execute(text("""
+            SELECT id, source_id, statement_plain, statement_rich_html,
+                   alternativas, alternativa_correta_id, content_hash_plain,
+                   content_hash_rich, answer_binding_hash
+            FROM exam_questions
+            WHERE catalog_version = 'v2' AND status = 'publicada' AND id > :last_id
+            ORDER BY id LIMIT 1000
+        """), {'last_id': last_id}).mappings().all()
+        if not rows:
+            break
+        signals = []
+        for row in rows:
+            issues = inspect_row(dict(row))
+            scanned += 1
+            if issues:
+                flagged += 1
+                counts.update(issues)
+                signals.append({'id': row['id'], 'issues': issues})
+        last_id = rows[-1]['id']
+        _emit_section(run_id, 'text_integrity_signals', signals, emit, chunk_size=20)
+        _emit_section(run_id, 'text_integrity_progress',
+                      [{'scanned': scanned, 'flagged': flagged, 'last_id': last_id}], emit)
+    _emit_section(run_id, 'text_integrity_summary',
+                  [{'scanned': scanned, 'flagged': flagged, 'signals': dict(counts),
+                    'scope': 'v2_publicada', 'complete': True}], emit)
 
 
 def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
@@ -434,9 +470,13 @@ def run_question_catalog_audit(
             transaction = connection.begin()
             try:
                 if connection.dialect.name == "postgresql":
+                    if mode == 'text_integrity':
+                        connection.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
                     connection.execute(text("SET TRANSACTION READ ONLY"))
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
-                if mode == "pilot_export":
+                if mode == "text_integrity":
+                    _audit_text_integrity(connection, run_id, emit)
+                elif mode == "pilot_export":
                     _audit_pilot_export(connection, run_id, emit)
                 elif mode == "critical_details":
                     _audit_critical_details(connection, run_id, emit)
