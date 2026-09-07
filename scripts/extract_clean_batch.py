@@ -102,15 +102,45 @@ def sanitize_to_rich_html(raw_html: str) -> str:
     sanitizer.feed(raw_html)
     return sanitizer.get_sanitized_html()
 
+class _PlainTextParser(HTMLParser):
+    """Read text without treating decoded comparison signs as markup."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts: List[str] = []
+        self.hidden: List[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {'script', 'style'}:
+            self.hidden.append(tag)
+        if self.hidden:
+            return
+        if tag in {'br', 'hr'}:
+            self.parts.append('\n')
+
+    def handle_endtag(self, tag):
+        if self.hidden:
+            if tag == self.hidden[-1]:
+                self.hidden.pop()
+            return
+        if tag in {'p', 'div', 'li', 'tr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}:
+            self.parts.append('\n')
+        elif tag in {'td', 'th'}:
+            self.parts.append(' ')
+
+    def handle_data(self, data):
+        if not self.hidden:
+            self.parts.append(data)
+
+
 def sanitize_to_plain_text(raw_html: str) -> str:
     if not raw_html:
         return ""
-    text = html.unescape(raw_html)
+    parser = _PlainTextParser()
+    parser.feed(raw_html)
+    parser.close()
+    text = ''.join(parser.parts)
     text = text.replace('\xa0', ' ').replace('\u200b', '').replace('\ufeff', '')
-    text = re.sub(r'</(?:p|div|li|tr|h\d)>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<(?:br|hr)[\s/>]*>', '\n', text, flags=re.IGNORECASE)
-    text = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', text, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', '', text)
     lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in text.split('\n')]
     cleaned = '\n'.join(lines)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
