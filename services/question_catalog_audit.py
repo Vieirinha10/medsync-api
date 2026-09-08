@@ -22,7 +22,7 @@ logger = logging.getLogger("medsync.question_catalog_audit")
 AUDIT_ENV = "QUESTION_CATALOG_AUDIT_RUN_ID"
 AUDIT_MODE_ENV = "QUESTION_CATALOG_AUDIT_MODE"
 _FALSE_VALUES = {"", "0", "false", "no", "off"}
-_SUPPORTED_MODES = {"full", "critical_details", "pilot_export", "text_integrity"}
+_SUPPORTED_MODES = {"full", "critical_details", "pilot_export", "text_integrity", "quality_snapshot"}
 
 
 def _audit_text_integrity(connection: Any, run_id: str, emit: Callable) -> None:
@@ -470,11 +470,15 @@ def run_question_catalog_audit(
             transaction = connection.begin()
             try:
                 if connection.dialect.name == "postgresql":
-                    if mode == 'text_integrity':
+                    if mode in {'text_integrity', 'quality_snapshot'}:
                         connection.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
                     connection.execute(text("SET TRANSACTION READ ONLY"))
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
-                if mode == "text_integrity":
+                if mode == "quality_snapshot":
+                    from scripts.export_question_quality_snapshot import export_snapshot
+
+                    export_snapshot(connection, run_id, emit)
+                elif mode == "text_integrity":
                     _audit_text_integrity(connection, run_id, emit)
                 elif mode == "pilot_export":
                     _audit_pilot_export(connection, run_id, emit)
