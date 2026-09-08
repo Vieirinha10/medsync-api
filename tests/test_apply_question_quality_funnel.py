@@ -95,8 +95,10 @@ def test_quality_funnel_stale_guard_aborts_everything(manifest):
             .where(table.c.id == first_id)
             .values(content_hash_plain="changed")
         )
-    with pytest.raises(ValueError, match=str(first_id)):
+    with pytest.raises(ValueError, match=str(first_id)) as error:
         execute(engine, table, manifest, apply=True)
+    assert "content_hash_plain" in str(error.value)
+    assert '"current": "changed"' in str(error.value)
 
     untouched = manifest["items"][1]
     with engine.connect() as connection:

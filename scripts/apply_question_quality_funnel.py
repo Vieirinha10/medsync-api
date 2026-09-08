@@ -138,6 +138,7 @@ def execute(
                 raise ValueError("Missing records; no changes applied")
 
             operations = []
+            stale = []
             for question_id in ids:
                 item = by_id[question_id]
                 expected = expected_state(item)
@@ -148,7 +149,16 @@ def execute(
                 if matches(rows[question_id], destination):
                     continue
                 if not matches(rows[question_id], source):
-                    raise ValueError(f"Stale or unexpected state for ID {question_id}")
+                    differences = {
+                        key: {
+                            "expected": normalized(source.get(key)),
+                            "current": normalized(rows[question_id].get(key)),
+                        }
+                        for key in source
+                        if normalized(rows[question_id].get(key)) != source.get(key)
+                    }
+                    stale.append({"id": question_id, "differences": differences})
+                    continue
                 changes = {
                     key: destination[key]
                     for key in WRITE_COLUMNS
@@ -159,6 +169,12 @@ def execute(
                         changes["quality_reviewed_at"]
                     )
                 operations.append((question_id, changes, destination))
+
+            if stale:
+                raise ValueError(
+                    "Stale or unexpected states: "
+                    + json.dumps(stale, ensure_ascii=False, sort_keys=True)
+                )
 
             for question_id, changes, _ in operations:
                 result = connection.execute(
