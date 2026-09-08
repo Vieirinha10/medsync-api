@@ -2,7 +2,7 @@
   "schema_version": 1,
   "catalog_version": "v2",
   "created_at": "2026-09-08T12:00:00+00:00",
-  "plan_sha256": "2ae485558a164dd599bfc812c25c3316cfa752deac112c3d2c316d8ddac77703",
+  "plan_sha256": "07cb493631794e1d90e270f7d92c26e90155ee1885a373fd175d2353431da75c",
   "semantics": {
     "triada": "Auditoria estrutural automatizada e/ou revisão taxonômica; não equivale a validação científica.",
     "revisao_necessaria": "Fora do catálogo ativo até resolução documental, editorial ou taxonômica.",
@@ -78,9 +78,9 @@
         "subtema": "Anemias microcíticas"
       },
       "expected_hashes": {
-        "content_hash_plain": "cc7486ea332afe8999e28e8e5b72ef8f2dce843f779309630d17b0fa21736c13",
+        "content_hash_plain": "db382957f886338cce7c18566f038cc7616ed22e9270a039162d428a590107d8",
         "content_hash_rich": "cbd2f3fba108a5c8a13445aa397fb64081166b958d654b1168c93ae83233eaae",
-        "answer_binding_hash": "6e792c595b7bc0e5f1a68ff024d24b920a4a0b472a5be13fd8a628f3e3939709"
+        "answer_binding_hash": "75fe0623923c6de8f6caa115a57661057b7284d78dc815e4a9492e2f5b77ab56"
       },
       "decision": "manter_familia",
       "educational_focus": "Causa de anemia ferropriva e hérnia hiatal",
@@ -1162,9 +1162,9 @@
         "subtema": null
       },
       "expected_hashes": {
-        "content_hash_plain": "9af7876393bd98ce18d941fdb83e1d443bf8828e955523a495c65a828f1bcd36",
+        "content_hash_plain": "ab6f993f031da1f0c5869dc535cbac384feeb65ee1c6fccad44e66fe110aa8aa",
         "content_hash_rich": "84e6004c1f7819ebdc51cfe2053e2911b156be5a82a236c007369f9ad92e8983",
-        "answer_binding_hash": "6358593b28371d9d2f4eb17f0a3677b2a29feb6a41adbb527dbb20493d976f8e"
+        "answer_binding_hash": "d2dd6520d91894cb36abd166d4b0a8595610404554dd73ced657d45d6c1b99a5"
       },
       "decision": "propor_preenchimento",
       "educational_focus": "Escore MASCC",
@@ -4130,9 +4130,9 @@
         "subtema": null
       },
       "expected_hashes": {
-        "content_hash_plain": "fa2ed598611b17fd556a240838ad136a3576af4743aeeb8dee6524b7e57e2809",
+        "content_hash_plain": "fc477612d16430b68e1b2c7a4c2859c963b8aba94c8fc6480de2734d4c9c0061",
         "content_hash_rich": "f5af0fff6169723e2bceef8e4ed9587d947c7a49ef2c46a2745bac5dfa328ad5",
-        "answer_binding_hash": "95581c2a65991b2c9c8834bf7364a3c9892825276eb0d83ffcefcff12e6c0b0a"
+        "answer_binding_hash": "afb83755c57119a4702dc4b5708a5bc016185220edf7e6b28f4b867107237832"
       },
       "decision": "propor_preenchimento",
       "educational_focus": "Anemia na gestação",
