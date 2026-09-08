@@ -52,9 +52,10 @@ def validate_plan(plan):
                     raise ValueError('Alternative identity, answer or HTML changed')
 
 
-def execute_plan(engine, table, plan, applied_at, *, apply=False, reverse=False):
+def execute_plan(engine, table, plan, applied_at, *, apply=False, reverse=False,
+                 validator=validate_plan):
     """Validate every locked row before writes; rollback whole batch on any error."""
-    validate_plan(plan)
+    validator(plan)
     timestamp = datetime.fromisoformat(applied_at)
     if timestamp.tzinfo is None:
         raise ValueError('Timezone required')
@@ -118,15 +119,18 @@ def main():
     parser.add_argument('--applied-at', required=True)
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--reverse', action='store_true')
+    parser.add_argument('--encoding', action='store_true')
     args = parser.parse_args()
     raw = args.plan.read_bytes()
     if hashlib.sha256(raw).hexdigest() != args.sha256:
         raise ValueError('Plan checksum mismatch')
     from database import engine
     from models import ExamQuestion
+    from scripts.repair_question_encoding import validate_encoding_plan
 
     result = execute_plan(engine, ExamQuestion.__table__, json.loads(raw), args.applied_at,
-                          apply=args.apply, reverse=args.reverse)
+                          apply=args.apply, reverse=args.reverse,
+                          validator=validate_encoding_plan if args.encoding else validate_plan)
     print(json.dumps(result, sort_keys=True))
 
 
