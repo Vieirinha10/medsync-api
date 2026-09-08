@@ -688,6 +688,7 @@ class AdminQuestionSummary(BaseModel):
     explicacoes_geradas: int
     relatos_abertos: int
     tentativas: int
+    qualidade: dict[str, int]
 
 
 class AdminQuestionItem(BaseModel):
@@ -701,6 +702,11 @@ class AdminQuestionItem(BaseModel):
     explicacao: QuestionExplanation | None
     explicacao_status: str
     status: str
+    quality_status: str
+    quality_flags: list[str]
+    quality_method: str | None
+    quality_source_reference: str | None
+    quality_reviewed_at: datetime | None
     tentativas: int
     percentual_acerto: float
     relatos_abertos: int
@@ -728,6 +734,14 @@ class AdminQuestionUpdate(BaseModel):
     assunto: str | None = Field(default=None, min_length=2, max_length=160)
     status: Literal["publicada", "oculta", "revisao"] | None = None
     explicacao_status: Literal["pendente", "gerada", "revisada"] | None = None
+    quality_status: Literal[
+        "importada",
+        "triada",
+        "revisao_necessaria",
+        "validada",
+        "validada_com_fonte",
+        "anulada",
+    ] | None = None
 
 
 class AdminQuestionReportUpdate(BaseModel):

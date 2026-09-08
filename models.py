@@ -411,6 +411,15 @@ class ExamQuestion(Base):
     tema: Mapped[str | None] = mapped_column(String(160), index=True, nullable=True)
     subtema: Mapped[str | None] = mapped_column(String(160), nullable=True)
     tipo_prova: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    quality_status: Mapped[str] = mapped_column(
+        String(32), default="importada", index=True
+    )
+    quality_flags: Mapped[list[str]] = mapped_column(JSON, default=list)
+    quality_method: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    quality_source_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
+    quality_reviewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

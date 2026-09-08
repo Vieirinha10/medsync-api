@@ -403,6 +403,11 @@ def import_catalog(
                     status=item["status"],
                     explicacao=item["explicacao"],
                     explicacao_status=item["explicacao_status"],
+                    # A importação só chega aqui após validação estrutural e
+                    # criptográfica integral do lote.
+                    quality_status="triada",
+                    quality_flags=["structural_import_validation"],
+                    quality_method="catalog_import_validation_v2",
                 )
                 db.add(new_q)
                 inserted_count += 1

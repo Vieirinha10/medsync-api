@@ -1271,9 +1271,10 @@ def test_13_v15_deterministic_tiebreak_and_rank_resolution(isolated_db, client):
             content_hash_plain="1" * 64,
             content_hash_rich="2" * 64,
             answer_binding_hash="3" * 64,
-            random_rank=fixed_rank,
-            status="publicada",
-            catalog_version="v2",
+                random_rank=fixed_rank,
+                status="publicada",
+                quality_status="triada",
+                catalog_version="v2",
         )
         q_second = ExamQuestion(
             ano=2025,
@@ -1292,9 +1293,10 @@ def test_13_v15_deterministic_tiebreak_and_rank_resolution(isolated_db, client):
             content_hash_plain="4" * 64,
             content_hash_rich="5" * 64,
             answer_binding_hash="6" * 64,
-            random_rank=fixed_rank,
-            status="publicada",
-            catalog_version="v2",
+                random_rank=fixed_rank,
+                status="publicada",
+                quality_status="triada",
+                catalog_version="v2",
         )
         db.add_all([q_first, q_second])
         db.commit()
@@ -1467,7 +1469,37 @@ def test_14_v16_migration_scenarios_and_data_preservation():
         assert v2_17 == 100
         assert att_17 == attempts_init
 
-        # Passo 2: 17 -> 16
+        # Passo 2: 17 -> 18 -> 17, preservando dados e classificando apenas o v2.
+        command.upgrade(cfg, "20260908_18")
+        test_eng = create_engine(db_url)
+        insp_18 = inspect(test_eng)
+        cols_18 = {column["name"] for column in insp_18.get_columns("exam_questions")}
+        idx_18 = {index["name"] for index in insp_18.get_indexes("exam_questions")}
+        assert {
+            "quality_status",
+            "quality_flags",
+            "quality_method",
+            "quality_source_reference",
+            "quality_reviewed_at",
+        } <= cols_18
+        assert "ix_exam_questions_quality_status" in idx_18
+        test_eng.dispose()
+
+        with sqlite3.connect(disposable_db) as con:
+            cur = con.cursor()
+            assert cur.execute(
+                "SELECT count(id) FROM exam_questions "
+                "WHERE catalog_version='v1' AND quality_status='importada'"
+            ).fetchone()[0] == 2811
+            assert cur.execute(
+                "SELECT count(id) FROM exam_questions "
+                "WHERE catalog_version='v2' AND quality_status='triada'"
+            ).fetchone()[0] == 100
+            assert cur.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "20260908_18"
+
+        command.downgrade(cfg, "20260902_17")
+
+        # Passo 3: 17 -> 16
         command.downgrade(cfg, "20260902_16")
         test_eng = create_engine(db_url)
         insp_16 = inspect(test_eng)
@@ -1532,7 +1564,17 @@ def test_14_v16_migration_scenarios_and_data_preservation():
 
         with sqlite3.connect(clean_db) as con:
             ver_clean = con.cursor().execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver_clean == "20260902_17"
+        assert ver_clean == "20260908_18"
+
+        quality_columns = {column["name"] for column in insp_clean.get_columns("exam_questions")}
+        assert {
+            "quality_status",
+            "quality_flags",
+            "quality_method",
+            "quality_source_reference",
+            "quality_reviewed_at",
+        } <= quality_columns
+        assert "ix_exam_questions_quality_status" in idx_clean
 
     finally:
         database.DATABASE_URL = old_db_url
@@ -1580,6 +1622,7 @@ def test_15_hematology_is_a_specialty_with_dependent_subjects(
             alternativa_correta_id="A",
             fingerprint=fingerprint,
             status="publicada",
+            quality_status="triada",
             catalog_version="v2",
             random_rank=random_rank,
         )
@@ -1650,5 +1693,3 @@ def test_15_hematology_is_a_specialty_with_dependent_subjects(
             os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
         else:
             os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
-
-

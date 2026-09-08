@@ -121,6 +121,7 @@ def question_answer_distribution(
 
 
 SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
+ELIGIBLE_QUALITY_STATUSES = {"triada", "validada", "validada_com_fonte"}
 
 # Primeira etapa da taxonomia navegável. No catálogo v2, Hematologia foi
 # importada como tema de Clínica Médica; para o aluno, ela deve se comportar
@@ -131,6 +132,15 @@ PROMOTED_SPECIALTIES = {
         "theme": "Hematologia",
     },
 }
+
+
+def public_catalog_conditions(catalog_version: str) -> tuple:
+    conditions = [ExamQuestion.status == "publicada"]
+    if catalog_version == "v2":
+        conditions.append(
+            ExamQuestion.quality_status.in_(ELIGIBLE_QUALITY_STATUSES)
+        )
+    return tuple(conditions)
 
 
 def get_active_catalog_version() -> str:
@@ -241,6 +251,13 @@ def specialty_conditions(specialty: str) -> list:
     return conditions
 
 
+def question_is_eligible(question: ExamQuestion) -> bool:
+    return question.status == "publicada" and (
+        question.catalog_version != "v2"
+        or question.quality_status in ELIGIBLE_QUALITY_STATUSES
+    )
+
+
 def facet(
     db: Session,
     column,
@@ -250,7 +267,7 @@ def facet(
     raw_facets = db.execute(
         select(column, func.count(ExamQuestion.id))
         .where(
-            ExamQuestion.status == "publicada",
+            *public_catalog_conditions(catalog_version),
             ExamQuestion.catalog_version == catalog_version,
             *extra_conditions,
         )
@@ -335,7 +352,7 @@ def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
     db_total = (
         db.scalar(
             select(func.count(ExamQuestion.id)).where(
-                ExamQuestion.status == "publicada",
+                *public_catalog_conditions(catalog_version),
                 ExamQuestion.catalog_version == catalog_version,
             )
         )
@@ -465,7 +482,7 @@ def list_questions(
         total_active = (
             db.scalar(
                 select(func.count(ExamQuestion.id)).where(
-                    ExamQuestion.status == "publicada",
+                    *public_catalog_conditions(effective_version),
                     ExamQuestion.catalog_version == effective_version,
                 )
             )
@@ -485,7 +502,7 @@ def list_questions(
         return []
 
     statement = select(ExamQuestion).where(
-        ExamQuestion.status == "publicada",
+        *public_catalog_conditions(effective_version),
         ExamQuestion.catalog_version == effective_version,
     )
     if especialidade:
@@ -546,7 +563,7 @@ def answer_question(
     db: Session = Depends(get_db),
 ):
     question = db.get(ExamQuestion, question_id)
-    if question is None or question.status != "publicada":
+    if question is None or not question_is_eligible(question):
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
 
     valid_ids = {item["id"] for item in question.alternativas}
@@ -632,7 +649,7 @@ def retry_question_explanation(
     db: Session = Depends(get_db),
 ):
     question = db.get(ExamQuestion, question_id)
-    if question is None or question.status != "publicada":
+    if question is None or not question_is_eligible(question):
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
     if question.catalog_version == "v2":
         raise HTTPException(
@@ -818,6 +835,10 @@ def admin_questions(
     busca: str | None = Query(default=None, min_length=1, max_length=160),
     situacao: str | None = Query(default=None, pattern="^(publicada|oculta|revisao)$"),
     assunto: str | None = Query(default=None, max_length=160),
+    qualidade: str | None = Query(
+        default=None,
+        pattern="^(importada|triada|revisao_necessaria|validada|validada_com_fonte|anulada)$",
+    ),
     relato_status: str | None = Query(
         default=None, pattern="^(aberto|em_analise|resolvido)$"
     ),
@@ -870,6 +891,10 @@ def admin_questions(
         question_statement = question_statement.where(ExamQuestion.status == situacao)
     if assunto:
         question_statement = question_statement.where(ExamQuestion.assunto == assunto)
+    if qualidade:
+        question_statement = question_statement.where(
+            ExamQuestion.quality_status == qualidade
+        )
     rows = db.execute(
         question_statement.order_by(
             func.coalesce(report_stats.c.reports, 0).desc(),
@@ -890,6 +915,13 @@ def admin_questions(
     reports = db.execute(
         report_statement.order_by(QuestionReport.created_at.desc()).limit(100)
     ).all()
+    quality_counts = {
+        str(label): int(total)
+        for label, total in db.execute(
+            select(ExamQuestion.quality_status, func.count(ExamQuestion.id))
+            .group_by(ExamQuestion.quality_status)
+        ).all()
+    }
     return {
         "resumo": {
             "total": db.scalar(select(func.count(ExamQuestion.id))) or 0,
@@ -918,6 +950,7 @@ def admin_questions(
             )
             or 0,
             "tentativas": db.scalar(select(func.count(QuestionAttempt.id))) or 0,
+            "qualidade": quality_counts,
         },
         "questoes": [
             {
@@ -931,6 +964,11 @@ def admin_questions(
                 "explicacao": item.explicacao,
                 "explicacao_status": item.explicacao_status,
                 "status": item.status,
+                "quality_status": item.quality_status,
+                "quality_flags": item.quality_flags or [],
+                "quality_method": item.quality_method,
+                "quality_source_reference": item.quality_source_reference,
+                "quality_reviewed_at": item.quality_reviewed_at,
                 "tentativas": attempts,
                 "percentual_acerto": round((hits / attempts) * 100, 1)
                 if attempts
@@ -966,8 +1004,12 @@ def update_admin_question(
     question = db.get(ExamQuestion, question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Questão não encontrada.")
-    for field, value in payload.model_dump(exclude_none=True).items():
+    changes = payload.model_dump(exclude_none=True)
+    for field, value in changes.items():
         setattr(question, field, value)
+    if "quality_status" in changes:
+        question.quality_method = "admin_manual_review"
+        question.quality_reviewed_at = datetime.now(UTC)
     db.commit()
     invalidate_catalog_metadata_cache(question.catalog_version)
     return {"message": "Questão atualizada."}

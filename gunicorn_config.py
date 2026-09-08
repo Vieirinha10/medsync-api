@@ -24,6 +24,10 @@ def on_starting(server):
 
     run_requested_repair()
 
+    from services.question_quality_funnel import run_requested_quality_funnel
+
+    run_requested_quality_funnel()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""
