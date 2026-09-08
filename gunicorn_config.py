@@ -20,6 +20,10 @@ def on_starting(server):
 
     prepare_database()
 
+    from services.question_quality_repair import run_requested_repair
+
+    run_requested_repair()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""
