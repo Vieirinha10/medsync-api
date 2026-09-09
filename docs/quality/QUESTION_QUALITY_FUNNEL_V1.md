@@ -50,6 +50,18 @@ O executor:
 O modo padrão é desabilitado. `dry-run` sempre faz rollback; `apply` somente deve
 ser habilitado depois de backup e autorização explícita de publicação.
 
+## Realocação taxonômica — segundo manifesto
+
+O segundo manifesto fecha as 19 realocações pendentes do piloto. Cada destino
+foi revisto pelo objetivo educacional predominante da questão, sem inferir nem
+alterar a resposta correta. O executor específico deriva o estado esperado do
+primeiro manifesto, exige os dois checksums, bloqueia as 19 linhas e reverte o
+lote inteiro se taxonomia, qualidade ou qualquer hash tiver mudado.
+
+Das 19 questões, 17 não possuem outra pendência e podem voltar à entrega como
+`triada`; as questões 465800 e 651659 continuam bloqueadas porque ainda possuem
+revisão editorial pendente. Assim, permanecem 33 itens do piloto em revisão.
+
 ## Fontes oficiais das anulações
 
 - Acesso Direto: <https://centrodeselecao.ufg.br/2021/coreme-ses/sistema/provas_gabaritos/gabarito_final/ACESSO%20DIRETO.pdf>

@@ -20,7 +20,7 @@ em revisão e 2 anuladas foram mantidas fora da entrega aos alunos.
 O modo `quality_priority` faz uma varredura somente leitura e combina:
 
 - quarentenas e flags editoriais já existentes;
-- as 1.321 sinalizações da auditoria de integridade textual;
+- sinalizações da auditoria de integridade textual ainda abertas;
 - conflitos de gabarito, truncamentos e necessidade de fonte oficial;
 - dependência de imagem e situação documental;
 - sensibilidade temporal do conteúdo;
@@ -67,3 +67,27 @@ termina em rollback. A execução gera diagnóstico; não corrige o banco.
 
 Nenhuma classificação de risco autoriza alteração automática de conteúdo,
 alternativas, gabarito, taxonomia ou situação de publicação.
+
+## Estado pós-reparo de integridade
+
+Os 1.321 IDs do primeiro diagnóstico eram um retrato histórico, não um passivo
+permanente. Em 8 de setembro de 2026 foram aplicados e verificados dois lotes
+atômicos: 1.304 alinhamentos determinísticos e 16 normalizações residuais de
+codificação. A auditoria fresca
+`text-integrity-post-repair-20260909-1504` examinou as 226.740 questões v2
+publicadas e encontrou **zero sinalizações**. O arquivo local de IDs foi
+atualizado para esse resultado, impedindo que o priorizador volte a contar os
+reparos concluídos como P0.
+
+## Segundo manifesto: realocação taxonômica
+
+O manifesto `question_quality_taxonomy_resolution_manifest.json` resolve as 19
+questões que haviam sido reconhecidas como externas à Hematologia. Ele altera
+somente `especialidade`, `assunto`, `tema`, `subtema` e metadados do funil:
+
+- 17 questões sem outra pendência retornam ao catálogo como `triada`;
+- 2 questões são realocadas, mas permanecem em revisão editorial;
+- conteúdo, alternativas, gabarito e os três hashes são imutáveis;
+- as 31 demais pendências editoriais/documentais não são liberadas.
+
+Depois da aplicação, o gate inicial passa de 50 para 33 questões em revisão.

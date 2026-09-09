@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "catalog_version": "v2",
+  "created_at": "2026-09-09T15:00:00+00:00",
+  "base_plan_sha256": "07cb493631794e1d90e270f7d92c26e90155ee1885a373fd175d2353431da75c",
+  "plan_sha256": "94c3c1b6abfd5e337b2b7c7f8693beec6b6701d1d09daf1b9d863b7683f048b1",
+  "items": [
+    {"id": 445379, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Oncologia", "tema": "Oncologia", "subtema": "Toxicidades do tratamento antineoplásico"}},
+    {"id": 465800, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Nefrologia", "tema": "Nefrologia", "subtema": "Anemia na doença renal crônica"}},
+    {"id": 469732, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Reumatologia", "tema": "Reumatologia", "subtema": "Diagnóstico diferencial da dor lombar"}},
+    {"id": 498263, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Alergia e Imunologia", "tema": "Alergia e Imunologia", "subtema": "Anafilaxia"}},
+    {"id": 546634, "taxonomy": {"especialidade": "Medicina Preventiva", "assunto": "Prevenção em saúde", "tema": "Prevenção em saúde", "subtema": "Prevenção do câncer"}},
+    {"id": 559891, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Oncologia", "tema": "Oncologia", "subtema": "Emergências oncológicas"}},
+    {"id": 571574, "taxonomy": {"especialidade": "Pediatria", "assunto": "Oncologia Pediátrica", "tema": "Oncologia Pediátrica", "subtema": "Tumores hepáticos"}},
+    {"id": 571648, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Oncologia", "tema": "Oncologia", "subtema": "Cuidados de suporte"}},
+    {"id": 580230, "taxonomy": {"especialidade": "Outros", "assunto": "Ciclo Básico", "tema": "Fisiologia", "subtema": "Transporte através de membranas"}},
+    {"id": 587068, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Oncologia", "tema": "Oncologia", "subtema": "Biologia molecular do câncer"}},
+    {"id": 609998, "taxonomy": {"especialidade": "Pediatria", "assunto": "Oncologia Pediátrica", "tema": "Oncologia Pediátrica", "subtema": "Massas mediastinais"}},
+    {"id": 619410, "taxonomy": {"especialidade": "Pediatria", "assunto": "Infectologia Pediátrica", "tema": "Infectologia Pediátrica", "subtema": "Artrite séptica"}},
+    {"id": 619457, "taxonomy": {"especialidade": "Pediatria", "assunto": "Oncologia Pediátrica", "tema": "Oncologia Pediátrica", "subtema": "Neoplasias secundárias"}},
+    {"id": 637434, "taxonomy": {"especialidade": "Pediatria", "assunto": "Infectologia Pediátrica", "tema": "Infectologia Pediátrica", "subtema": "Profilaxia pós-exposição à varicela"}},
+    {"id": 651659, "taxonomy": {"especialidade": "Medicina Preventiva", "assunto": "Ética Médica", "tema": "Ética Médica", "subtema": "Recusa de transfusão em menores"}},
+    {"id": 651712, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Nutrologia", "tema": "Nutrologia", "subtema": "Avaliação nutricional"}},
+    {"id": 657169, "taxonomy": {"especialidade": "Clínica Médica", "assunto": "Endocrinologia", "tema": "Endocrinologia", "subtema": "Insuficiência adrenal"}},
+    {"id": 662705, "taxonomy": {"especialidade": "Pediatria", "assunto": "Infectologia Pediátrica", "tema": "Infectologia Pediátrica", "subtema": "Toxocaríase"}},
+    {"id": 667079, "taxonomy": {"especialidade": "Cirurgia", "assunto": "Cirurgia Torácica", "tema": "Cirurgia Torácica", "subtema": "Massas mediastinais"}}
+  ]
+}

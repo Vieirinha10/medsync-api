@@ -28,6 +28,12 @@ def on_starting(server):
 
     run_requested_quality_funnel()
 
+    from services.question_quality_taxonomy_resolution import (
+        run_requested_taxonomy_resolution,
+    )
+
+    run_requested_taxonomy_resolution()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""

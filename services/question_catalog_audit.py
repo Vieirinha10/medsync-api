@@ -58,9 +58,17 @@ def _load_quality_flagged_ids() -> set[int]:
     )
     payload = json.loads(path.read_text(encoding="utf-8"))
     ids = payload.get("ids") or []
-    if len(ids) != 1321 or len(ids) != len(set(ids)):
+    if (
+        payload.get("complete") is not True
+        or payload.get("scope") != "v2_publicada"
+        or not payload.get("source_run_id")
+        or not isinstance(payload.get("scanned"), int)
+        or payload["scanned"] <= 0
+        or len(ids) != len(set(ids))
+        or any(not isinstance(question_id, int) for question_id in ids)
+    ):
         raise ValueError("Unexpected text-integrity ID manifest")
-    return {int(question_id) for question_id in ids}
+    return set(ids)
 
 
 def _audit_quality_priority(connection: Any, run_id: str, emit: Callable) -> None:

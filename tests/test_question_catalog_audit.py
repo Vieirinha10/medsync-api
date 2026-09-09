@@ -210,3 +210,7 @@ def test_quality_priority_mode_is_read_only_and_emits_bounded_queue(monkeypatch)
     assert any('"section":"quality_priority_queue"' in item for item in messages)
     sql = " ".join(connection.statements).upper()
     assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
+
+
+def test_quality_priority_uses_fresh_zero_residual_integrity_manifest():
+    assert audit._load_quality_flagged_ids() == set()
