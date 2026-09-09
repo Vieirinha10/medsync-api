@@ -75,6 +75,17 @@ def test_text_signal_images_reports_and_exposure_are_prioritized():
     }
 
 
+def test_editorial_exam_fair_use_is_documented_visual_rights():
+    result = prioritize_question(
+        row(
+            media_classification="REQUIRES_IMAGE",
+            image_rights_status="EDITORIAL_EXAM_FAIR_USE",
+        )
+    )
+    assert "image_rights_review" not in result["reasons"]
+    assert result["tier"] == "p3_rotina"
+
+
 def test_annulled_question_is_counted_but_never_reenters_queue():
     result = prioritize_question(row(quality_status="anulada", status="revisao"))
     assert result["tier"] == "excluida"

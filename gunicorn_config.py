@@ -40,6 +40,12 @@ def on_starting(server):
 
     run_requested_clinical_review()
 
+    from services.question_quality_visual_quarantine import (
+        run_requested_visual_quarantine,
+    )
+
+    run_requested_visual_quarantine()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""

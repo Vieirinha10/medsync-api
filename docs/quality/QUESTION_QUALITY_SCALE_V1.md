@@ -105,3 +105,11 @@ revisão médica. O manifesto `data/question_quality_p0_batch_001.json` fixa os
 1.000 IDs, `source_id` e score por checksum. O modo `quality_visual_audit` confere
 presença de `<img>`, tipo do endereço, domínio e situação documental, sem emitir
 enunciados ou URLs completos e sem alterar o banco.
+
+O primeiro resultado confirmou 992 itens com marcação e documentação prontas,
+incluindo 980 com `EDITORIAL_EXAM_FAIR_USE`, e encontrou somente oito questões
+`REQUIRES_IMAGE` sem `<img>`. O priorizador passou a reconhecer o status editorial
+como documentado, eliminando o falso positivo em massa. As oito ausências reais
+foram registradas no manifesto
+`data/question_quality_visual_quarantine_manifest.json` para quarentena atômica,
+sem alterar conteúdo, imagem ou gabarito.

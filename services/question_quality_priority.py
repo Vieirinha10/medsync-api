@@ -21,6 +21,13 @@ FLAG_WEIGHTS = {
     "taxonomy_relocation_pending": 45,
 }
 
+DOCUMENTED_IMAGE_RIGHTS = {
+    "VERIFIED",
+    "LICENSED",
+    "OWNED",
+    "EDITORIAL_EXAM_FAIR_USE",
+}
+
 _TIME_SENSITIVE_PATTERN = re.compile(
     r"\b(?:diretriz|guideline|protocolo|recomenda(?:ção|ções)|calendário|"
     r"notificação compulsória|legislação|lei|portaria|dose|tratamento|"
@@ -93,11 +100,7 @@ def prioritize_question(
 
     media = str(row.get("media_classification") or "")
     rights = str(row.get("image_rights_status") or "")
-    if media == "REQUIRES_IMAGE" and rights not in {
-        "VERIFIED",
-        "LICENSED",
-        "OWNED",
-    }:
+    if media == "REQUIRES_IMAGE" and rights not in DOCUMENTED_IMAGE_RIGHTS:
         score += 60
         reasons.append("image_rights_review")
 

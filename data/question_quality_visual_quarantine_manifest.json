@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "catalog_version": "v2",
+  "created_at": "2026-09-09T21:15:00+00:00",
+  "source_run_id": "quality-visual-p0-batch-001-20260909",
+  "plan_sha256": "c5047f954c2aa1df9a2cff54408e9142f0b90ca4c269a2c163e93eae3bf083b2",
+  "items": [
+    {
+      "id": 481695,
+      "source_id": "4000012185",
+      "expected": {
+        "ano": 2015,
+        "especialidade": "Clínica Médica",
+        "assunto": "Neurologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "6893daa652a645e710af95a55a8f5998491cef2823ea22aa8cb3202bfedebb45",
+        "content_hash_rich": "b3813cb40dfa49d861c3a367bae1929fd770b02e27faae205c225da384761cce",
+        "answer_binding_hash": "5f1cb9d1fdba71f963e93a01a8233c598c1f7faca4343d659a602f59c5f303d7"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 482626,
+      "source_id": "4000101941",
+      "expected": {
+        "ano": 2013,
+        "especialidade": "Clínica Médica",
+        "assunto": "Nefrologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "f6d450aa255e12e29e2cb4575d0e3ac1b8f739cf69c79dc0bf269f42b2160079",
+        "content_hash_rich": "6cc617713942eee2e398b250eb64d366b756aa399804f1832347d227d639c246",
+        "answer_binding_hash": "6a61803918ecc0851d33203238c3f41f9227380df3853341c8c8fbbbae10a9df"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 483071,
+      "source_id": "4000110608",
+      "expected": {
+        "ano": 2015,
+        "especialidade": "Pediatria",
+        "assunto": "Pediatria",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "8954fca7d6c63ac403fa04ced5356136250884bbdd065597d12b68a57ba040b9",
+        "content_hash_rich": "8d1a06bb1f7ac258ce8b3e4944751c3089dda3702e9ff59487607f89c6e0d5e0",
+        "answer_binding_hash": "a2c632bf4adea91c8997acb15f12317dd4e07b2484782c5d562428127088ce70"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 483581,
+      "source_id": "4000128307",
+      "expected": {
+        "ano": 2013,
+        "especialidade": "Cirurgia",
+        "assunto": "Cirurgia Plástica",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "e8b873039c66bb37c92c63f453ee24d956b9312cb3ccfe4a0cef4cce86eccd15",
+        "content_hash_rich": "59d64175ad18c92653871ab6b335c1edff03ebaa8ad975d2a77f83ebf650933a",
+        "answer_binding_hash": "919fddb367c9a7ea48b65d6ce073892f96f9b2f0a64a529215f9aa3c3dc535e6"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 485944,
+      "source_id": "4000121445",
+      "expected": {
+        "ano": 2019,
+        "especialidade": "Outros",
+        "assunto": "Oftalmologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "9be5b882971dcf79771836a95b63a1744498cfb1e6729c48a7d064cba7517451",
+        "content_hash_rich": "c2b45c0fed5a5f5b71ff294194c36be696154ac546f16480e9820751203adff8",
+        "answer_binding_hash": "c78d174c5a4b8396b30e57d268234a90445d94bb6aa046c856f814f570745942"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 486193,
+      "source_id": "4000140899",
+      "expected": {
+        "ano": 2014,
+        "especialidade": "Outros",
+        "assunto": "Oftalmologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "9ffb2707fe45215e20b29c4a5d28b07225511c3d671a370b3929f6d1d5765588",
+        "content_hash_rich": "b3bd4e78c74da610651389e4fce6c1f33e0cbbdd5cf1552330c872c828824b57",
+        "answer_binding_hash": "ce5ae42d25a1184298bef16575ba1e19a93cc59e2a90ee15e71040145647b1b6"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 486230,
+      "source_id": "4000140936",
+      "expected": {
+        "ano": 2015,
+        "especialidade": "Outros",
+        "assunto": "Oftalmologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "a84d93f1de857d3b952326ad227bac90874d6bb4e3e576305a7e1c77475e768e",
+        "content_hash_rich": "fbae5cc7f727690ed3d6b29d9ad8560a238048ba173df107e94ddfda7e4584f8",
+        "answer_binding_hash": "3e183ee4b98a2d55a7846fd3a6a7c8ab3900e43b96fb4914c6da67a002000460"
+      },
+      "decision": "quarantine_missing_visual"
+    },
+    {
+      "id": 486234,
+      "source_id": "4000140940",
+      "expected": {
+        "ano": 2015,
+        "especialidade": "Outros",
+        "assunto": "Oftalmologia",
+        "status": "publicada",
+        "quality_status": "triada",
+        "quality_flags": [],
+        "quality_method": "structural_catalog_audit_v1",
+        "quality_source_reference": null,
+        "quality_reviewed_at": null,
+        "media_classification": "REQUIRES_IMAGE",
+        "image_rights_status": "EDITORIAL_EXAM_FAIR_USE",
+        "content_hash_plain": "31624b61930ad8280eefdb63d8e6cc79daea24bc029d752d73d985b78c9dd324",
+        "content_hash_rich": "d3145d20850a332745f4c0106e2fb8803d0327f45d486b5f9799c8f29d5e139f",
+        "answer_binding_hash": "c9dcef477fd3b2a8b96c23d0e09b7e5d13e88316200a35b7bd435708140510be"
+      },
+      "decision": "quarantine_missing_visual"
+    }
+  ]
+}
