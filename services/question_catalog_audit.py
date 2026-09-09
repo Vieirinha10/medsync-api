@@ -22,7 +22,106 @@ logger = logging.getLogger("medsync.question_catalog_audit")
 AUDIT_ENV = "QUESTION_CATALOG_AUDIT_RUN_ID"
 AUDIT_MODE_ENV = "QUESTION_CATALOG_AUDIT_MODE"
 _FALSE_VALUES = {"", "0", "false", "no", "off"}
-_SUPPORTED_MODES = {"full", "critical_details", "pilot_export", "text_integrity", "quality_snapshot"}
+_SUPPORTED_MODES = {
+    "full",
+    "critical_details",
+    "pilot_export",
+    "text_integrity",
+    "quality_snapshot",
+    "quality_priority",
+}
+
+_QUALITY_PRIORITY_SQL = """
+SELECT id, source_id, ano, especialidade, assunto, tema, subtema,
+       status, quality_status, quality_flags, media_classification,
+       image_rights_status, enunciado, statement_plain
+FROM exam_questions
+WHERE catalog_version = 'v2' AND id > :last_id
+ORDER BY id
+LIMIT 1000
+"""
+
+_ATTEMPT_COUNTS_SQL = """
+SELECT id_questao AS question_id, COUNT(*) AS total
+FROM question_attempts GROUP BY id_questao
+"""
+
+_OPEN_REPORT_COUNTS_SQL = """
+SELECT id_questao AS question_id, COUNT(*) AS total
+FROM question_reports WHERE status <> 'resolvido' GROUP BY id_questao
+"""
+
+
+def _load_quality_flagged_ids() -> set[int]:
+    path = (
+        Path(__file__).resolve().parents[1] / "data/question_quality_flagged_ids.json"
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    ids = payload.get("ids") or []
+    if len(ids) != 1321 or len(ids) != len(set(ids)):
+        raise ValueError("Unexpected text-integrity ID manifest")
+    return {int(question_id) for question_id in ids}
+
+
+def _audit_quality_priority(connection: Any, run_id: str, emit: Callable) -> None:
+    """Escaneia o catálogo sem emitir enunciados ou alterar qualquer registro."""
+    from services.question_quality_priority import summarize_priorities
+
+    attempts = {
+        int(row["question_id"]): int(row["total"])
+        for row in connection.execute(text(_ATTEMPT_COUNTS_SQL)).mappings().all()
+    }
+    reports = {
+        int(row["question_id"]): int(row["total"])
+        for row in connection.execute(text(_OPEN_REPORT_COUNTS_SQL)).mappings().all()
+    }
+
+    def iter_rows():
+        last_id = 0
+        scanned = 0
+        while True:
+            page = (
+                connection.execute(text(_QUALITY_PRIORITY_SQL), {"last_id": last_id})
+                .mappings()
+                .all()
+            )
+            if not page:
+                return
+            for row in page:
+                yield dict(row)
+            scanned += len(page)
+            last_id = int(page[-1]["id"])
+            if scanned % 10_000 == 0:
+                emit(
+                    f"QUESTION_CATALOG_AUDIT_PROGRESS run_id={run_id} "
+                    f"section=quality_priority scanned={scanned} last_id={last_id}"
+                )
+
+    top_limit = max(
+        50,
+        min(int(os.getenv("QUESTION_QUALITY_PRIORITY_TOP_LIMIT", "500")), 2_000),
+    )
+    result = summarize_priorities(
+        iter_rows(),
+        flagged_ids=_load_quality_flagged_ids(),
+        attempts_by_id=attempts,
+        reports_by_id=reports,
+        top_limit=top_limit,
+    )
+    summary = {
+        key: value
+        for key, value in result.items()
+        if key not in {"specialties", "priority_queue"}
+    }
+    _emit_section(run_id, "quality_priority_summary", [summary], emit)
+    _emit_section(run_id, "quality_priority_specialties", result["specialties"], emit)
+    _emit_section(
+        run_id,
+        "quality_priority_queue",
+        result["priority_queue"],
+        emit,
+        chunk_size=25,
+    )
 
 
 def _audit_text_integrity(connection: Any, run_id: str, emit: Callable) -> None:
@@ -34,14 +133,21 @@ def _audit_text_integrity(connection: Any, run_id: str, emit: Callable) -> None:
     counts = Counter()
     scanned = flagged = last_id = 0
     while True:
-        rows = connection.execute(text("""
+        rows = (
+            connection.execute(
+                text("""
             SELECT id, source_id, statement_plain, statement_rich_html,
                    alternativas, alternativa_correta_id, content_hash_plain,
                    content_hash_rich, answer_binding_hash
             FROM exam_questions
             WHERE catalog_version = 'v2' AND status = 'publicada' AND id > :last_id
             ORDER BY id LIMIT 1000
-        """), {'last_id': last_id}).mappings().all()
+        """),
+                {"last_id": last_id},
+            )
+            .mappings()
+            .all()
+        )
         if not rows:
             break
         signals = []
@@ -51,14 +157,29 @@ def _audit_text_integrity(connection: Any, run_id: str, emit: Callable) -> None:
             if issues:
                 flagged += 1
                 counts.update(issues)
-                signals.append({'id': row['id'], 'issues': issues})
-        last_id = rows[-1]['id']
-        _emit_section(run_id, 'text_integrity_signals', signals, emit, chunk_size=20)
-        _emit_section(run_id, 'text_integrity_progress',
-                      [{'scanned': scanned, 'flagged': flagged, 'last_id': last_id}], emit)
-    _emit_section(run_id, 'text_integrity_summary',
-                  [{'scanned': scanned, 'flagged': flagged, 'signals': dict(counts),
-                    'scope': 'v2_publicada', 'complete': True}], emit)
+                signals.append({"id": row["id"], "issues": issues})
+        last_id = rows[-1]["id"]
+        _emit_section(run_id, "text_integrity_signals", signals, emit, chunk_size=20)
+        _emit_section(
+            run_id,
+            "text_integrity_progress",
+            [{"scanned": scanned, "flagged": flagged, "last_id": last_id}],
+            emit,
+        )
+    _emit_section(
+        run_id,
+        "text_integrity_summary",
+        [
+            {
+                "scanned": scanned,
+                "flagged": flagged,
+                "signals": dict(counts),
+                "scope": "v2_publicada",
+                "complete": True,
+            }
+        ],
+        emit,
+    )
 
 
 def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
@@ -68,16 +189,26 @@ def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
         alternativas, alternativa_correta_id, content_hash_plain,
         content_hash_rich, answer_binding_hash, media_classification,
         image_rights_status"""
-    queries = [("conflicts", f"""SELECT {columns} FROM exam_questions
+    queries = [
+        (
+            "conflicts",
+            f"""SELECT {columns} FROM exam_questions
         WHERE catalog_version = 'v2' AND id IN
         (487699,487760,513939,519572,487698,487705,501940,502025)
-        ORDER BY id""")]
+        ORDER BY id""",
+        )
+    ]
     for name, condition in [("unclassified", "IS NULL"), ("classified", "IS NOT NULL")]:
-        queries.append((name, f"""SELECT {columns} FROM exam_questions
+        queries.append(
+            (
+                name,
+                f"""SELECT {columns} FROM exam_questions
             WHERE catalog_version = 'v2' AND status = 'publicada'
               AND especialidade = 'Clínica Médica' AND tema = 'Hematologia'
               AND NULLIF(BTRIM(subtema), '') {condition}
-            ORDER BY MD5(id::text || 'medsync-hema-pilot-v1'), id LIMIT 100"""))
+            ORDER BY MD5(id::text || 'medsync-hema-pilot-v1'), id LIMIT 100""",
+            )
+        )
     counts = {}
     for cohort, sql in queries:
         rows = connection.execute(text(sql)).mappings().all()
@@ -85,14 +216,25 @@ def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
         for row in rows:
             payload = json.dumps(dict(row), ensure_ascii=True, sort_keys=True)
             digest = hashlib.sha256(payload.encode()).hexdigest()
-            parts = [payload[i:i + 1500] for i in range(0, len(payload), 1500)]
+            parts = [payload[i : i + 1500] for i in range(0, len(payload), 1500)]
             for index, part in enumerate(parts):
-                emit("QUESTION_PILOT_EXPORT " + json.dumps({
-                    "run_id": run_id, "cohort": cohort, "id": row["id"],
-                    "part": index, "parts": len(parts), "sha256": digest,
-                    "payload": part,
-                }, separators=(",", ":")))
+                emit(
+                    "QUESTION_PILOT_EXPORT "
+                    + json.dumps(
+                        {
+                            "run_id": run_id,
+                            "cohort": cohort,
+                            "id": row["id"],
+                            "part": index,
+                            "parts": len(parts),
+                            "sha256": digest,
+                            "payload": part,
+                        },
+                        separators=(",", ":"),
+                    )
+                )
     _emit_section(run_id, "pilot_export_counts", [counts], emit)
+
 
 _QUERIES: tuple[tuple[str, str], ...] = (
     (
@@ -334,7 +476,9 @@ def _emit_section(
     *,
     chunk_size: int = 50,
 ) -> None:
-    chunks = [rows[index : index + chunk_size] for index in range(0, len(rows), chunk_size)]
+    chunks = [
+        rows[index : index + chunk_size] for index in range(0, len(rows), chunk_size)
+    ]
     if not chunks:
         chunks = [[]]
     for index, chunk in enumerate(chunks, start=1):
@@ -355,15 +499,19 @@ def _emit_section(
 
 
 def _catalog_id_bounds(connection: Any) -> tuple[int | None, int | None]:
-    bounds = connection.execute(
-        text(
-            """
+    bounds = (
+        connection.execute(
+            text(
+                """
             SELECT MIN(id) AS min_id, MAX(id) AS max_id
             FROM exam_questions
             WHERE catalog_version = 'v2' AND status = 'publicada'
             """
+            )
         )
-    ).mappings().one()
+        .mappings()
+        .one()
+    )
     return bounds["min_id"], bounds["max_id"]
 
 
@@ -387,10 +535,14 @@ def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> Non
         batch_number = 0
         for start_id in range(int(min_id), int(max_id) + 1, batch_size):
             batch_number += 1
-            row = connection.execute(
-                text(_ANSWER_INTEGRITY_BATCH_SQL),
-                {"start_id": start_id, "end_id": start_id + batch_size - 1},
-            ).mappings().one()
+            row = (
+                connection.execute(
+                    text(_ANSWER_INTEGRITY_BATCH_SQL),
+                    {"start_id": start_id, "end_id": start_id + batch_size - 1},
+                )
+                .mappings()
+                .one()
+            )
             for key in totals:
                 totals[key] += int(row[key] or 0)
             if batch_number % 5 == 0:
@@ -403,12 +555,15 @@ def _audit_answer_integrity(connection: Any, run_id: str, emit: Callable) -> Non
 
 
 def _audit_critical_details(connection: Any, run_id: str, emit: Callable) -> None:
-    conflict_rows = connection.execute(text(_CONFLICTING_DUPLICATES_SQL)).mappings().all()
+    conflict_rows = (
+        connection.execute(text(_CONFLICTING_DUPLICATES_SQL)).mappings().all()
+    )
     conflicts = [
-        {key: _json_value(value) for key, value in row.items()}
-        for row in conflict_rows
+        {key: _json_value(value) for key, value in row.items()} for row in conflict_rows
     ]
-    _emit_section(run_id, "conflicting_duplicate_details", conflicts, emit, chunk_size=20)
+    _emit_section(
+        run_id, "conflicting_duplicate_details", conflicts, emit, chunk_size=20
+    )
 
     min_id, max_id = _catalog_id_bounds(connection)
     blank_questions: list[dict[str, Any]] = []
@@ -417,13 +572,16 @@ def _audit_critical_details(connection: Any, run_id: str, emit: Callable) -> Non
         batch_number = 0
         for start_id in range(int(min_id), int(max_id) + 1, batch_size):
             batch_number += 1
-            rows = connection.execute(
-                text(_BLANK_OPTION_DETAILS_BATCH_SQL),
-                {"start_id": start_id, "end_id": start_id + batch_size - 1},
-            ).mappings().all()
+            rows = (
+                connection.execute(
+                    text(_BLANK_OPTION_DETAILS_BATCH_SQL),
+                    {"start_id": start_id, "end_id": start_id + batch_size - 1},
+                )
+                .mappings()
+                .all()
+            )
             blank_questions.extend(
-                {key: _json_value(value) for key, value in row.items()}
-                for row in rows
+                {key: _json_value(value) for key, value in row.items()} for row in rows
             )
             if batch_number % 5 == 0:
                 emit(
@@ -470,11 +628,19 @@ def run_question_catalog_audit(
             transaction = connection.begin()
             try:
                 if connection.dialect.name == "postgresql":
-                    if mode in {'text_integrity', 'quality_snapshot'}:
-                        connection.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
+                    if mode in {
+                        "text_integrity",
+                        "quality_snapshot",
+                        "quality_priority",
+                    }:
+                        connection.execute(
+                            text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+                        )
                     connection.execute(text("SET TRANSACTION READ ONLY"))
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
-                if mode == "quality_snapshot":
+                if mode == "quality_priority":
+                    _audit_quality_priority(connection, run_id, emit)
+                elif mode == "quality_snapshot":
                     from scripts.export_question_quality_snapshot import export_snapshot
 
                     export_snapshot(connection, run_id, emit)

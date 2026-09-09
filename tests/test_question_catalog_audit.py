@@ -22,8 +22,11 @@ def test_pilot_export_roundtrip_and_bounded_queries():
     connection = Connection()
     messages = []
     audit._audit_pilot_export(connection, "pilot", messages.append)
-    pieces = [json.loads(m.split(" ", 1)[1]) for m in messages
-              if m.startswith("QUESTION_PILOT_EXPORT ")]
+    pieces = [
+        json.loads(m.split(" ", 1)[1])
+        for m in messages
+        if m.startswith("QUESTION_PILOT_EXPORT ")
+    ]
     first = [p for p in pieces if p["cohort"] == "conflicts"]
     payload = "".join(p["payload"] for p in first)
     assert hashlib.sha256(payload.encode()).hexdigest() == first[0]["sha256"]
@@ -151,3 +154,59 @@ def test_start_requested_audit_claims_one_lock(monkeypatch, tmp_path):
     assert audit.start_requested_audit() is True
     assert audit.start_requested_audit() is False
     assert started == [("quality-2026",)]
+
+
+def test_quality_priority_mode_is_read_only_and_emits_bounded_queue(monkeypatch):
+    class Connection(_Connection):
+        def __init__(self):
+            super().__init__()
+            self.pages = 0
+
+        def execute(self, statement, parameters=None):
+            sql = str(statement)
+            self.statements.append(sql)
+            if "FROM question_attempts" in sql or "FROM question_reports" in sql:
+                return _Result([])
+            if "FROM exam_questions" in sql:
+                self.pages += 1
+                if self.pages == 1:
+                    return _Result(
+                        [
+                            {
+                                "id": 7,
+                                "source_id": "7",
+                                "ano": 2024,
+                                "especialidade": "Hematologia",
+                                "assunto": "Anemias",
+                                "tema": "Hematologia",
+                                "subtema": "Anemias",
+                                "status": "revisao",
+                                "quality_status": "revisao_necessaria",
+                                "quality_flags": ["editorial_review_pending"],
+                                "media_classification": "NO_VISUAL_DEPENDENCY",
+                                "image_rights_status": "NONE_REQUIRED",
+                                "enunciado": "Questão",
+                                "statement_plain": "Questão",
+                            }
+                        ]
+                    )
+                return _Result([])
+            return _Result([])
+
+    monkeypatch.setattr(audit, "_load_quality_flagged_ids", lambda: set())
+    connection = Connection()
+    messages = []
+    audit.run_question_catalog_audit(
+        "priority-test",
+        mode="quality_priority",
+        connect=lambda: connection,
+        emit=messages.append,
+    )
+
+    assert connection.statements[0] == "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+    assert connection.statements[1] == "SET TRANSACTION READ ONLY"
+    assert connection.transaction.rolled_back is True
+    assert any('"section":"quality_priority_summary"' in item for item in messages)
+    assert any('"section":"quality_priority_queue"' in item for item in messages)
+    sql = " ".join(connection.statements).upper()
+    assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))

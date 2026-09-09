@@ -1,16 +1,16 @@
-# Graph Report - medsync-api-quality-block  (2026-09-08)
+# Graph Report - medsync-api-quality-block  (2026-09-09)
 
 ## Corpus Check
-- 130 files · ~142,090 words
+- 133 files · ~143,839 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1153 nodes · 2856 edges · 68 communities (47 shown, 5 thin omitted)
+- 1181 nodes · 2906 edges · 74 communities (53 shown, 5 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 294 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0c19afc0`
+- Built from commit: `3652238e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,8 +21,8 @@
 - MedSync — Diretriz Oficial para Criação de Desafios Visuais
 - test_api.py
 - payments.py
-- admin.py
-- learning_paths.py
+- User
+- error_notebook.py
 - questions.py
 - synapse_providers.py
 - field_validator
@@ -42,12 +42,12 @@
 - clinical_feedback_batch_four.py
 - clinical_feedback_batch_three.py
 - clinical_feedback_batch_two.py
-- import_catalog
+- test_question_catalog_v2.py
 - Simulação Clínica 2.2
 - Eficiência operacional da Synapse
 - routers/__init__.py
 - execute
-- User
+- security.py
 - Documentação Técnica: Catálogo v2 e Atualização Consolidada do Banco de Questões MedSync
 - Homologação clínica — lote 2
 - scripts/__init__.py
@@ -61,12 +61,18 @@
 - Não publicado
 - models.py
 - ClinicalRubric
+- test_evaluation.py
 - ExamQuestion
-- question_explanations.py
 - Instruções para agentes e colaboradores
 - Funil de qualidade das questões — versão 1
 - taxonomy_normalizer.py
 - vital_signs.py
+- benchmark_synapse_efficiency.py
+- test_visual_questions_catalog.py
+- test_question_quality_priority.py
+- Escala do controle de qualidade das questões — versão 1
+- EmailVerificationResend
+- AdminClinicalCaseUpsert
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 107 edges
@@ -95,15 +101,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (68 total, 5 thin omitted)
+## Communities (74 total, 5 thin omitted)
 
 ### Community 0 - "evaluation.py"
-Cohesion: 0.07
-Nodes (75): AIUsageMetrics, answer_simulation_question(), _bounded_env_int(), build_clinical_consequences(), build_compact_feedback_payload(), build_compact_question_payload(), build_exam_rationale_feedback(), build_rule_based_narrative() (+67 more)
+Cohesion: 0.10
+Nodes (46): AIUsageMetrics, answer_simulation_question(), _bounded_env_int(), build_clinical_consequences(), build_compact_feedback_payload(), build_compact_question_payload(), build_exam_rationale_feedback(), ClinicalConsequences (+38 more)
 
 ### Community 1 - "simulations.py"
-Cohesion: 0.08
-Nodes (56): alias, get_db(), SimulationEvaluation, SimulationQuestionRequest, Header, HTTPAuthorizationCredentials, Progresso, Reserva persistente que torna o envio à Synapse idempotente. (+48 more)
+Cohesion: 0.12
+Nodes (34): alias, Header, AIUsageRecord, Progresso, Reserva persistente que torna o envio à Synapse idempotente., Métrica financeira e operacional de cada chamada feita pela Synapse., SimulationRequest, UserActivity (+26 more)
 
 ### Community 2 - "schemas.py"
 Cohesion: 0.07
@@ -114,36 +120,36 @@ Cohesion: 0.05
 Nodes (36): 10. Regras para a explicação, 11. Achados-chave, 12. Regras para imagens e licenças, 13. Limites de inferência clínica, 14. Diversidade dentro do lote, 15. Proteção do gabarito, 16. Checklist de aprovação do lote, 17. Instrução pronta para outras IAs (+28 more)
 
 ### Community 4 - "test_api.py"
-Cohesion: 0.07
-Nodes (41): _register_and_login(), test_academic_analytics_are_restricted_and_aggregated(), test_admin_can_search_moderate_and_generate_question_explanations(), test_admin_operations_manage_content_metrics_announcements_and_export(), test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(), test_all_cases_are_available_after_final_rubric_review(), test_asaas_checkout_and_webhook_activate_premium_once(), test_checkout_paid_activates_detached_plan_without_double_grant() (+33 more)
+Cohesion: 0.06
+Nodes (45): _independent_question_explanation(), _register_and_login(), test_academic_analytics_are_restricted_and_aggregated(), test_admin_can_search_moderate_and_generate_question_explanations(), test_admin_operations_manage_content_metrics_announcements_and_export(), test_admin_synapse_usage_aggregates_tokens_cost_latency_and_models(), test_all_cases_are_available_after_final_rubric_review(), test_asaas_checkout_and_webhook_activate_premium_once() (+37 more)
 
 ### Community 5 - "payments.py"
-Cohesion: 0.09
-Nodes (58): PaymentGrant, PaymentOrder, UserEntitlement, _add_months(), _callback(), _card_payload(), _check_payment_availability(), _checkout_payload() (+50 more)
+Cohesion: 0.12
+Nodes (46): AsaasWebhookEvent, PaymentGrant, PaymentOrder, UserEntitlement, _add_months(), _callback(), _card_payload(), _check_payment_availability() (+38 more)
 
-### Community 6 - "admin.py"
+### Community 6 - "User"
 Cohesion: 0.09
-Nodes (50): Gabaritos dos desafios nativos mantidos somente no servidor., AIUsageRecord, Announcement, Métrica financeira e operacional de cada chamada feita pela Synapse., VisualChallenge, put, academic_analytics(), admin_create_announcement() (+42 more)
+Nodes (58): Gabaritos dos desafios nativos mantidos somente no servidor., get_db(), HTTPAuthorizationCredentials, get_learning_activity(), get_learning_path(), Announcement, LearningPathProgress, User (+50 more)
 
-### Community 7 - "learning_paths.py"
-Cohesion: 0.32
-Nodes (10): get_learning_activity(), get_learning_path(), LearningPathProgress, complete_learning_activity(), list_learning_paths(), _progress_map(), get, post (+2 more)
+### Community 7 - "error_notebook.py"
+Cohesion: 0.24
+Nodes (20): StudyError, build_review_forecasts(), calculate_review_outcome(), delete_error(), _find_error(), list_due_reviews(), list_my_errors(), list_review_plan() (+12 more)
 
 ### Community 8 - "questions.py"
-Cohesion: 0.15
-Nodes (37): QuestionAttempt, get_current_admin(), admin_questions(), answer_question(), answered_today(), current_admin(), facet(), get_cached_catalog_metadata() (+29 more)
+Cohesion: 0.17
+Nodes (31): admin_questions(), answer_question(), answered_today(), current_admin(), facet(), get_active_catalog_version(), get_cached_catalog_metadata(), is_premium() (+23 more)
 
 ### Community 9 - "synapse_providers.py"
 Cohesion: 0.10
 Nodes (14): AnthropicProvider, calculate_cost_usd(), ConsensusResult, DeepSeekProvider, _ensure_env_loaded(), GeminiProvider, ProviderUsageMetrics, Any (+6 more)
 
 ### Community 10 - "field_validator"
-Cohesion: 0.11
-Nodes (11): EmailStr, field_validator, EmailVerificationResend, PasswordRecoveryRequest, QuestionAnswerRequest, TransparentCard, TransparentPayer, UserCreate (+3 more)
+Cohesion: 0.15
+Nodes (7): field_validator, QuestionAnswerRequest, TransparentCard, TransparentPayer, UserCreate, _validated_public_url(), SecretStr
 
 ### Community 11 - "main.py"
-Cohesion: 0.09
-Nodes (31): BaseHTTPMiddleware, FastAPI, create_app(), lifespan(), Request, Response, RateLimitMiddleware, RateLimitRule (+23 more)
+Cohesion: 0.07
+Nodes (41): BaseHTTPMiddleware, FastAPI, create_app(), lifespan(), Request, Response, RateLimitMiddleware, RateLimitRule (+33 more)
 
 ### Community 12 - "canonical_hashes"
 Cohesion: 0.07
@@ -151,7 +157,7 @@ Nodes (61): HTMLParser, parametrize, analyze(), legacy_plain(), main(), Offline 
 
 ### Community 13 - "question_catalog_audit.py"
 Cohesion: 0.08
-Nodes (29): export_snapshot(), Export a fixed, reviewed ID list through the internal read-only auditor., _audit_answer_integrity(), _audit_critical_details(), _audit_pilot_export(), _audit_text_integrity(), _batch_size(), _catalog_id_bounds() (+21 more)
+Nodes (33): export_snapshot(), Export a fixed, reviewed ID list through the internal read-only auditor., _audit_answer_integrity(), _audit_critical_details(), _audit_pilot_export(), _audit_quality_priority(), _audit_text_integrity(), _batch_size() (+25 more)
 
 ### Community 14 - "clinical_cases_psychiatry.py"
 Cohesion: 0.28
@@ -201,9 +207,9 @@ Nodes (3): Any, Terceiro lote de rubricas estruturadas para casos clínicos lega
 Cohesion: 0.50
 Nodes (3): Any, Segundo lote de rubricas estruturadas para casos clínicos legados., _source()
 
-### Community 27 - "import_catalog"
-Cohesion: 0.07
-Nodes (39): invalidate_catalog_metadata_cache(), Invalida o cache de metadados em memória., compute_sha256(), import_catalog(), main(), Any, Path, Session (+31 more)
+### Community 27 - "test_question_catalog_v2.py"
+Cohesion: 0.08
+Nodes (41): invalidate_catalog_metadata_cache(), Invalida o cache de metadados em memória., compute_sha256(), import_catalog(), main(), Any, Path, Session (+33 more)
 
 ### Community 38 - "Simulação Clínica 2.2"
 Cohesion: 0.12
@@ -217,9 +223,9 @@ Nodes (9): Arquivos principais, Comparativo de 25 casos, Contexto compacto, Efic
 Cohesion: 0.16
 Nodes (23): on_starting(), post_worker_init(), Aplica migrações uma única vez antes de iniciar os workers., Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada., execute(), expected_state(), main(), manifest_digest() (+15 more)
 
-### Community 45 - "User"
-Cohesion: 0.15
-Nodes (24): User, create_access_token(), has_active_premium(), hash_password(), Integração da API, Banco Temporário e Importador — Piloto de 100 Questões…, test_integration_frontend_api_flow(), auth_headers(), client() (+16 more)
+### Community 45 - "security.py"
+Cohesion: 0.18
+Nodes (15): create_access_token(), has_active_premium(), hash_password(), Integração da API, Banco Temporário e Importador — Piloto de 100 Questões…, test_integration_frontend_api_flow(), auth_headers(), client(), isolated_db() (+7 more)
 
 ### Community 46 - "Documentação Técnica: Catálogo v2 e Atualização Consolidada do Banco de Questões MedSync"
 Cohesion: 0.09
@@ -250,28 +256,28 @@ Cohesion: 0.33
 Nodes (5): 🛠️ Como Ativar no `.env`, ⚡ Como Funciona a Ativação Plug & Play, 🧪 Como Testar a Conexão, 🔑 Onde Obter as Chaves de API e Custos Médios, 🧠 Synapse Multi-LLM 5-Core — Guia de Arquitetura e Ativação
 
 ### Community 55 - "users.py"
-Cohesion: 0.21
-Nodes (21): _as_utc(), login_usuario(), obter_usuario_atual(), datetime, get, post, Session, recuperar_senha() (+13 more)
+Cohesion: 0.20
+Nodes (22): _as_utc(), login_usuario(), obter_usuario_atual(), datetime, get, post, Session, recuperar_senha() (+14 more)
 
 ### Community 56 - "Não publicado"
 Cohesion: 0.33
 Nodes (5): Adicionado, Alterado, Alterado, Changelog, Não publicado
 
 ### Community 57 - "models.py"
-Cohesion: 0.19
-Nodes (10): Base, DeclarativeBase, AsaasWebhookEvent, QuestionReport, QuestionSourceAlias, main(), purge_batch_files(), purge_non_medical() (+2 more)
+Cohesion: 0.20
+Nodes (10): Base, DeclarativeBase, QuestionAttempt, QuestionReport, QuestionSourceAlias, main(), purge_batch_files(), purge_non_medical() (+2 more)
 
 ### Community 58 - "ClinicalRubric"
+Cohesion: 0.21
+Nodes (16): ClinicalRubricDefinition, ClinicalRubric, apply_case_payload(), test_existing_pilot_rubric_is_safely_upgraded(), test_fifth_feedback_expansion_batch_is_structured_and_clinically_corrected(), test_final_feedback_batch_is_structured_and_clinically_corrected(), test_first_expansion_batch_is_complete_rich_and_revised(), test_first_feedback_expansion_batch_is_structured_and_clinically_corrected() (+8 more)
+
+### Community 59 - "test_evaluation.py"
+Cohesion: 0.31
+Nodes (17): build_rule_based_narrative(), evaluate_objective(), SimulationSubmission, test_case_without_essential_exams_rewards_avoiding_low_value_tests(), test_psychiatry_batch_accepts_short_diagnostic_answers(), test_rule_based_feedback_is_driven_by_the_reviewed_rubric(), test_second_expansion_batch_accepts_short_diagnostic_answers(), _case_seven() (+9 more)
+
+### Community 60 - "ExamQuestion"
 Cohesion: 0.22
-Nodes (15): ClinicalRubricDefinition, ClinicalRubric, test_existing_pilot_rubric_is_safely_upgraded(), test_fifth_feedback_expansion_batch_is_structured_and_clinically_corrected(), test_final_feedback_batch_is_structured_and_clinically_corrected(), test_first_expansion_batch_is_complete_rich_and_revised(), test_first_feedback_expansion_batch_is_structured_and_clinically_corrected(), test_first_rubric_v2_batch_is_available_and_has_clinical_sources() (+7 more)
-
-### Community 59 - "ExamQuestion"
-Cohesion: 0.15
-Nodes (15): ExamQuestion, _independent_question_explanation(), test_free_question_limit_counts_unique_questions_per_day(), test_question_catalog_and_answer_flow_are_isolated_from_review_features(), test_question_distribution_counts_each_user_latest_answer_once(), Hematologia deixa de aparecer como assunto e usa subtemas dependentes., Importa os 100 registros em banco isolado e compara campo a campo os 100…, Testa falha na pré-validação: - O arquivo contém um registro estruturalmente… (+7 more)
-
-### Community 60 - "question_explanations.py"
-Cohesion: 0.29
-Nodes (8): QuestionExplanation, _fallback_explanation(), generate_question_explanation(), GeneratedAlternativeExplanation, GeneratedQuestionExplanation, BaseModel, model_validator, Gera comentários próprios para questões sem reutilizar material editorial…
+Nodes (14): ExamQuestion, post, question_is_eligible(), regenerate_question_explanation(), report_question(), retry_question_explanation(), QuestionExplanation, _fallback_explanation() (+6 more)
 
 ### Community 62 - "Funil de qualidade das questões — versão 1"
 Cohesion: 0.29
@@ -285,20 +291,44 @@ Nodes (4): clean_taxonomy_string(), parse_canonical_taxonomy(), scripts/taxonomy
 Cohesion: 0.67
 Nodes (3): extract_vital_signs(), _item(), Extrai sinais vitais documentados sem inventar dados ausentes.
 
+### Community 68 - "benchmark_synapse_efficiency.py"
+Cohesion: 0.20
+Nodes (14): ClinicalNarrative, model_validator, Pequena camada gerativa aplicada sobre o feedback determinístico., SynapseNarrativeEnhancement, _case_with_current_exams(), _estimated_tokens(), _json_bytes(), _legacy_payload() (+6 more)
+
+### Community 69 - "test_visual_questions_catalog.py"
+Cohesion: 0.14
+Nodes (16): auth_headers(), client(), isolated_visual_db(), fixture, Suíte de Testes Automatizados — Catálogo de Questões Visuais (Com Imagens)…, Importa lote de amostra de questões visuais e valida persistência canônica., Atomicidade 1: Erro em registro na pré-validação bloqueia antes de qualquer…, Atomicidade 2: Falha pós-flush aciona rollback estrito e zero registros… (+8 more)
+
+### Community 70 - "test_question_quality_priority.py"
+Cohesion: 0.27
+Nodes (14): prioritize_question(), Any, Priorização determinística do catálogo; não equivale a revisão clínica., Agrega o catálogo inteiro e retém uma fila limitada e reproduzível., Classifica risco operacional sem inferir mérito médico ou gabarito., summarize_priorities(), year_bucket(), row() (+6 more)
+
+### Community 71 - "Escala do controle de qualidade das questões — versão 1"
+Cohesion: 0.25
+Nodes (7): Auditoria de priorização, Como executar com segurança, Escala do controle de qualidade das questões — versão 1, Gate de correção, Política cronológica aprovada, Ponto de partida, Prioridades
+
+### Community 72 - "EmailVerificationResend"
+Cohesion: 0.29
+Nodes (4): EmailStr, EmailVerificationResend, PasswordRecoveryRequest, UserLogin
+
+### Community 73 - "AdminClinicalCaseUpsert"
+Cohesion: 0.33
+Nodes (4): AdminClinicalCaseResponse, AdminClinicalCaseUpsert, _normalized_spoiler_text(), model_validator
+
 ## Knowledge Gaps
-- **104 isolated node(s):** `RateLimitRule`, `Repertório de IA do MedSync`, `1. Visão Geral do Sistema`, `2.1. Distribuição por Especialidade Médica (Catálogo v2)`, `2.2. Distribuição por Tipo de Prova e Formato` (+99 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 334 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **109 isolated node(s):** `RateLimitRule`, `Repertório de IA do MedSync`, `1. Visão Geral do Sistema`, `2.1. Distribuição por Especialidade Médica (Catálogo v2)`, `2.2. Distribuição por Tipo de Prova e Formato` (+104 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 344 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ExamQuestion` connect `ExamQuestion` to `test_api.py`, `questions.py`, `main.py`, `execute`, `canonical_hashes`, `User`, `models.py`, `import_catalog`, `question_explanations.py`?**
-  _High betweenness centrality (0.155) - this node is a cross-community bridge._
-- **Why does `User` connect `User` to `simulations.py`, `test_api.py`, `payments.py`, `admin.py`, `learning_paths.py`, `questions.py`, `import_catalog`, `main.py`, `users.py`, `models.py`, `ExamQuestion`?**
-  _High betweenness centrality (0.097) - this node is a cross-community bridge._
-- **Why does `SimulationSubmission` connect `evaluation.py` to `simulations.py`, `test_api.py`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `ExamQuestion` connect `ExamQuestion` to `test_api.py`, `test_visual_questions_catalog.py`, `questions.py`, `main.py`, `execute`, `canonical_hashes`, `security.py`, `models.py`, `test_question_catalog_v2.py`?**
+  _High betweenness centrality (0.142) - this node is a cross-community bridge._
+- **Why does `User` connect `User` to `simulations.py`, `test_api.py`, `payments.py`, `test_visual_questions_catalog.py`, `error_notebook.py`, `questions.py`, `main.py`, `security.py`, `users.py`, `models.py`, `test_question_catalog_v2.py`, `ExamQuestion`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `SimulationSubmission` connect `test_evaluation.py` to `evaluation.py`, `simulations.py`, `benchmark_synapse_efficiency.py`, `test_api.py`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Are the 84 inferred relationships involving `User` (e.g. with `academic_analytics()` and `admin_create_announcement()`) actually correct?**
   _`User` has 84 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 41 inferred relationships involving `ExamQuestion` (e.g. with `admin_questions()` and `answer_question()`) actually correct?**
@@ -306,4 +336,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 7 inferred relationships involving `Base` (e.g. with `test_integration_frontend_api_flow()` and `isolated_db()`) actually correct?**
   _`Base` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `RateLimitRule`, `Repertório de IA do MedSync`, `1. Visão Geral do Sistema` to the rest of the system?**
-  _104 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _109 weakly-connected nodes found - possible documentation gaps or missing edges._
