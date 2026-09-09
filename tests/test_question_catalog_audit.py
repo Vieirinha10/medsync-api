@@ -1,7 +1,9 @@
+import base64
 import hashlib
 import json
 import pathlib
 import sys
+import zlib
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -33,6 +35,64 @@ def test_pilot_export_roundtrip_and_bounded_queries():
     assert json.loads(payload)["id"] == 42
     assert len(first) == first[0]["parts"]
     assert all("LIMIT 100" in sql for sql in connection.statements[1:])
+
+
+def test_quality_hold_snapshot_roundtrip_is_bounded():
+    class Connection(_Connection):
+        def execute(self, statement, _parameters=None):
+            self.statements.append(str(statement))
+            return _Result(
+                [
+                    {
+                        "id": 42,
+                        "statement_plain": "Questão clínica",
+                        "quality_status": "revisao_necessaria",
+                    }
+                ]
+            )
+
+    connection = Connection()
+    messages = []
+    audit._audit_quality_hold_snapshot(connection, "hold", messages.append)
+    pieces = [
+        json.loads(message.split(" ", 1)[1])
+        for message in messages
+        if message.startswith("QUESTION_QUALITY_HOLD_SNAPSHOT ")
+    ]
+    encoded = "".join(piece["payload"] for piece in pieces)
+    payload = zlib.decompress(base64.b64decode(encoded))
+
+    assert hashlib.sha256(payload).hexdigest() == pieces[0]["sha256"]
+    assert json.loads(payload)["id"] == 42
+    assert len(pieces) == pieces[0]["parts"]
+    assert "quality_status = 'revisao_necessaria'" in connection.statements[0]
+    assert "LIMIT 100" in connection.statements[0]
+
+
+def test_quality_hold_snapshot_mode_is_read_only():
+    class Connection(_Connection):
+        def execute(self, statement, _parameters=None):
+            self.statements.append(str(statement))
+            return _Result([])
+
+    connection = Connection()
+    messages = []
+
+    audit.run_question_catalog_audit(
+        "hold-test",
+        mode="quality_hold_snapshot",
+        connect=lambda: connection,
+        emit=messages.append,
+    )
+
+    assert connection.statements[0] == "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+    assert connection.statements[1] == "SET TRANSACTION READ ONLY"
+    assert connection.transaction.rolled_back is True
+    assert any(
+        item.startswith("QUESTION_QUALITY_HOLD_SNAPSHOT_DONE ") for item in messages
+    )
+    sql = " ".join(connection.statements).upper()
+    assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
 
 
 def test_json_value_normalizes_postgres_decimal():

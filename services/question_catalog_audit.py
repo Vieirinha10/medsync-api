@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import logging
 import os
 import re
 import threading
+import zlib
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
@@ -29,6 +31,7 @@ _SUPPORTED_MODES = {
     "text_integrity",
     "quality_snapshot",
     "quality_priority",
+    "quality_hold_snapshot",
 }
 
 _QUALITY_PRIORITY_SQL = """
@@ -242,6 +245,65 @@ def _audit_pilot_export(connection: Any, run_id: str, emit: Callable) -> None:
                     )
                 )
     _emit_section(run_id, "pilot_export_counts", [counts], emit)
+
+
+def _audit_quality_hold_snapshot(connection: Any, run_id: str, emit: Callable) -> None:
+    """Exporta somente as questões v2 ainda bloqueadas para revisão editorial."""
+    rows = (
+        connection.execute(
+            text("""
+            SELECT id, source_id, ano, instituicao, banca, especialidade,
+                   assunto, tema, subtema, status, quality_status, quality_flags,
+                   quality_method, quality_source_reference, statement_plain,
+                   statement_rich_html, alternativas, alternativa_correta_id,
+                   content_hash_plain, content_hash_rich, answer_binding_hash,
+                   media_classification, image_rights_status, updated_at
+            FROM exam_questions
+            WHERE catalog_version = 'v2'
+              AND quality_status = 'revisao_necessaria'
+            ORDER BY id
+            LIMIT 100
+            """)
+        )
+        .mappings()
+        .all()
+    )
+    for row in rows:
+        payload = json.dumps(
+            dict(row),
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+            separators=(",", ":"),
+        ).encode()
+        encoded = base64.b64encode(zlib.compress(payload)).decode()
+        chunks = [
+            encoded[index : index + 1500] for index in range(0, len(encoded), 1500)
+        ]
+        digest = hashlib.sha256(payload).hexdigest()
+        for index, chunk in enumerate(chunks):
+            emit(
+                "QUESTION_QUALITY_HOLD_SNAPSHOT "
+                + json.dumps(
+                    {
+                        "run_id": run_id,
+                        "id": row["id"],
+                        "part": index,
+                        "parts": len(chunks),
+                        "sha256": digest,
+                        "encoding": "zlib-base64",
+                        "payload": chunk,
+                    },
+                    separators=(",", ":"),
+                )
+            )
+    emit(
+        "QUESTION_QUALITY_HOLD_SNAPSHOT_DONE "
+        + json.dumps(
+            {"run_id": run_id, "exported": len(rows), "bounded_limit": 100},
+            separators=(",", ":"),
+        )
+    )
 
 
 _QUERIES: tuple[tuple[str, str], ...] = (
@@ -640,6 +702,7 @@ def run_question_catalog_audit(
                         "text_integrity",
                         "quality_snapshot",
                         "quality_priority",
+                        "quality_hold_snapshot",
                     }:
                         connection.execute(
                             text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
@@ -648,6 +711,8 @@ def run_question_catalog_audit(
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
                 if mode == "quality_priority":
                     _audit_quality_priority(connection, run_id, emit)
+                elif mode == "quality_hold_snapshot":
+                    _audit_quality_hold_snapshot(connection, run_id, emit)
                 elif mode == "quality_snapshot":
                     from scripts.export_question_quality_snapshot import export_snapshot
 
