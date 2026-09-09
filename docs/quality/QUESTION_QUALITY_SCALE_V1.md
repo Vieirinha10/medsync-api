@@ -91,3 +91,17 @@ somente `especialidade`, `assunto`, `tema`, `subtema` e metadados do funil:
 - as 31 demais pendências editoriais/documentais não são liberadas.
 
 Depois da aplicação, o gate inicial passa de 50 para 33 questões em revisão.
+
+## Primeiro lote P0
+
+A varredura somente leitura `quality-priority-p0-1000-20260909` examinou as
+226.792 questões depois da revisão clínica da quarentena. Ela encontrou 13.371
+itens P0 e selecionou os primeiros 1.000 em ordem determinística. Nesse recorte,
+973 são casos de documentação visual e 27 são quarentenas já revisadas; 665 são
+anteriores a 2016 e somente 16 pertencem à faixa 2020–2026.
+
+Por isso, o primeiro lote foi convertido em auditoria de ativos visuais antes da
+revisão médica. O manifesto `data/question_quality_p0_batch_001.json` fixa os
+1.000 IDs, `source_id` e score por checksum. O modo `quality_visual_audit` confere
+presença de `<img>`, tipo do endereço, domínio e situação documental, sem emitir
+enunciados ou URLs completos e sem alterar o banco.

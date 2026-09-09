@@ -32,6 +32,7 @@ _SUPPORTED_MODES = {
     "quality_snapshot",
     "quality_priority",
     "quality_hold_snapshot",
+    "quality_visual_audit",
 }
 
 _QUALITY_PRIORITY_SQL = """
@@ -303,6 +304,24 @@ def _audit_quality_hold_snapshot(connection: Any, run_id: str, emit: Callable) -
             {"run_id": run_id, "exported": len(rows), "bounded_limit": 100},
             separators=(",", ":"),
         )
+    )
+
+
+def _audit_quality_visual(connection: Any, run_id: str, emit: Callable) -> None:
+    """Audita marcação visual do primeiro lote P0 sem emitir o conteúdo."""
+    from services.question_visual_audit import audit_batch, load_batch_manifest
+
+    path = (
+        Path(__file__).resolve().parents[1] / "data/question_quality_p0_batch_001.json"
+    )
+    result = audit_batch(connection, load_batch_manifest(path))
+    _emit_section(run_id, "quality_visual_summary", [result["summary"]], emit)
+    _emit_section(
+        run_id,
+        "quality_visual_details",
+        result["details"],
+        emit,
+        chunk_size=25,
     )
 
 
@@ -703,6 +722,7 @@ def run_question_catalog_audit(
                         "quality_snapshot",
                         "quality_priority",
                         "quality_hold_snapshot",
+                        "quality_visual_audit",
                     }:
                         connection.execute(
                             text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
@@ -711,6 +731,8 @@ def run_question_catalog_audit(
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
                 if mode == "quality_priority":
                     _audit_quality_priority(connection, run_id, emit)
+                elif mode == "quality_visual_audit":
+                    _audit_quality_visual(connection, run_id, emit)
                 elif mode == "quality_hold_snapshot":
                     _audit_quality_hold_snapshot(connection, run_id, emit)
                 elif mode == "quality_snapshot":

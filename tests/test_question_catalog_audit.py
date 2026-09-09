@@ -274,3 +274,34 @@ def test_quality_priority_mode_is_read_only_and_emits_bounded_queue(monkeypatch)
 
 def test_quality_priority_uses_fresh_zero_residual_integrity_manifest():
     assert audit._load_quality_flagged_ids() == set()
+
+
+def test_quality_visual_mode_is_read_only(monkeypatch):
+    connection = _Connection()
+    messages = []
+    monkeypatch.setattr(
+        "services.question_visual_audit.load_batch_manifest",
+        lambda _path: {"items": []},
+    )
+    monkeypatch.setattr(
+        "services.question_visual_audit.audit_batch",
+        lambda _connection, _manifest: {
+            "summary": {"requested": 0, "scanned": 0, "database_mutations": 0},
+            "details": [],
+        },
+    )
+
+    audit.run_question_catalog_audit(
+        "visual-test",
+        mode="quality_visual_audit",
+        connect=lambda: connection,
+        emit=messages.append,
+    )
+
+    assert connection.statements[0] == "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"
+    assert connection.statements[1] == "SET TRANSACTION READ ONLY"
+    assert connection.transaction.rolled_back is True
+    assert any('"section":"quality_visual_summary"' in item for item in messages)
+    assert any('"section":"quality_visual_details"' in item for item in messages)
+    sql = " ".join(connection.statements).upper()
+    assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
