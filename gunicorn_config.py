@@ -34,6 +34,12 @@ def on_starting(server):
 
     run_requested_taxonomy_resolution()
 
+    from services.question_quality_clinical_review import (
+        run_requested_clinical_review,
+    )
+
+    run_requested_clinical_review()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""

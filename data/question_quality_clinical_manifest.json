@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "catalog_version": "v2",
+  "created_at": "2026-09-09T18:00:00+00:00",
+  "base_plan_sha256": "07cb493631794e1d90e270f7d92c26e90155ee1885a373fd175d2353431da75c",
+  "taxonomy_plan_sha256": "94c3c1b6abfd5e337b2b7c7f8693beec6b6701d1d09daf1b9d863b7683f048b1",
+  "source_snapshot_run_id": "quality-hold-snapshot-20260909-1600",
+  "semantics": {
+    "release_validated": "Conteúdo e gabarito revisados clinicamente; questão retorna ao catálogo ativo.",
+    "keep_quarantined": "Incerteza clínica, editorial, visual ou documental impede liberação segura."
+  },
+  "plan_sha256": "ecb9b7ac2ea2bf0324885695f7887dcbe4384a6e965533d3d39e84273963f128",
+  "items": [
+    {
+      "id": 445725,
+      "decision": "release_validated",
+      "rationale": "A resposta por inibidor de tirosina-quinase é compatível com o tratamento da LMC em fase crônica e o vínculo do gabarito está íntegro.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12310532/"
+      ]
+    },
+    {
+      "id": 455417,
+      "decision": "keep_quarantined",
+      "rationale": "O enunciado generaliza o mecanismo dos anticoagulantes orais diretos; dabigatrana não é inibidor do fator Xa.",
+      "sources": []
+    },
+    {
+      "id": 458428,
+      "decision": "release_validated",
+      "rationale": "Em PTI persistente dependente de corticoide ou sem resposta, agonista do receptor de trombopoietina é alternativa de segunda linha respaldada por diretriz.",
+      "sources": [
+        "https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines/immune-thrombocytopenia-guidelines",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6963252/"
+      ]
+    },
+    {
+      "id": 460637,
+      "decision": "release_validated",
+      "rationale": "O quadro de hemólise oxidativa por dapsona com bite cells é compatível com deficiência de G6PD; a dosagem enzimática é a melhor opção apresentada.",
+      "sources": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK470315/"
+      ]
+    },
+    {
+      "id": 465800,
+      "decision": "keep_quarantined",
+      "rationale": "Há erros de unidade em hemoglobina e creatinina; requer correção editorial antes de nova validação.",
+      "sources": [
+        "https://kdigo.org/guidelines/anemia-in-ckd/"
+      ]
+    },
+    {
+      "id": 474349,
+      "decision": "keep_quarantined",
+      "rationale": "A indicação de esplenectomia na PTI é dependente de contexto e o item antigo pode admitir mais de uma interpretação à luz de recomendações atuais.",
+      "sources": [
+        "https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines/immune-thrombocytopenia-guidelines"
+      ]
+    },
+    {
+      "id": 481992,
+      "decision": "keep_quarantined",
+      "rationale": "A resolução depende de hemograma ou elemento visual ausente do registro.",
+      "sources": []
+    },
+    {
+      "id": 482787,
+      "decision": "keep_quarantined",
+      "rationale": "A resolução depende de resultados laboratoriais ou elemento visual ausente do registro.",
+      "sources": []
+    },
+    {
+      "id": 487698,
+      "decision": "keep_quarantined",
+      "rationale": "Questão de par visual sem imagem disponível e com conflito de gabarito entre registros equivalentes.",
+      "sources": []
+    },
+    {
+      "id": 487699,
+      "decision": "keep_quarantined",
+      "rationale": "Questão de par visual sem imagem disponível e com conflito de gabarito entre registros equivalentes.",
+      "sources": []
+    },
+    {
+      "id": 487705,
+      "decision": "keep_quarantined",
+      "rationale": "Questão de par visual sem imagem disponível e com conflito de gabarito entre registros equivalentes.",
+      "sources": []
+    },
+    {
+      "id": 487760,
+      "decision": "keep_quarantined",
+      "rationale": "Questão de par visual sem imagem disponível e com conflito de gabarito entre registros equivalentes.",
+      "sources": []
+    },
+    {
+      "id": 509469,
+      "decision": "keep_quarantined",
+      "rationale": "Os percentuais da eletroforese totalizam 102% e há inconsistência textual de idade/sexo; requer correção documental.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC9910222/"
+      ]
+    },
+    {
+      "id": 513939,
+      "decision": "keep_quarantined",
+      "rationale": "Duplicata com gabaritos conflitantes; deficiência de B12 aponta para anemia megaloblástica, alternativa diferente do gabarito registrado.",
+      "sources": []
+    },
+    {
+      "id": 519572,
+      "decision": "keep_quarantined",
+      "rationale": "Duplicata com gabaritos conflitantes; deficiência de B12 aponta para anemia megaloblástica, alternativa diferente do gabarito registrado.",
+      "sources": []
+    },
+    {
+      "id": 528306,
+      "decision": "keep_quarantined",
+      "rationale": "O item afirma que aumento de hepcidina eleva absorção intestinal de ferro, relação fisiológica invertida.",
+      "sources": []
+    },
+    {
+      "id": 537048,
+      "decision": "keep_quarantined",
+      "rationale": "A palavra 'preferencial' torna o esquema de mieloma sensível à data e ao contexto; requer confirmação documental da prova e diretriz aplicável.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7861652/",
+        "https://www.nature.com/articles/s41571-025-01041-x"
+      ]
+    },
+    {
+      "id": 551982,
+      "decision": "keep_quarantined",
+      "rationale": "A classificação e a conduta dependem de imagem ou dados laboratoriais ausentes.",
+      "sources": []
+    },
+    {
+      "id": 559904,
+      "decision": "release_validated",
+      "rationale": "Blastos transitórios no recém-nascido com síndrome de Down e resolução espontânea são compatíveis com mielopoiese anormal transitória.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5031718/"
+      ]
+    },
+    {
+      "id": 571534,
+      "decision": "keep_quarantined",
+      "rationale": "Mais de uma assertiva prognóstica é defensável, mas não há alternativa correspondente; o gabarito não é inequívoco.",
+      "sources": []
+    },
+    {
+      "id": 571660,
+      "decision": "release_validated",
+      "rationale": "Falha/intolerância ao imatinibe justifica troca de TKI; entre as opções, dasatinibe evita o perfil metabólico desfavorável do nilotinibe.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12310532/"
+      ]
+    },
+    {
+      "id": 571721,
+      "decision": "keep_quarantined",
+      "rationale": "O prazo de inaptidão para doação por malária depende da versão histórica da norma oficial; falta vincular a fonte vigente na data da prova.",
+      "sources": []
+    },
+    {
+      "id": 580200,
+      "decision": "keep_quarantined",
+      "rationale": "Texto corrompido e formulação antiga sobre esplenectomia na PTI exigem reconstrução e atualização clínica.",
+      "sources": [
+        "https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines/immune-thrombocytopenia-guidelines"
+      ]
+    },
+    {
+      "id": 593750,
+      "decision": "keep_quarantined",
+      "rationale": "O limiar de blastos apresentado para transformação em LMA está obsoleto ou incompleto frente às classificações atuais.",
+      "sources": []
+    },
+    {
+      "id": 600556,
+      "decision": "keep_quarantined",
+      "rationale": "Há erro de nomenclatura do gene CALR; requer correção editorial antes de liberação.",
+      "sources": []
+    },
+    {
+      "id": 629040,
+      "decision": "keep_quarantined",
+      "rationale": "O conceito CRAB é reconhecível, mas hemoglobina e creatinina usam unidades incorretas.",
+      "sources": []
+    },
+    {
+      "id": 629065,
+      "decision": "keep_quarantined",
+      "rationale": "Uma alternativa está corrompida e o conjunto de assertivas não sustenta de modo inequívoco o gabarito atual.",
+      "sources": []
+    },
+    {
+      "id": 629086,
+      "decision": "keep_quarantined",
+      "rationale": "A indicação de esplenectomia baseada apenas na contagem plaquetária e duração está desatualizada e insuficientemente contextualizada.",
+      "sources": [
+        "https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines/immune-thrombocytopenia-guidelines"
+      ]
+    },
+    {
+      "id": 644455,
+      "decision": "keep_quarantined",
+      "rationale": "A relação proposta entre deficiência de vitamina C, hipotireoidismo e ferritina é questionável e requer fonte clínica específica.",
+      "sources": []
+    },
+    {
+      "id": 645214,
+      "decision": "keep_quarantined",
+      "rationale": "O enunciado está truncado e não permite validar integralmente a pergunta.",
+      "sources": []
+    },
+    {
+      "id": 651659,
+      "decision": "release_validated",
+      "rationale": "Em menor sob risco grave, a proteção da vida autoriza o tratamento necessário apesar da recusa dos responsáveis, com comunicação às autoridades.",
+      "sources": [
+        "https://portal.cfm.org.br/noticias/cfm-esclarece-pontos-da-resolucao-que-trata-da-recusa-terapeutica-e-objecao-de-consciencia/",
+        "https://portal.cfm.org.br/images/Recomendacoes/1_2016.pdf"
+      ]
+    },
+    {
+      "id": 657153,
+      "decision": "keep_quarantined",
+      "rationale": "Assertivas antigas sobre esplenectomia na PTI não permanecem inequívocas sob recomendações atuais.",
+      "sources": [
+        "https://www.hematology.org/education/clinicians/guidelines-and-quality-care/clinical-practice-guidelines/immune-thrombocytopenia-guidelines"
+      ]
+    },
+    {
+      "id": 667932,
+      "decision": "keep_quarantined",
+      "rationale": "A observação na PTI pediátrica com sangramento leve é plausível, porém a anemia importante no caso impede aceitar o diagnóstico isolado sem documentação adicional.",
+      "sources": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6963252/"
+      ]
+    }
+  ]
+}
+

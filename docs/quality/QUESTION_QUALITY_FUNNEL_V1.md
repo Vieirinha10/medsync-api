@@ -66,3 +66,19 @@ revisão editorial pendente. Assim, permanecem 33 itens do piloto em revisão.
 
 - Acesso Direto: <https://centrodeselecao.ufg.br/2021/coreme-ses/sistema/provas_gabaritos/gabarito_final/ACESSO%20DIRETO.pdf>
 - Pré-requisito Pediatria: <https://centrodeselecao.ufg.br/2021/coreme-ses/sistema/provas_gabaritos/gabarito_final/PRE_REQUISITO_PEDIATRIA.pdf>
+
+## Revisão clínica da quarentena
+
+O manifesto `data/question_quality_clinical_manifest.json` registra a revisão
+individual das 33 questões que permaneceram em quarentena após a resolução
+taxonômica. O critério é conservador: somente seis itens com resposta inequívoca e
+fonte clínica explícita retornam ao catálogo como `validada_com_fonte`. Os outros
+27 continuam com `status=revisao` e `quality_status=revisao_necessaria` até que a
+imagem, o documento oficial, o texto ou o gabarito sejam corrigidos e reavaliados.
+
+O executor `scripts/apply_question_quality_clinical_review.py` valida os checksums
+dos três manifestos, trava as 33 linhas, confirma hashes, taxonomia e vínculo da
+resposta e só então altera os seis campos de governança de qualidade. Ele não
+escreve enunciado, alternativas, gabarito, hashes ou taxonomia. A execução em
+produção exige `dry-run` antes de `apply` e o reconhecimento explícito do SHA-256
+do plano.
