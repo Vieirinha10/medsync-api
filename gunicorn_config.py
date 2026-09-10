@@ -46,6 +46,18 @@ def on_starting(server):
 
     run_requested_visual_quarantine()
 
+    # As agregações do catálogo são feitas uma vez no processo mestre. Os
+    # workers herdam o cache pronto e não transferem esse custo ao primeiro aluno.
+    from routers.questions import warm_question_catalog_cache
+
+    warm_question_catalog_cache()
+
+    # Evita que conexões abertas pelo processo mestre sejam compartilhadas
+    # entre os workers após o fork; cada worker cria seu próprio pool.
+    from database import engine
+
+    engine.dispose()
+
 
 def post_worker_init(worker):
     """Dispara, sem bloquear a API, uma auditoria interna explicitamente solicitada."""
