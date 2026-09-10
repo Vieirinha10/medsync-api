@@ -1707,3 +1707,89 @@ def test_15_public_taxonomy_has_dependent_specialty_theme_and_subject(
             os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
         else:
             os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)
+
+
+def test_16_historical_years_are_grouped_and_filter_as_inclusive_range(
+    isolated_db,
+    client,
+    auth_headers,
+):
+    from sqlalchemy import delete
+
+    from routers.questions import invalidate_catalog_metadata_cache
+
+    db: Session = isolated_db["SessionLocal"]()
+    question_ids = [9_910_001, 9_910_002, 9_910_003]
+    institution = "Instituição faixa histórica"
+
+    def make_question(question_id: int, year: int, rank: float) -> ExamQuestion:
+        return ExamQuestion(
+            id=question_id,
+            ano=year,
+            instituicao=institution,
+            cabecalho=f"{institution} · {year}",
+            especialidade="Pediatria",
+            assunto="Infectologia pediátrica",
+            tema="Infectologia pediátrica",
+            subtema="Infecções comunitárias",
+            enunciado=f"Questão histórica de {year}.",
+            alternativas=[
+                {"id": "A", "texto": "Correta", "is_correct": True},
+                {"id": "B", "texto": "Incorreta", "is_correct": False},
+            ],
+            alternativa_correta_id="A",
+            fingerprint=f"test_historical_year_range_{year}",
+            status="publicada",
+            quality_status="triada",
+            catalog_version="v2",
+            random_rank=rank,
+        )
+
+    old_active = os.environ.get("QUESTION_CATALOG_ACTIVE_VERSION")
+    os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = "v2"
+    try:
+        db.add_all([
+            make_question(question_ids[0], 2004, 0.000011),
+            make_question(question_ids[1], 2020, 0.000012),
+            make_question(question_ids[2], 2021, 0.000013),
+        ])
+        db.commit()
+        invalidate_catalog_metadata_cache("v2")
+
+        metadata_response = client.get("/questoes/meta", headers=auth_headers)
+        assert metadata_response.status_code == status.HTTP_200_OK
+        year_facets = metadata_response.json()["anos"]
+        year_values = {item["valor"] for item in year_facets}
+        grouped = next(item for item in year_facets if item["valor"] == "2004–2020")
+        assert grouped["total"] >= 2
+        assert "2004" not in year_values
+        assert "2020" not in year_values
+        assert "2021" in year_values
+
+        list_response = client.get(
+            "/questoes",
+            params={
+                "ano": "2004–2020",
+                "instituicao": institution,
+                "quantidade": 10,
+            },
+            headers=auth_headers,
+        )
+        assert list_response.status_code == status.HTTP_200_OK
+        assert {item["id"] for item in list_response.json()} == set(question_ids[:2])
+
+        invalid_response = client.get(
+            "/questoes",
+            params={"ano": "2020–2004"},
+            headers=auth_headers,
+        )
+        assert invalid_response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    finally:
+        db.execute(delete(ExamQuestion).where(ExamQuestion.id.in_(question_ids)))
+        db.commit()
+        db.close()
+        invalidate_catalog_metadata_cache("v2")
+        if old_active is not None:
+            os.environ["QUESTION_CATALOG_ACTIVE_VERSION"] = old_active
+        else:
+            os.environ.pop("QUESTION_CATALOG_ACTIVE_VERSION", None)

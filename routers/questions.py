@@ -1,8 +1,10 @@
 import collections
 import json
+import logging
 import os
 import pathlib
 import re
+import time
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
@@ -36,6 +38,10 @@ from settings import is_admin_email
 router = APIRouter(tags=["Questões"])
 FREE_DAILY_LIMIT = 10
 LOCAL_TIMEZONE = ZoneInfo("America/Fortaleza")
+YEAR_GROUP_START = 2004
+YEAR_GROUP_END = 2020
+YEAR_GROUP_LABEL = "2004–2020"
+logger = logging.getLogger(__name__)
 
 
 def current_admin(user: User = Depends(get_current_user)) -> User:
@@ -280,6 +286,55 @@ def _sorted_facets(values: dict[str, int]) -> list[dict[str, object]]:
     ]
 
 
+def group_year_facets(items: list[dict[str, object]]) -> list[dict[str, object]]:
+    """Agrupa anos históricos para manter o filtro curto sem perder questões."""
+    grouped_total = 0
+    remaining: list[dict[str, object]] = []
+    for item in items:
+        value = str(item.get("valor", "")).strip()
+        try:
+            year = int(value)
+        except ValueError:
+            remaining.append(item)
+            continue
+        if YEAR_GROUP_START <= year <= YEAR_GROUP_END:
+            grouped_total += int(item.get("total", 0))
+        else:
+            remaining.append(item)
+
+    if grouped_total:
+        remaining.append({"valor": YEAR_GROUP_LABEL, "total": grouped_total})
+
+    def sort_key(item: dict[str, object]) -> tuple[int, int]:
+        value = str(item.get("valor", ""))
+        if value == YEAR_GROUP_LABEL:
+            return (YEAR_GROUP_END, 0)
+        try:
+            return (int(value), 1)
+        except ValueError:
+            return (-1, 0)
+
+    return sorted(remaining, key=sort_key, reverse=True)
+
+
+def parse_year_filter(value: str) -> tuple[int, int]:
+    """Aceita um ano isolado ou uma faixa inclusiva exibida pelo catálogo."""
+    match = re.fullmatch(r"\s*(\d{4})(?:\s*(?:-|–|—|a)\s*(\d{4}))?\s*", value)
+    if not match:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Filtro de ano inválido.",
+        )
+    start = int(match.group(1))
+    end = int(match.group(2) or start)
+    if start > end:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A faixa de anos deve estar em ordem crescente.",
+        )
+    return start, end
+
+
 def get_public_taxonomy(db: Session, catalog_version: str) -> dict:
     """Agrega a projeção pública em uma única leitura e mantém o resultado em memória."""
     if catalog_version in _CATALOG_TAXONOMY_MEMORY_CACHE:
@@ -401,15 +456,20 @@ def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
         }
 
     if disk_data and catalog_version in disk_data and disk_data[catalog_version].get("total") == db_total:
-        cached_item = disk_data[catalog_version]
+        cached_item = {
+            **disk_data[catalog_version],
+            "anos": group_year_facets(disk_data[catalog_version].get("anos", [])),
+        }
         _CATALOG_METADATA_MEMORY_CACHE[catalog_version] = cached_item
         return cached_item
 
     computed = {
         "total": db_total,
-        "especialidades": facet(db, ExamQuestion.especialidade, catalog_version),
-        "assuntos": facet(db, ExamQuestion.assunto, catalog_version),
-        "anos": facet(db, ExamQuestion.ano, catalog_version),
+        # Especialidades e assuntos vêm da taxonomia pública dependente. Evitar
+        # estas duas agregações duplicadas reduz o custo do primeiro acesso.
+        "especialidades": [],
+        "assuntos": [],
+        "anos": group_year_facets(facet(db, ExamQuestion.ano, catalog_version)),
         "instituicoes": facet(db, ExamQuestion.instituicao, catalog_version),
     }
     _CATALOG_METADATA_MEMORY_CACHE[catalog_version] = computed
@@ -425,6 +485,29 @@ def invalidate_catalog_metadata_cache(catalog_version: str | None = None) -> Non
     else:
         _CATALOG_METADATA_MEMORY_CACHE.clear()
         _CATALOG_TAXONOMY_MEMORY_CACHE.clear()
+
+
+def warm_question_catalog_cache() -> dict[str, object]:
+    """Prepara metadados e taxonomia antes de os workers atenderem estudantes."""
+    from database import SessionLocal
+
+    catalog_version = get_active_catalog_version()
+    started_at = time.perf_counter()
+    db = SessionLocal()
+    try:
+        metadata = get_cached_catalog_metadata(db, catalog_version)
+        taxonomy = get_public_taxonomy(db, catalog_version)
+        elapsed_ms = round((time.perf_counter() - started_at) * 1000)
+        summary = {
+            "catalog_version": catalog_version,
+            "total": metadata.get("total", 0),
+            "specialties": len(taxonomy.get("especialidades", [])),
+            "elapsed_ms": elapsed_ms,
+        }
+        logger.info("Cache do catálogo de questões preparado: %s", summary)
+        return summary
+    finally:
+        db.close()
 
 
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
@@ -527,7 +610,7 @@ def list_questions(
     especialidade: str | None = None,
     tema: str | None = None,
     assunto: str | None = None,
-    ano: int | None = None,
+    ano: str | None = Query(default=None, max_length=24),
     instituicao: str | None = None,
     catalog_version: str | None = Query(default=None),
     quantidade: int = Query(default=10, ge=1, le=30),
@@ -598,7 +681,8 @@ def list_questions(
             detail="Selecione uma especialidade antes de tema ou assunto.",
         )
     if ano:
-        statement = statement.where(ExamQuestion.ano == ano)
+        first_year, last_year = parse_year_filter(ano)
+        statement = statement.where(ExamQuestion.ano.between(first_year, last_year))
     if instituicao:
         statement = statement.where(ExamQuestion.instituicao == instituicao)
 
