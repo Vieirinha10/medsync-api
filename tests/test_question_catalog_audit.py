@@ -69,6 +69,55 @@ def test_quality_hold_snapshot_roundtrip_is_bounded():
     assert "LIMIT 100" in connection.statements[0]
 
 
+def test_taxonomy_inventory_roundtrip_is_aggregated_and_read_only():
+    class Connection(_Connection):
+        def execute(self, statement, _parameters=None):
+            self.statements.append(str(statement))
+            if str(statement).startswith("SET "):
+                return _Result([])
+            return _Result(
+                [
+                    {
+                        "macro_area": "Clínica Médica",
+                        "specialty": "Hematologia",
+                        "source_subject": "Anemias microcíticas",
+                        "questions": 42,
+                    }
+                ]
+            )
+
+    connection = Connection()
+    messages = []
+    audit.run_question_catalog_audit(
+        "taxonomy-test",
+        mode="taxonomy_inventory",
+        connect=lambda: connection,
+        emit=messages.append,
+    )
+
+    pieces = [
+        json.loads(message.split(" ", 1)[1])
+        for message in messages
+        if message.startswith("QUESTION_TAXONOMY_INVENTORY ")
+    ]
+    encoded = "".join(piece["payload"] for piece in pieces)
+    payload = zlib.decompress(base64.b64decode(encoded))
+    rows = json.loads(payload)
+    assert rows == [
+        {
+            "macro_area": "Clínica Médica",
+            "specialty": "Hematologia",
+            "source_subject": "Anemias microcíticas",
+            "questions": 42,
+        }
+    ]
+    assert hashlib.sha256(payload).hexdigest() == pieces[0]["sha256"]
+    assert connection.transaction.rolled_back is True
+    sql = " ".join(connection.statements).upper()
+    assert "GROUP BY" in sql
+    assert not any(token in sql for token in (" INSERT ", " UPDATE ", " DELETE "))
+
+
 def test_quality_hold_snapshot_mode_is_read_only():
     class Connection(_Connection):
         def execute(self, statement, _parameters=None):

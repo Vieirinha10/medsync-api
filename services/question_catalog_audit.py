@@ -33,7 +33,23 @@ _SUPPORTED_MODES = {
     "quality_priority",
     "quality_hold_snapshot",
     "quality_visual_audit",
+    "taxonomy_inventory",
 }
+
+_TAXONOMY_INVENTORY_SQL = """
+SELECT BTRIM(especialidade) AS macro_area,
+       COALESCE(NULLIF(BTRIM(tema), ''), NULLIF(BTRIM(assunto), '')) AS specialty,
+       NULLIF(BTRIM(subtema), '') AS source_subject,
+       COUNT(*) AS questions
+FROM exam_questions
+WHERE catalog_version = 'v2'
+  AND status = 'publicada'
+  AND quality_status IN ('triada', 'validada', 'validada_com_fonte')
+GROUP BY BTRIM(especialidade),
+         COALESCE(NULLIF(BTRIM(tema), ''), NULLIF(BTRIM(assunto), '')),
+         NULLIF(BTRIM(subtema), '')
+ORDER BY macro_area, specialty, source_subject NULLS FIRST
+"""
 
 _QUALITY_PRIORITY_SQL = """
 SELECT id, source_id, ano, especialidade, assunto, tema, subtema,
@@ -325,6 +341,47 @@ def _audit_quality_visual(connection: Any, run_id: str, emit: Callable) -> None:
     )
 
 
+def _audit_taxonomy_inventory(connection: Any, run_id: str, emit: Callable) -> None:
+    """Exporta somente combinações taxonômicas agregadas, nunca questões."""
+    rows = connection.execute(text(_TAXONOMY_INVENTORY_SQL)).mappings().all()
+    payload = json.dumps(
+        [
+            {key: _json_value(value) for key, value in row.items()}
+            for row in rows
+        ],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode()
+    encoded = base64.b64encode(zlib.compress(payload, level=9)).decode()
+    chunks = [encoded[index : index + 2500] for index in range(0, len(encoded), 2500)]
+    digest = hashlib.sha256(payload).hexdigest()
+    for index, chunk in enumerate(chunks, start=1):
+        emit(
+            "QUESTION_TAXONOMY_INVENTORY "
+            + json.dumps(
+                {
+                    "run_id": run_id,
+                    "chunk": index,
+                    "chunks": len(chunks),
+                    "sha256": digest,
+                    "encoding": "zlib-base64",
+                    "payload": chunk,
+                },
+                separators=(",", ":"),
+            )
+        )
+    emit(
+        "QUESTION_TAXONOMY_INVENTORY_DONE "
+        + json.dumps(
+            {
+                "run_id": run_id,
+                "combinations": len(rows),
+                "chunks": len(chunks),
+                "sha256": digest,
+            },
+            separators=(",", ":"),
+        )
+    )
 _QUERIES: tuple[tuple[str, str], ...] = (
     (
         "inventory",
@@ -723,6 +780,7 @@ def run_question_catalog_audit(
                         "quality_priority",
                         "quality_hold_snapshot",
                         "quality_visual_audit",
+                        "taxonomy_inventory",
                     }:
                         connection.execute(
                             text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
@@ -731,6 +789,8 @@ def run_question_catalog_audit(
                     connection.execute(text("SET LOCAL statement_timeout = '180s'"))
                 if mode == "quality_priority":
                     _audit_quality_priority(connection, run_id, emit)
+                elif mode == "taxonomy_inventory":
+                    _audit_taxonomy_inventory(connection, run_id, emit)
                 elif mode == "quality_visual_audit":
                     _audit_quality_visual(connection, run_id, emit)
                 elif mode == "quality_hold_snapshot":
