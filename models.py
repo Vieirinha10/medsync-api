@@ -364,6 +364,15 @@ class ExamQuestion(Base):
             "random_rank",
             "id",
         ),
+        Index(
+            "ix_exam_questions_public_taxonomy",
+            "catalog_version",
+            "status",
+            "quality_status",
+            "especialidade",
+            "tema",
+            "subtema",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
