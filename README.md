@@ -34,6 +34,8 @@ A API inicia em `http://127.0.0.1:8000` e a documentação interativa fica em
   clínico; padrão `gpt-5.6-terra`. `OPENAI_MODEL` permanece como fallback legado.
 - `OPENAI_QUESTION_MODEL`: modelo opcional das explicações próprias do banco de
   questões; quando vazio, utiliza `OPENAI_MODEL`.
+- `TAXONOMY_CLASSIFIER_MODEL` e `TAXONOMY_VERIFIER_MODEL`: modelos usados apenas
+  pelo executor editorial da taxonomia unificada; ele não roda no boot da API.
 - `OPENAI_SIMULATION_QUESTION_MODEL`: substituição opcional das perguntas
   pós-simulação. Quando vazio, elas são roteadas automaticamente entre rotina e
   avançado.

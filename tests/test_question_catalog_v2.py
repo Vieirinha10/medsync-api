@@ -1564,7 +1564,13 @@ def test_14_v16_migration_scenarios_and_data_preservation():
 
         with sqlite3.connect(clean_db) as con:
             ver_clean = con.cursor().execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver_clean == "20260910_19"
+        assert ver_clean == "20260910_20"
+        assert {
+            "medical_taxonomy_versions",
+            "medical_taxonomy_nodes",
+            "taxonomy_classification_runs",
+            "content_taxonomy_classifications",
+        } <= set(insp_clean.get_table_names())
 
         quality_columns = {column["name"] for column in insp_clean.get_columns("exam_questions")}
         assert {

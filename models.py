@@ -248,6 +248,173 @@ class LearningPathProgress(Base):
     usuario: Mapped[User] = relationship(back_populates="progressos_trilhas")
 
 
+class MedicalTaxonomyVersion(Base):
+    """Versão editorial da taxonomia compartilhada por todos os conteúdos."""
+
+    __tablename__ = "medical_taxonomy_versions"
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    nome: Mapped[str] = mapped_column(String(160))
+    descricao: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(24), default="rascunho", index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    published_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
+class MedicalTaxonomyNode(Base):
+    """Nó canônico: especialidade, tema ou assunto."""
+
+    __tablename__ = "medical_taxonomy_nodes"
+    __table_args__ = (
+        UniqueConstraint(
+            "taxonomy_version",
+            "code",
+            name="uq_medical_taxonomy_version_code",
+        ),
+        Index(
+            "ix_medical_taxonomy_parent_level",
+            "taxonomy_version",
+            "parent_id",
+            "level",
+            "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    taxonomy_version: Mapped[str] = mapped_column(
+        ForeignKey("medical_taxonomy_versions.id", ondelete="CASCADE"), index=True
+    )
+    code: Mapped[str] = mapped_column(String(180))
+    label: Mapped[str] = mapped_column(String(180))
+    level: Mapped[str] = mapped_column(String(20), index=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("medical_taxonomy_nodes.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    aliases: Mapped[list[str]] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(24), default="rascunho", index=True)
+    source: Mapped[str] = mapped_column(String(80), default="editorial")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+
+class ContentTaxonomyClassification(Base):
+    """Classificação semântica versionada sem alterar o conteúdo de origem."""
+
+    __tablename__ = "content_taxonomy_classifications"
+    __table_args__ = (
+        UniqueConstraint(
+            "content_type",
+            "content_id",
+            "taxonomy_version",
+            name="uq_content_taxonomy_item_version",
+        ),
+        Index(
+            "ix_content_taxonomy_navigation",
+            "taxonomy_version",
+            "status",
+            "specialty_code",
+            "theme_code",
+            "subject_code",
+        ),
+        Index(
+            "ix_content_taxonomy_review_queue",
+            "taxonomy_version",
+            "status",
+            "confidence",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content_type: Mapped[str] = mapped_column(String(32), index=True)
+    content_id: Mapped[str] = mapped_column(String(120), index=True)
+    taxonomy_version: Mapped[str] = mapped_column(
+        ForeignKey("medical_taxonomy_versions.id", ondelete="CASCADE"), index=True
+    )
+    specialty_code: Mapped[str] = mapped_column(String(180))
+    specialty_label: Mapped[str] = mapped_column(String(180))
+    theme_code: Mapped[str] = mapped_column(String(180))
+    theme_label: Mapped[str] = mapped_column(String(180))
+    subject_code: Mapped[str] = mapped_column(String(180))
+    subject_label: Mapped[str] = mapped_column(String(180))
+    learning_objectives: Mapped[list[str]] = mapped_column(JSON, default=list)
+    competencies: Mapped[list[str]] = mapped_column(JSON, default=list)
+    clinical_contexts: Mapped[list[str]] = mapped_column(JSON, default=list)
+    tags: Mapped[list[str]] = mapped_column(JSON, default=list)
+    difficulty: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    classifier_confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    verifier_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    verifier_agrees: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="proposta", index=True)
+    classification_method: Mapped[str] = mapped_column(String(80))
+    classifier_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    verifier_model: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    evidence: Mapped[list[str]] = mapped_column(JSON, default=list)
+    ambiguity_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    classifier_payload: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    verifier_payload: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON, nullable=True
+    )
+    source_hash: Mapped[str] = mapped_column(String(64), index=True)
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("taxonomy_classification_runs.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+
+
+class TaxonomyClassificationRun(Base):
+    """Checkpoint retomável e métricas de uma classificação em massa."""
+
+    __tablename__ = "taxonomy_classification_runs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    taxonomy_version: Mapped[str] = mapped_column(
+        ForeignKey("medical_taxonomy_versions.id", ondelete="RESTRICT"), index=True
+    )
+    content_type: Mapped[str] = mapped_column(String(32), index=True)
+    status: Mapped[str] = mapped_column(String(24), default="preparando", index=True)
+    cursor_after_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    processed_count: Mapped[int] = mapped_column(Integer, default=0)
+    verified_count: Mapped[int] = mapped_column(Integer, default=0)
+    review_count: Mapped[int] = mapped_column(Integer, default=0)
+    failed_count: Mapped[int] = mapped_column(Integer, default=0)
+    configuration: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    error_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
 class ClinicalCase(Base):
     __tablename__ = "clinical_cases"
 
