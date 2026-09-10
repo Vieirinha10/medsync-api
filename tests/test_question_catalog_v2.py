@@ -1564,7 +1564,7 @@ def test_14_v16_migration_scenarios_and_data_preservation():
 
         with sqlite3.connect(clean_db) as con:
             ver_clean = con.cursor().execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver_clean == "20260908_18"
+        assert ver_clean == "20260910_19"
 
         quality_columns = {column["name"] for column in insp_clean.get_columns("exam_questions")}
         assert {
@@ -1575,6 +1575,7 @@ def test_14_v16_migration_scenarios_and_data_preservation():
             "quality_reviewed_at",
         } <= quality_columns
         assert "ix_exam_questions_quality_status" in idx_clean
+        assert "ix_exam_questions_public_taxonomy" in idx_clean
 
     finally:
         database.DATABASE_URL = old_db_url
@@ -1585,12 +1586,12 @@ def test_14_v16_migration_scenarios_and_data_preservation():
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def test_15_hematology_is_a_specialty_with_dependent_subjects(
+def test_15_public_taxonomy_has_dependent_specialty_theme_and_subject(
     isolated_db,
     client,
     auth_headers,
 ):
-    """Hematologia deixa de aparecer como assunto e usa subtemas dependentes."""
+    """Clínica Médica vira especialidades reais com tema e assunto dependentes."""
     from sqlalchemy import delete
 
     from routers.questions import invalidate_catalog_metadata_cache
@@ -1631,14 +1632,14 @@ def test_15_hematology_is_a_specialty_with_dependent_subjects(
         make_question(
             question_ids[0],
             "Hematologia",
-            "Anemias",
+            "Anemias microcíticas",
             "test_filter_hematology_anemias",
             0.000001,
         ),
         make_question(
             question_ids[1],
             "Hematologia",
-            "Leucemias",
+            "Leucemias agudas",
             "test_filter_hematology_leukemias",
             0.000002,
         ),
@@ -1664,26 +1665,39 @@ def test_15_hematology_is_a_specialty_with_dependent_subjects(
         specialty_names = {item["valor"] for item in metadata["especialidades"]}
         global_subject_names = {item["valor"] for item in metadata["assuntos"]}
         assert "Hematologia" in specialty_names
+        assert "Cardiologia" in specialty_names
+        assert "Clínica Médica" not in specialty_names
+        assert "Outros" not in specialty_names
         assert "Hematologia" not in global_subject_names
 
+        themes_response = client.get(
+            "/questoes/temas?especialidade=Hematologia",
+            headers=auth_headers,
+        )
+        assert themes_response.status_code == status.HTTP_200_OK
+        theme_names = {item["valor"] for item in themes_response.json()}
+        assert {"Anemias", "Neoplasias hematológicas"}.issubset(theme_names)
+
         subjects_response = client.get(
-            "/questoes/assuntos?especialidade=Hematologia",
+            "/questoes/assuntos?especialidade=Hematologia&tema=Anemias",
             headers=auth_headers,
         )
         assert subjects_response.status_code == status.HTTP_200_OK
         subject_names = {item["valor"] for item in subjects_response.json()}
-        assert {"Anemias", "Leucemias"}.issubset(subject_names)
+        assert "Anemias microcíticas" in subject_names
+        assert "Leucemias agudas" not in subject_names
         assert "Arritmias" not in subject_names
 
         list_response = client.get(
-            "/questoes?especialidade=Hematologia&assunto=Anemias&quantidade=10",
+            "/questoes?especialidade=Hematologia&tema=Anemias&assunto=Anemias%20microc%C3%ADticas&quantidade=10",
             headers=auth_headers,
         )
         assert list_response.status_code == status.HTTP_200_OK
         items = list_response.json()
         assert [item["id"] for item in items] == [question_ids[0]]
         assert items[0]["especialidade"] == "Hematologia"
-        assert items[0]["assunto"] == "Anemias"
+        assert items[0]["tema"] == "Anemias"
+        assert items[0]["assunto"] == "Anemias microcíticas"
     finally:
         db.execute(delete(ExamQuestion).where(ExamQuestion.id.in_(question_ids)))
         db.commit()

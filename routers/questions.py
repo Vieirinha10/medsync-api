@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import case, distinct, func, or_, select
+from sqlalchemy import and_, case, distinct, func, or_, select
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -30,6 +30,7 @@ from schemas import (
 from security import get_current_user
 from services.activity import track_activity
 from services.question_explanations import generate_question_explanation
+from services.question_public_taxonomy import derive_public_taxonomy
 from settings import is_admin_email
 
 router = APIRouter(tags=["Questões"])
@@ -123,17 +124,6 @@ def question_answer_distribution(
 SUPPORTED_CATALOG_VERSIONS = {"v1", "v2"}
 ELIGIBLE_QUALITY_STATUSES = {"triada", "validada", "validada_com_fonte"}
 
-# Primeira etapa da taxonomia navegável. No catálogo v2, Hematologia foi
-# importada como tema de Clínica Médica; para o aluno, ela deve se comportar
-# como especialidade e seus subtemas devem compor o filtro de assuntos.
-PROMOTED_SPECIALTIES = {
-    "Hematologia": {
-        "base_specialty": "Clínica Médica",
-        "theme": "Hematologia",
-    },
-}
-
-
 def public_catalog_conditions(catalog_version: str) -> tuple:
     conditions = [ExamQuestion.status == "publicada"]
     if catalog_version == "v2":
@@ -210,19 +200,20 @@ def serialize_question(question: ExamQuestion) -> dict:
     subject = sanitize_facet_label(question.assunto)
     theme = sanitize_facet_label(getattr(question, "tema", None))
     subtheme = sanitize_facet_label(getattr(question, "subtema", None))
-    promoted = PROMOTED_SPECIALTIES.get(theme)
-    if promoted and specialty == promoted["base_specialty"]:
-        specialty = theme
-        subject = subtheme or "Geral"
+    public_taxonomy = derive_public_taxonomy(
+        specialty,
+        theme or subject,
+        subtheme,
+    )
 
     return {
         "id": question.id,
         "ano": question.ano,
         "instituicao": question.instituicao,
         "cabecalho": question.cabecalho,
-        "especialidade": specialty,
-        "assunto": subject,
-        "tema": theme,
+        "especialidade": public_taxonomy["especialidade"],
+        "assunto": public_taxonomy["assunto"],
+        "tema": public_taxonomy["tema"],
         "regiao": getattr(question, "regiao", None),
         "enunciado": question.enunciado,
         "statement_rich_html": question.statement_rich_html or question.enunciado,
@@ -232,23 +223,11 @@ def serialize_question(question: ExamQuestion) -> dict:
     }
 
 
-def specialty_conditions(specialty: str) -> list:
-    promoted = PROMOTED_SPECIALTIES.get(specialty)
-    if promoted:
-        return [
-            ExamQuestion.especialidade == promoted["base_specialty"],
-            ExamQuestion.tema == promoted["theme"],
-        ]
-
-    conditions = [ExamQuestion.especialidade == specialty]
-    promoted_themes = [item["theme"] for item in PROMOTED_SPECIALTIES.values()]
-    if specialty in {
-        item["base_specialty"] for item in PROMOTED_SPECIALTIES.values()
-    }:
-        conditions.append(
-            or_(ExamQuestion.tema.is_(None), ExamQuestion.tema.not_in(promoted_themes))
-        )
-    return conditions
+def source_topic_expression():
+    return func.coalesce(
+        func.nullif(func.trim(ExamQuestion.tema), ""),
+        ExamQuestion.assunto,
+    )
 
 
 def question_is_eligible(question: ExamQuestion) -> bool:
@@ -291,44 +270,97 @@ CATALOG_METADATA_CACHE_FILE = (
     pathlib.Path(__file__).resolve().parent.parent / "data" / "catalog_metadata_cache.json"
 )
 _CATALOG_METADATA_MEMORY_CACHE: dict[str, dict] = {}
-_CATALOG_SUBJECT_MEMORY_CACHE: dict[tuple[str, str], list[dict[str, object]]] = {}
+_CATALOG_TAXONOMY_MEMORY_CACHE: dict[str, dict] = {}
 
 
-def organize_filter_metadata(meta: dict) -> dict:
-    """Separa especialidades de assuntos sem alterar o cache canônico bruto."""
-    specialties = [dict(item) for item in meta.get("especialidades", [])]
-    subjects = [dict(item) for item in meta.get("assuntos", [])]
-
-    for promoted_name, promoted in PROMOTED_SPECIALTIES.items():
-        promoted_total = next(
-            (
-                int(item["total"])
-                for item in subjects
-                if sanitize_facet_label(item.get("valor")) == promoted["theme"]
-            ),
-            0,
-        )
-        if promoted_total and not any(
-            sanitize_facet_label(item.get("valor")) == promoted_name
-            for item in specialties
-        ):
-            specialties.append({"valor": promoted_name, "total": promoted_total})
-            for item in specialties:
-                if sanitize_facet_label(item.get("valor")) == promoted["base_specialty"]:
-                    item["total"] = max(0, int(item["total"]) - promoted_total)
-                    break
-
-    specialty_names = {
-        sanitize_facet_label(item.get("valor")) for item in specialties
-    }
-    subjects = [
-        item
-        for item in subjects
-        if sanitize_facet_label(item.get("valor")) not in specialty_names
+def _sorted_facets(values: dict[str, int]) -> list[dict[str, object]]:
+    return [
+        {"valor": label, "total": total}
+        for label, total in sorted(values.items(), key=lambda item: (-item[1], item[0]))
     ]
-    specialties.sort(key=lambda item: (-int(item["total"]), str(item["valor"])))
 
-    return {**meta, "especialidades": specialties, "assuntos": subjects}
+
+def get_public_taxonomy(db: Session, catalog_version: str) -> dict:
+    """Agrega a projeção pública em uma única leitura e mantém o resultado em memória."""
+    if catalog_version in _CATALOG_TAXONOMY_MEMORY_CACHE:
+        return _CATALOG_TAXONOMY_MEMORY_CACHE[catalog_version]
+
+    topic_column = source_topic_expression()
+    raw_rows = db.execute(
+        select(
+            ExamQuestion.especialidade,
+            topic_column.label("source_topic"),
+            ExamQuestion.subtema,
+            func.count(ExamQuestion.id),
+        )
+        .where(
+            *public_catalog_conditions(catalog_version),
+            ExamQuestion.catalog_version == catalog_version,
+        )
+        .group_by(ExamQuestion.especialidade, topic_column, ExamQuestion.subtema)
+    ).all()
+
+    specialties: collections.defaultdict[str, int] = collections.defaultdict(int)
+    themes: dict[str, collections.defaultdict[str, int]] = collections.defaultdict(
+        lambda: collections.defaultdict(int)
+    )
+    subjects: dict[tuple[str, str], collections.defaultdict[str, int]] = collections.defaultdict(
+        lambda: collections.defaultdict(int)
+    )
+    global_subjects: collections.defaultdict[str, int] = collections.defaultdict(int)
+    rows: list[dict[str, object]] = []
+
+    for macro_area, source_topic, source_subject, total in raw_rows:
+        macro = sanitize_facet_label(macro_area)
+        topic = sanitize_facet_label(source_topic)
+        raw_subject = sanitize_facet_label(source_subject)
+        public = derive_public_taxonomy(macro, topic, raw_subject)
+        row = {
+            "macro_area": macro,
+            "source_topic": topic,
+            "source_subject": raw_subject,
+            **public,
+            "total": int(total),
+        }
+        rows.append(row)
+        if not public["filtravel"]:
+            continue
+        specialty = str(public["especialidade"])
+        theme = str(public["tema"])
+        subject = str(public["assunto"])
+        specialties[specialty] += int(total)
+        themes[specialty][theme] += int(total)
+        subjects[(specialty, theme)][subject] += int(total)
+        global_subjects[subject] += int(total)
+
+    result = {
+        "especialidades": _sorted_facets(specialties),
+        "temas": {key: _sorted_facets(value) for key, value in themes.items()},
+        "assuntos": {key: _sorted_facets(value) for key, value in subjects.items()},
+        "assuntos_globais": _sorted_facets(global_subjects),
+        "rows": rows,
+    }
+    _CATALOG_TAXONOMY_MEMORY_CACHE[catalog_version] = result
+    return result
+
+
+def taxonomy_row_conditions(rows: list[dict[str, object]]):
+    clauses = []
+    for row in rows:
+        source_subject = str(row["source_subject"])
+        subject_condition = (
+            ExamQuestion.subtema == source_subject
+            if source_subject
+            else or_(ExamQuestion.subtema.is_(None), func.trim(ExamQuestion.subtema) == "")
+        )
+        clauses.append(
+            and_(
+                ExamQuestion.especialidade == row["macro_area"],
+                source_topic_expression() == row["source_topic"],
+                subject_condition,
+            )
+        )
+    return or_(*clauses) if clauses else None
 
 
 def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
@@ -386,15 +418,13 @@ def get_cached_catalog_metadata(db: Session, catalog_version: str) -> dict:
 
 def invalidate_catalog_metadata_cache(catalog_version: str | None = None) -> None:
     """Invalida o cache de metadados em memória."""
-    global _CATALOG_METADATA_MEMORY_CACHE
+    global _CATALOG_METADATA_MEMORY_CACHE, _CATALOG_TAXONOMY_MEMORY_CACHE
     if catalog_version:
         _CATALOG_METADATA_MEMORY_CACHE.pop(catalog_version, None)
-        for cache_key in list(_CATALOG_SUBJECT_MEMORY_CACHE):
-            if cache_key[0] == catalog_version:
-                _CATALOG_SUBJECT_MEMORY_CACHE.pop(cache_key, None)
+        _CATALOG_TAXONOMY_MEMORY_CACHE.pop(catalog_version, None)
     else:
         _CATALOG_METADATA_MEMORY_CACHE.clear()
-        _CATALOG_SUBJECT_MEMORY_CACHE.clear()
+        _CATALOG_TAXONOMY_MEMORY_CACHE.clear()
 
 
 @router.get("/questoes/meta", response_model=QuestionMetadataResponse)
@@ -404,9 +434,8 @@ def question_metadata(
     db: Session = Depends(get_db),
 ):
     effective_version = resolve_catalog_version(catalog_version, current_user)
-    meta = organize_filter_metadata(
-        get_cached_catalog_metadata(db, effective_version)
-    )
+    meta = get_cached_catalog_metadata(db, effective_version)
+    taxonomy = get_public_taxonomy(db, effective_version)
     if meta.get("total", 0) == 0:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -417,8 +446,8 @@ def question_metadata(
     used = answered_today(db, current_user.id, catalog_version=effective_version)
     return {
         "total_questoes": meta["total"],
-        "especialidades": meta["especialidades"],
-        "assuntos": meta["assuntos"],
+        "especialidades": taxonomy["especialidades"],
+        "assuntos": taxonomy["assuntos_globais"],
         "anos": meta["anos"],
         "instituicoes": meta["instituicoes"],
         "premium_ativo": premium,
@@ -429,11 +458,29 @@ def question_metadata(
 
 
 @router.get(
+    "/questoes/temas",
+    response_model=list[QuestionFacetCount],
+)
+def question_themes(
+    especialidade: str = Query(min_length=1, max_length=160),
+    catalog_version: str | None = Query(default=None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retorna somente os temas pertencentes à especialidade escolhida."""
+    effective_version = resolve_catalog_version(catalog_version, current_user)
+    specialty = sanitize_facet_label(especialidade)
+    taxonomy = get_public_taxonomy(db, effective_version)
+    return taxonomy["temas"].get(specialty, [])
+
+
+@router.get(
     "/questoes/assuntos",
     response_model=list[QuestionFacetCount],
 )
 def question_subjects(
     especialidade: str = Query(min_length=1, max_length=160),
+    tema: str | None = Query(default=None, max_length=160),
     catalog_version: str | None = Query(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -441,31 +488,44 @@ def question_subjects(
     """Retorna somente os assuntos pertencentes à especialidade escolhida."""
     effective_version = resolve_catalog_version(catalog_version, current_user)
     specialty = sanitize_facet_label(especialidade)
-    cache_key = (effective_version, specialty)
-    if cache_key in _CATALOG_SUBJECT_MEMORY_CACHE:
-        return _CATALOG_SUBJECT_MEMORY_CACHE[cache_key]
+    theme = sanitize_facet_label(tema)
+    taxonomy = get_public_taxonomy(db, effective_version)
+    if theme:
+        return taxonomy["assuntos"].get((specialty, theme), [])
 
-    promoted = PROMOTED_SPECIALTIES.get(specialty)
-    subject_column = ExamQuestion.subtema if promoted else ExamQuestion.assunto
-    subjects = facet(
-        db,
-        subject_column,
-        effective_version,
-        tuple(specialty_conditions(specialty)),
-    )
-    excluded_labels = {specialty, *(PROMOTED_SPECIALTIES.keys())}
-    subjects = [
-        item
-        for item in subjects
-        if sanitize_facet_label(item.get("valor")) not in excluded_labels
+    # Compatibilidade com clientes antigos: sem tema, devolve a união dos
+    # assuntos da especialidade, já agregada e sem misturar outras áreas.
+    aggregated: collections.defaultdict[str, int] = collections.defaultdict(int)
+    for (item_specialty, _), facets in taxonomy["assuntos"].items():
+        if item_specialty == specialty:
+            for item in facets:
+                aggregated[str(item["valor"])] += int(item["total"])
+    return _sorted_facets(aggregated)
+
+
+def taxonomy_selection_condition(
+    db: Session,
+    catalog_version: str,
+    specialty: str,
+    theme: str | None = None,
+    subject: str | None = None,
+):
+    taxonomy = get_public_taxonomy(db, catalog_version)
+    matching_rows = [
+        row
+        for row in taxonomy["rows"]
+        if row["filtravel"]
+        and row["especialidade"] == specialty
+        and (not theme or row["tema"] == theme)
+        and (not subject or row["assunto"] == subject)
     ]
-    _CATALOG_SUBJECT_MEMORY_CACHE[cache_key] = subjects
-    return subjects
+    return taxonomy_row_conditions(matching_rows)
 
 
 @router.get("/questoes", response_model=list[QuestionListItem])
 def list_questions(
     especialidade: str | None = None,
+    tema: str | None = None,
     assunto: str | None = None,
     ano: int | None = None,
     instituicao: str | None = None,
@@ -506,11 +566,37 @@ def list_questions(
         ExamQuestion.catalog_version == effective_version,
     )
     if especialidade:
-        statement = statement.where(*specialty_conditions(especialidade))
-    if assunto:
-        promoted = PROMOTED_SPECIALTIES.get(especialidade or "")
-        subject_column = ExamQuestion.subtema if promoted else ExamQuestion.assunto
-        statement = statement.where(subject_column == assunto)
+        specialty = sanitize_facet_label(especialidade)
+        selected_theme = sanitize_facet_label(tema)
+        selected_subject = sanitize_facet_label(assunto)
+        if selected_theme or selected_subject:
+            selection = taxonomy_selection_condition(
+                db,
+                effective_version,
+                specialty,
+                selected_theme or None,
+                selected_subject or None,
+            )
+            if selection is None:
+                return []
+            statement = statement.where(selection)
+        else:
+            selection = taxonomy_selection_condition(
+                db,
+                effective_version,
+                specialty,
+            )
+            if selection is None:
+                # Mantém compatibilidade com especialidades recém-inseridas
+                # antes da invalidação do cache em memória.
+                statement = statement.where(ExamQuestion.especialidade == specialty)
+            else:
+                statement = statement.where(selection)
+    elif tema or assunto:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Selecione uma especialidade antes de tema ou assunto.",
+        )
     if ano:
         statement = statement.where(ExamQuestion.ano == ano)
     if instituicao:
