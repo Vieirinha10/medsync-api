@@ -1,0 +1,14 @@
+{
+  "run_id": "calibration-pilot-v2-phase2",
+  "status": "bloqueado",
+  "last_checkpoint_at": "2026-09-11T17:25:00Z",
+  "completed_ids": [],
+  "last_id": null,
+  "processed_count": 0,
+  "verified_count": 0,
+  "review_count": 0,
+  "failed_count": 0,
+  "high_effort_count": 0,
+  "hashes": {},
+  "blocker_reason": "BLOQUEIO DE DADOS: A fonte disponível possui apenas 1 especialidade ('Cirurgia', 2811 questões) com tema e subtema vazios. Conforme restrição contratual absoluta, interrompida execução para evitar substituição por Cirurgia e proibição de uso de fixtures sintéticas."
+}

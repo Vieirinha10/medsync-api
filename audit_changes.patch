@@ -1,0 +1,32 @@
+diff --git a/models.py b/models.py
+index bd624b2..521b167 100644
+--- a/models.py
++++ b/models.py
+@@ -12,6 +12,7 @@ from sqlalchemy import (
+     String,
+     Text,
+     UniqueConstraint,
++    CheckConstraint,
+ )
+ from sqlalchemy.orm import Mapped, mapped_column, relationship
+ 
+@@ -335,6 +336,10 @@ class ContentTaxonomyClassification(Base):
+             "status",
+             "confidence",
+         ),
++        CheckConstraint(
++            "specialty_code <> theme_code AND theme_code <> subject_code",
++            name="ck_content_taxonomy_distinct_levels",
++        ),
+     )
+ 
+     id: Mapped[int] = mapped_column(primary_key=True)
+diff --git a/pyproject.toml b/pyproject.toml
+index 8357bb6..8dc79be 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -11,3 +11,4 @@ ignore = ["B008", "E501"]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
++pythonpath = ["."]

@@ -1,0 +1,5 @@
+{"timestamp": "2026-09-11T17:15:00Z", "event": "run_start", "run_id": "calibration-pilot-v2-phase2", "target_count": 100}
+{"timestamp": "2026-09-11T17:15:01Z", "event": "source_inspection", "source": "SQLite Local medsync.db", "total_candidates": 2811, "distinct_specialties": 1, "specialties": ["Cirurgia"]}
+{"timestamp": "2026-09-11T17:15:02Z", "event": "diversity_gate_check", "min_required_specialties": 15, "available_specialties": 1, "status": "failed"}
+{"timestamp": "2026-09-11T17:15:03Z", "event": "blocker_triggered", "reason": "BLOQUEIO DE DADOS: A fonte disponível possui apenas 1 especialidade ('Cirurgia'). Proibida a substituição da amostra por Cirurgia e proibido uso de fixtures sintéticas conforme restrições absolutas."}
+{"timestamp": "2026-09-11T17:15:04Z", "event": "run_halted", "processed_count": 0, "status": "bloqueado"}

@@ -12,6 +12,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    CheckConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -334,6 +335,10 @@ class ContentTaxonomyClassification(Base):
             "taxonomy_version",
             "status",
             "confidence",
+        ),
+        CheckConstraint(
+            "specialty_code <> theme_code AND theme_code <> subject_code",
+            name="ck_content_taxonomy_distinct_levels",
         ),
     )
 

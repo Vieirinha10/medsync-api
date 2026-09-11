@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-09-11T17:25:00Z",
+  "total_classified": 0,
+  "verified_count": 0,
+  "requires_review_count": 0,
+  "high_effort_reanalyses_count": 0,
+  "canonical_nodes_count": 0,
+  "provisional_nodes_count": 0,
+  "specialty_distribution": {},
+  "checkpoint_status": "bloqueado",
+  "run_id": "calibration-pilot-v2-phase2",
+  "blocker": "BLOQUEIO DE DADOS: Fonte local restrita a 2811 questões de Cirurgia. Sem acesso configurado ao PostgreSQL com o acervo completo de 226.792 questões."
+}

@@ -1,0 +1,35 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   models.py
+	modified:   pyproject.toml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	audit_changes.patch
+	audit_file_inventory.txt
+	audit_git_status.txt
+	audit_test_results.txt
+	data/pilot_checkpoint.json
+	data/pilot_classifications_100.jsonl
+	data/pilot_execution_log.jsonl
+	data/pilot_inputs_100.jsonl
+	data/pilot_manifest_3000.json
+	data/pilot_metrics.json
+	data/pilot_review_sheet.csv
+	data/pilot_selection_report.json
+	data/taxonomy_registry_pilot_v0_1.json
+	docs/PILOT_CLASSIFICATION_RUNBOOK.md
+	medsync-taxonomia-piloto-fase1.zip
+	medsync-taxonomia-piloto-fase2.zip
+	scripts/build_pilot_dataset.py
+	scripts/package_audit_zip.py
+	scripts/run_pilot_calibration.py
+	services/taxonomy_state_machine.py
+	tests/test_taxonomy_pilot_validation.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+

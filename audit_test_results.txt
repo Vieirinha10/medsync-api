@@ -1,0 +1,23 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\rgust\.gemini\antigravity\scratch\medsync\medsync-api\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\rgust\.gemini\antigravity\scratch\medsync\medsync-api
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 12 items
+
+tests/test_taxonomy_pilot_validation.py::test_selection_100_items_and_quotas PASSED [  8%]
+tests/test_taxonomy_pilot_validation.py::test_selection_reproducibility_and_seed_change PASSED [ 16%]
+tests/test_taxonomy_pilot_validation.py::test_no_fixture_in_real_selection PASSED [ 25%]
+tests/test_taxonomy_pilot_validation.py::test_identical_hash_in_selector_and_executor PASSED [ 33%]
+tests/test_taxonomy_pilot_validation.py::test_hash_alters_when_statement_alternative_or_answer_changes PASSED [ 41%]
+tests/test_taxonomy_pilot_validation.py::test_batches_of_10_and_durable_checkpoint PASSED [ 50%]
+tests/test_taxonomy_pilot_validation.py::test_divergence_triggers_reanalysis PASSED [ 58%]
+tests/test_taxonomy_pilot_validation.py::test_missing_or_duplicate_ids_rejected PASSED [ 66%]
+tests/test_taxonomy_pilot_validation.py::test_semantically_repeated_theme_and_subject_rejected PASSED [ 75%]
+tests/test_taxonomy_pilot_validation.py::test_taxonomy_registry_canonical_vs_provisional PASSED [ 83%]
+tests/test_taxonomy_pilot_validation.py::test_zero_production_mutations_and_filters_unchanged PASSED [ 91%]
+tests/test_taxonomy_pilot_validation.py::test_zero_paid_api_calls PASSED [100%]
+
+============================= 12 passed in 1.97s ==============================
+

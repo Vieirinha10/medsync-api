@@ -1,0 +1,24 @@
+{
+  "seed": 20260910,
+  "target_count": 100,
+  "max_per_specialty": 10,
+  "total_candidates_available": 2811,
+  "total_distinct_specialties_available": 1,
+  "available_specialties": [
+    "Cirurgia"
+  ],
+  "selected_count": 10,
+  "selected_by_specialty": {
+    "Cirurgia": 10
+  },
+  "selected_by_criteria": {
+    "institution_diversity": 10,
+    "missing_taxonomy_fields": 10,
+    "year_diversity": 10,
+    "high_risk_clinical": 8,
+    "generic_theme_or_subject": 1,
+    "multidisciplinary": 1
+  },
+  "blocker": "BLOQUEIO DE DADOS: A fonte disponível possui apenas 1 especialidade(s) ('Cirurgia'), impossibilitando a seleção de 100 questões com diversidade real (mínimo exigido: até 10 por especialidade em >= 15 especialidades). Conforme as restrições absolutas, a execução foi interrompida para evitar substituição por Cirurgia.",
+  "source_description": "SQLite Local medsync.db (2811 questões)"
+}

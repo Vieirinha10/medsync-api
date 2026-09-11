@@ -1,0 +1,452 @@
+{
+  "registry_version": "0.1.0",
+  "name": "Registro Canônico da Taxonomia Médica MedSync - Piloto v0.1",
+  "description": "Hierarquia controlada de Especialidades, Temas e Assuntos para calibração semântica e auditoria externa.",
+  "rules": {
+    "semantic_distinct_levels": true,
+    "forbidden_self_repetition": true,
+    "max_depth": 3,
+    "allowed_competencies": [
+      "fundamentos",
+      "prevencao",
+      "diagnostico",
+      "interpretacao_de_exames",
+      "tratamento",
+      "procedimento",
+      "prognostico",
+      "seguimento",
+      "urgencia_e_emergencia",
+      "seguranca_do_paciente",
+      "etica_e_saude_coletiva"
+    ],
+    "synonym_normalization": true
+  },
+  "specialties": [
+    {
+      "code": "clinica_medica",
+      "label": "Clínica Médica",
+      "aliases": ["Medicina Interna", "Clínica"],
+      "themes": [
+        {
+          "code": "cardiologia",
+          "label": "Cardiologia",
+          "aliases": ["Aparelho Cardiovascular"],
+          "subjects": [
+            {"code": "valvopatias", "label": "Valvopatias", "aliases": ["Doenças Valvares", "Estenose e Insuficiência Valvar"]},
+            {"code": "doenca_coronariana", "label": "Doença Arterial Coronariana", "aliases": ["DAC", "Angina", "Infarto Agudo do Miocárdio", "IAM"]},
+            {"code": "insuficiencia_cardiaca", "label": "Insuficiência Cardíaca", "aliases": ["IC", "Insuficiência Cardíaca Congestiva"]},
+            {"code": "arritmias_cardiacas", "label": "Arritmias Cardíacas", "aliases": ["Taquiarritmias", "Bradiarritmias", "Fibrilação Atrial"]},
+            {"code": "hipertensao_arterial", "label": "Hipertensão Arterial Sistêmica", "aliases": ["HAS", "Pressão Alta"]}
+          ]
+        },
+        {
+          "code": "pneumologia",
+          "label": "Pneumologia",
+          "aliases": ["Aparelho Respiratório"],
+          "subjects": [
+            {"code": "asma", "label": "Asma Brônquica", "aliases": ["Asma"]},
+            {"code": "dpoc", "label": "Doença Pulmonar Obstrutiva Crônica", "aliases": ["DPOC", "Enfisema", "Bronquite Crônica"]},
+            {"code": "pneumonias", "label": "Pneumonias Adquiridas na Comunidade", "aliases": ["PAC", "Pneumonia"]},
+            {"code": "tromboembolismo_pulmonar", "label": "Tromboembolismo Pulmonar", "aliases": ["TEP", "Embolia Pulmonar"]},
+            {"code": "derrame_pleural", "label": "Derrame Pleural", "aliases": ["Pleuras"]}
+          ]
+        },
+        {
+          "code": "gastroenterologia",
+          "label": "Gastroenterologia",
+          "aliases": ["Gastro", "Aparelho Digestivo Clínico"],
+          "subjects": [
+            {"code": "refluxo_gastroesofagico", "label": "Doença do Refluxo Gastroesofágico", "aliases": ["DRGE"]},
+            {"code": "doenca_peptica", "label": "Úlcera Péptica e Gastrite", "aliases": ["Úlcera Péptica", "H. pylori"]},
+            {"code": "hepatopatias_e_cirrose", "label": "Cirrose Hepática e Hipertensão Portal", "aliases": ["Cirrose", "Hepatite Crônica"]},
+            {"code": "doenca_inflamatoria_intestinal", "label": "Doença Inflamatória Intestinal", "aliases": ["DII", "Doença de Crohn", "Retocolite Ulcerativa"]}
+          ]
+        },
+        {
+          "code": "nefrologia",
+          "label": "Nefrologia",
+          "aliases": ["Rim e Vias Urinárias Clínicas"],
+          "subjects": [
+            {"code": "lesao_renal_aguda", "label": "Lesão Renal Aguda", "aliases": ["LRA", "Insuficiência Renal Aguda"]},
+            {"code": "doenca_renal_cronica", "label": "Doença Renal Crônica", "aliases": ["DRC", "Insuficiência Renal Crônica"]},
+            {"code": "glomerulopatias", "label": "Glomerulopatias", "aliases": ["Síndrome Nefrótica", "Síndrome Nefrítica"]},
+            {"code": "disturbios_hidroeletroliticos", "label": "Distúrbios Hidroeletrolíticos e Ácido-Base", "aliases": ["Sódio", "Potássio", "Gasometria"]}
+          ]
+        },
+        {
+          "code": "endocrinologia",
+          "label": "Endocrinologia",
+          "aliases": ["Metabologia"],
+          "subjects": [
+            {"code": "diabetes_mellitus", "label": "Diabetes Mellitus", "aliases": ["Diabetes", "DM1", "DM2", "Cetoacidose Diabética"]},
+            {"code": "tireoidopatias", "label": "Tireoidopatias", "aliases": ["Hipotireoidismo", "Hipertireoidismo", "Tireoidite"]},
+            {"code": "doencas_da_adrenal", "label": "Doenças da Adrenal", "aliases": ["Insuficiência Adrenal", "Síndrome de Cushing"]}
+          ]
+        },
+        {
+          "code": "hematologia",
+          "label": "Hematologia",
+          "aliases": ["Onco-hematologia"],
+          "subjects": [
+            {"code": "anemias_carenciais", "label": "Anemias Carenciais", "aliases": ["Anemia Ferropriva", "Anemia Megaloblástica"]},
+            {"code": "anemias_hemoliticas", "label": "Anemias Hemolíticas", "aliases": ["Anemia Falciforme", "Esferocitose"]},
+            {"code": "leucemias_e_linfomas", "label": "Leucemias e Linfomas", "aliases": ["LMC", "LLA", "Linfoma de Hodgkin"]},
+            {"code": "hemostasia_e_trombose", "label": "Distúrbios da Hemostasia e Coagulação", "aliases": ["Plaquetopenia", "Hemofilia"]}
+          ]
+        },
+        {
+          "code": "infectologia",
+          "label": "Infectologia",
+          "aliases": ["Doenças Infecciosas e Parasitárias", "DIP"],
+          "subjects": [
+            {"code": "sepse", "label": "Sepse e Choque Séptico", "aliases": ["Sepse", "SIRS"]},
+            {"code": "hiv_aids", "label": "HIV/Aids e Infecções Oportunistas", "aliases": ["HIV", "Aids"]},
+            {"code": "tuberculose", "label": "Tuberculose", "aliases": ["TB"]},
+            {"code": "arboviroses", "label": "Arboviroses", "aliases": ["Dengue", "Chikungunya", "Zika"]},
+            {"code": "infeccoes_comunitarias", "label": "Infecções Comunitárias Frequentes", "aliases": ["ITU Comunitária", "Faringite"]}
+          ]
+        },
+        {
+          "code": "neurologia",
+          "label": "Neurologia",
+          "aliases": ["Neurologia Clínica"],
+          "subjects": [
+            {"code": "acidente_vascular_cerebral", "label": "Acidente Vascular Cerebral", "aliases": ["AVC", "AVE", "Isquêmico", "Hemorrágico"]},
+            {"code": "cefaleias", "label": "Cefaleias Primárias e Secundárias", "aliases": ["Enxaqueca", "Cefaleia Tensional"]},
+            {"code": "epilepsia", "label": "Epilepsia e Crises Epilépticas", "aliases": ["Convulsão", "Crise Convulsiva"]},
+            {"code": "demencias", "label": "Síndromes Demenciais", "aliases": ["Doença de Alzheimer", "Demência"]}
+          ]
+        },
+        {
+          "code": "reumatologia",
+          "label": "Reumatologia",
+          "aliases": ["Doenças Autoimunes"],
+          "subjects": [
+            {"code": "artrite_reumatoide", "label": "Artrite Reumatoide", "aliases": ["AR"]},
+            {"code": "lupus_eritematoso_sistemico", "label": "Lúpus Eritematoso Sistêmico", "aliases": ["LES", "Lúpus"]},
+            {"code": "espondiloartrites", "label": "Espondiloartrites", "aliases": ["Espondilite Anquilosante", "Artrite Psoriásica"]}
+          ]
+        },
+        {
+          "code": "dermatologia",
+          "label": "Dermatologia",
+          "aliases": ["Pele e Anexos"],
+          "subjects": [
+            {"code": "dermatoses_inflamatorias", "label": "Dermatoses Inflamatórias e Alérgicas", "aliases": ["Eczema", "Psoríase", "Dermatite"]},
+            {"code": "infeccoes_cutaneas", "label": "Infecções Cutâneas", "aliases": ["Erisipela", "Impetigo", "Micoses"]},
+            {"code": "neoplasias_cutaneas", "label": "Neoplasias Cutâneas", "aliases": ["Melanoma", "CBC", "CEC"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "cirurgia",
+      "label": "Cirurgia",
+      "aliases": ["Cirurgia Geral e Especializada", "Cirurgia Geral"],
+      "themes": [
+        {
+          "code": "trauma_e_emergencia",
+          "label": "Trauma e Emergência Cirúrgica",
+          "aliases": ["Trauma", "Politrauma", "Urgências Cirúrgicas"],
+          "subjects": [
+            {"code": "atendimento_inicial_trauma", "label": "Atendimento Inicial ao Politraumatizado", "aliases": ["ATLS", "ABCDE"]},
+            {"code": "trauma_toracico", "label": "Trauma Torácico", "aliases": ["Pneumotórax Hipertensivo", "Hemotórax Maciço", "Tórax Instável"]},
+            {"code": "trauma_abdominal", "label": "Trauma Abdominal", "aliases": ["Trauma Esplênico", "Trauma Hepático", "FAST"]},
+            {"code": "queimaduras", "label": "Queimaduras e Choque Térmico", "aliases": ["Grande Queimado", "Regra dos Nove"]}
+          ]
+        },
+        {
+          "code": "abdome_agudo",
+          "label": "Abdome Agudo",
+          "aliases": ["Síndromes Abdominais Agudas"],
+          "subjects": [
+            {"code": "abdome_agudo_inflamatorio", "label": "Abdome Agudo Inflamatório", "aliases": ["Apendicite Aguda", "Diverticulite Aguda", "Colecistite Aguda"]},
+            {"code": "abdome_agudo_obstrutivo", "label": "Abdome Agudo Obstrutivo", "aliases": ["Obstrução Intestinal", "Volvo", "Bridas"]},
+            {"code": "abdome_agudo_perfurativo", "label": "Abdome Agudo Perfurativo", "aliases": ["Pneumoperitônio", "Úlcera Perfurada"]},
+            {"code": "abdome_agudo_vascular", "label": "Abdome Agudo Vascular", "aliases": ["Isquemia Mesentérica", "Trombose Mesentérica"]}
+          ]
+        },
+        {
+          "code": "parede_abdominal",
+          "label": "Doenças da Parede Abdominal",
+          "aliases": ["Hérnias"],
+          "subjects": [
+            {"code": "hernias_inguinocrurais", "label": "Hérnias Inguinais e Crurais", "aliases": ["Hérnia Inguinal Indireta", "Hérnia Inguinal Direta", "Hérnia Femoral"]},
+            {"code": "hernias_ventrais", "label": "Hérnias Ventrais e Incisionais", "aliases": ["Hérnia Umbilical", "Hérnia Epigástrica"]}
+          ]
+        },
+        {
+          "code": "aparelho_digestivo_cirurgico",
+          "label": "Cirurgia do Aparelho Digestivo",
+          "aliases": ["Aparelho Digestivo"],
+          "subjects": [
+            {"code": "litiase_biliar", "label": "Litíase Biliar e Doenças Biliares", "aliases": ["Colelitíase", "Coledocolitíase", "Colangite"]},
+            {"code": "neoplasias_gastrointestinais", "label": "Neoplasias Gastrointestinais", "aliases": ["Câncer Gástrico", "Câncer Colorretal", "Câncer de Esôfago"]}
+          ]
+        },
+        {
+          "code": "urologia",
+          "label": "Urologia",
+          "aliases": ["Urologia Cirúrgica"],
+          "subjects": [
+            {"code": "litiase_urinaria", "label": "Litíase Urinária", "aliases": ["Cálculo Renal", "Cólica Nefrética"]},
+            {"code": "hiperplasia_prostatica", "label": "Hiperplasia Prostática Benigna e Câncer de Próstata", "aliases": ["HPB", "Próstata"]},
+            {"code": "escroto_agudo", "label": "Escroto Agudo", "aliases": ["Torção Testicular", "Orquiepididimite"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "pediatria",
+      "label": "Pediatria",
+      "aliases": ["Saúde da Criança e do Adolescente"],
+      "themes": [
+        {
+          "code": "neonatologia",
+          "label": "Neonatologia",
+          "aliases": ["Recém-Nascido", "Perinatologia"],
+          "subjects": [
+            {"code": "reanimacao_neonatal", "label": "Reanimação Neonatal em Sala de Parto", "aliases": ["Passos Iniciais", "VPP Neonatal"]},
+            {"code": "ictericia_neonatal", "label": "Icterícia Neonatal", "aliases": ["Fototerapia", "Icterícia Fisiológica", "Incompatibilidade Rh/ABO"]},
+            {"code": "dificuldade_respiratoria_rn", "label": "Dificuldade Respiratória no Recém-Nascido", "aliases": ["Doença da Membrana Hialina", "Taquipneia Transitória"]}
+          ]
+        },
+        {
+          "code": "puericultura_e_desenvolvimento",
+          "label": "Puericultura e Crescimento",
+          "aliases": ["Crescimento e Desenvolvimento"],
+          "subjects": [
+            {"code": "marcos_do_desenvolvimento", "label": "Marcos do Desenvolvimento Neuropsicomotor", "aliases": ["DNPM"]},
+            {"code": "crescimento_e_baixa_estatura", "label": "Crescimento e Baixa Estatura", "aliases": ["Curvas OMS", "Velocidade de Crescimento"]},
+            {"code": "aleitamento_materno", "label": "Aleitamento Materno e Alimentação Complementar", "aliases": ["Amamentação"]}
+          ]
+        },
+        {
+          "code": "pneumologia_pediatrica",
+          "label": "Doenças Respiratórias na Infância",
+          "aliases": ["Infecções Respiratórias Pediátricas"],
+          "subjects": [
+            {"code": "bronquiolite_viral_aguda", "label": "Bronquiolite Viral Aguda", "aliases": ["BVA", "VSR"]},
+            {"code": "asma_na_infancia", "label": "Asma na Infância", "aliases": ["Lactente Sibilante"]},
+            {"code": "pneumonias_na_infancia", "label": "Pneumonias na Infância", "aliases": ["Pneumonia Bacteriana", "Derrame Pleural Parapneumônico"]}
+          ]
+        },
+        {
+          "code": "infectologia_pediatrica",
+          "label": "Infectologia Pediátrica",
+          "aliases": ["Doenças Exantemáticas"],
+          "subjects": [
+            {"code": "doencas_exantematicas", "label": "Doenças Exantemáticas na Infância", "aliases": ["Sarampo", "Varicela", "Escarlatina", "Exantema Súbito"]},
+            {"code": "febre_sem_foco", "label": "Febre Sem Foco", "aliases": ["Bacteremia Oculta"]},
+            {"code": "meningites_na_infancia", "label": "Meningites na Infância", "aliases": ["Meningite Meningocócica"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "ginecologia",
+      "label": "Ginecologia",
+      "aliases": ["Saúde da Mulher - Ginecologia"],
+      "themes": [
+        {
+          "code": "ginecologia_geral_e_preventiva",
+          "label": "Ginecologia Geral e Rastreamento",
+          "aliases": ["Prevenção Ginecológica"],
+          "subjects": [
+            {"code": "rastreamento_cancer_colo", "label": "Rastreamento do Câncer de Colo Uterino", "aliases": ["Papanicolau", "Preventivo", "HPV"]},
+            {"code": "rastreamento_cancer_mama", "label": "Rastreamento do Câncer de Mama", "aliases": ["Mamografia", "BI-RADS"]},
+            {"code": "anticoncepcao", "label": "Planejamento Familiar e Anticoncepção", "aliases": ["Contracepção", "DIU", "Critérios Médicos de Elegibilidade"]}
+          ]
+        },
+        {
+          "code": "sangramento_uterino_anormal",
+          "label": "Sangramento Uterino Anormal",
+          "aliases": ["SUA", "Hemorragia Uterina Disfuncional"],
+          "subjects": [
+            {"code": "miomatose_uterina", "label": "Miomatose Uterina", "aliases": ["Mioma"]},
+            {"code": "classificacao_palm_coein", "label": "Classificação PALM-COEIN", "aliases": ["PALM COEIN"]},
+            {"code": "endometriose", "label": "Endometriose e Adenomiose", "aliases": ["Dor Pélvica Crônica"]}
+          ]
+        },
+        {
+          "code": "infeccoes_genitais",
+          "label": "Infecções Genitais e DSTs",
+          "aliases": ["Vulvovaginites e DIP"],
+          "subjects": [
+            {"code": "vulvovaginites", "label": "Vulvovaginites e Vaginose", "aliases": ["Candidíase", "Tricomoníase", "Vaginose Bacteriana"]},
+            {"code": "doenca_inflamatoria_pelvica", "label": "Doença Inflamatória Pélvica", "aliases": ["DIP"]}
+          ]
+        },
+        {
+          "code": "climaterio_e_menopausa",
+          "label": "Climatério e Menopausa",
+          "aliases": ["Terapia Hormonal"],
+          "subjects": [
+            {"code": "terapia_hormonal_climaterio", "label": "Terapia Hormonal e Sintomas Climatéricos", "aliases": ["Fogachos", "TH"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "obstetricia",
+      "label": "Obstetrícia",
+      "aliases": ["Saúde Materna e Perinatal"],
+      "themes": [
+        {
+          "code": "assistencia_pre_natal",
+          "label": "Assistência Pré-Natal",
+          "aliases": ["Pré-Natal", "Fisiologia da Gestação"],
+          "subjects": [
+            {"code": "rotina_pre_natal", "label": "Rotina Laboratorial e Diagnóstico de Gestação", "aliases": ["Consultas Pré-Natais"]},
+            {"code": "modificacoes_gravidicas", "label": "Modificações Anatômicas e Fisiológicas da Gravidez", "aliases": ["Fisiologia Obstétrica"]}
+          ]
+        },
+        {
+          "code": "sangramento_primeira_metade",
+          "label": "Sangramentos da Primeira Metade da Gestação",
+          "aliases": ["Hemorragias Iniciais"],
+          "subjects": [
+            {"code": "abortamento", "label": "Síndromes do Abortamento", "aliases": ["Aborto Retido", "Abortamento Incompleto", "Ameaça de Aborto"]},
+            {"code": "prenhez_ectopica", "label": "Prenhez Ectópica", "aliases": ["Gestação Ectópica"]},
+            {"code": "doenca_trofoblastica", "label": "Doença Trofoblástica Gestacional", "aliases": ["Mola Hidatiforme"]}
+          ]
+        },
+        {
+          "code": "sangramento_segunda_metade",
+          "label": "Sangramentos da Segunda Metade da Gestação",
+          "aliases": ["Hemorragias Tardias"],
+          "subjects": [
+            {"code": "descolamento_prematuro_placenta", "label": "Descolamento Prematuro de Placenta", "aliases": ["DPP"]},
+            {"code": "placenta_previa", "label": "Placenta Prévia e Inserção Baixa", "aliases": ["Placenta Prévia", "Acretismo Placentário"]}
+          ]
+        },
+        {
+          "code": "intercorrencias_clinicas_gravidez",
+          "label": "Doenças Intercorrentes e Específicas da Gravidez",
+          "aliases": ["Patologia Obstétrica"],
+          "subjects": [
+            {"code": "sindromes_hipertensivas_gestacao", "label": "Síndromes Hipertensivas da Gestação", "aliases": ["Pré-eclâmpsia", "Eclâmpsia", "HELLP"]},
+            {"code": "diabetes_gestacional", "label": "Diabetes Mellitus Gestacional", "aliases": ["DMG"]}
+          ]
+        },
+        {
+          "code": "trabalho_de_parto_e_parto",
+          "label": "Trabalho de Parto, Parto e Puerpério",
+          "aliases": ["Parto e Puerpério"],
+          "subjects": [
+            {"code": "mecanismo_e_periodos_parto", "label": "Mecanismo e Assistência ao Parto", "aliases": ["Partograma", "Fases do Parto"]},
+            {"code": "hemorragia_pos_parto", "label": "Hemorragia Pós-Parto e Atonia Uterina", "aliases": ["HPP", "Atonia Uterina"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "medicina_preventiva",
+      "label": "Medicina Preventiva e Social",
+      "aliases": ["Saúde Coletiva", "Medicina Social", "Preventiva"],
+      "themes": [
+        {
+          "code": "epidemiologia_e_metodologia",
+          "label": "Epidemiologia e Desenhos de Estudo",
+          "aliases": ["Epidemiologia Clínica"],
+          "subjects": [
+            {"code": "desenhos_de_estudo", "label": "Desenhos de Estudos Epidemiológicos", "aliases": ["Coorte", "Caso-Controle", "Ensaio Clínico", "Transversal"]},
+            {"code": "medidas_de_associacao_e_frequencia", "label": "Medidas de Associação e Frequência", "aliases": ["Risco Relativo", "Odds Ratio", "Prevalência", "Incidência"]},
+            {"code": "testes_diagnosticos", "label": "Avaliação de Testes Diagnósticos", "aliases": ["Sensibilidade", "Especificidade", "VPP", "VPN", "Acurácia"]}
+          ]
+        },
+        {
+          "code": "sistema_unico_de_saude",
+          "label": "Sistema Único de Saúde (SUS)",
+          "aliases": ["Políticas de Saúde", "Legislação do SUS"],
+          "subjects": [
+            {"code": "principios_e_diretrizes_sus", "label": "Princípios Doutrinários e Organizativos do SUS", "aliases": ["Universalidade", "Equidade", "Integralidade", "Descentralização"]},
+            {"code": "atencao_primaria_saude", "label": "Atenção Primária à Saúde e Estratégia Saúde da Família", "aliases": ["APS", "ESF"]},
+            {"code": "financiamento_e_legislacao_sus", "label": "Legislação e Financiamento do SUS", "aliases": ["Leis 8080 e 8142", "Decreto 7508"]}
+          ]
+        },
+        {
+          "code": "etica_e_medicina_legal",
+          "label": "Bioética, Ética Médica e Medicina Legal",
+          "aliases": ["Ética Médica"],
+          "subjects": [
+            {"code": "codigo_de_etica_medica", "label": "Código de Ética Médica e Sigilo Profissional", "aliases": ["Sigilo", "Prontuário Médico", "Consentimento Informado"]},
+            {"code": "declaracao_de_obito", "label": "Declaração de Óbito e Atestados", "aliases": ["Causa Básica", "DO"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "psiquiatria",
+      "label": "Psiquiatria",
+      "aliases": ["Saúde Mental"],
+      "themes": [
+        {
+          "code": "transtornos_do_humor",
+          "label": "Transtornos do Humor",
+          "aliases": ["Depressão e Bipolaridade"],
+          "subjects": [
+            {"code": "transtorno_depressivo_maior", "label": "Transtorno Depressivo Maior", "aliases": ["Depressão"]},
+            {"code": "transtorno_afetivo_bipolar", "label": "Transtorno Bipolar", "aliases": ["TAB", "Mania", "Hipomania"]}
+          ]
+        },
+        {
+          "code": "transtornos_ansiosos_e_psicoticos",
+          "label": "Transtornos de Ansiedade e Psicoses",
+          "aliases": ["Ansiedade e Psicoses"],
+          "subjects": [
+            {"code": "transtornos_de_ansiedade", "label": "Transtornos de Ansiedade e Pânico", "aliases": ["TAG", "Pânico"]},
+            {"code": "esquizofrenia_e_outras_psicoses", "label": "Esquizofrenia e Psicoses Agudas", "aliases": ["Psicose", "Delírios e Alucinações"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "ortopedia",
+      "label": "Ortopedia",
+      "aliases": ["Traumatologia Ortopédica"],
+      "themes": [
+        {
+          "code": "fraturas_e_luxacoes",
+          "label": "Fraturas e Luxações",
+          "aliases": ["Lesões Traumáticas"],
+          "subjects": [
+            {"code": "fraturas_membros_superiores", "label": "Fraturas de Membros Superiores", "aliases": ["Fratura de Colles", "Fratura de Clavícula"]},
+            {"code": "fraturas_membros_inferiores", "label": "Fraturas de Membros Inferiores", "aliases": ["Fratura de Fêmur", "Fratura de Tornozelo"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "oftalmologia",
+      "label": "Oftalmologia",
+      "aliases": ["Olho e Visão"],
+      "themes": [
+        {
+          "code": "urgencias_e_afeccoes_oculares",
+          "label": "Urgências e Afecções Oculares",
+          "aliases": ["Olho Vermelho"],
+          "subjects": [
+            {"code": "olho_vermelho_e_conjuntivites", "label": "Olho Vermelho, Conjuntivite e Glaucoma Agudo", "aliases": ["Glaucoma", "Conjuntivite"]}
+          ]
+        }
+      ]
+    },
+    {
+      "code": "otorrinolaringologia",
+      "label": "Otorrinolaringologia",
+      "aliases": ["Otorrino", "ORL"],
+      "themes": [
+        {
+          "code": "infeccoes_e_urgencias_orl",
+          "label": "Infecções e Urgências em Otorrinolaringologia",
+          "aliases": ["Vias Aéreas Superiores"],
+          "subjects": [
+            {"code": "otites_e_sinusites", "label": "Otites Médias, Externas e Rinossinusites", "aliases": ["OMA", "Sinusite"]},
+            {"code": "epistaxe_e_corpo_estranho", "label": "Epistaxe e Corpos Estranhos", "aliases": ["Epistaxe", "Sangramento Nasal"]}
+          ]
+        }
+      ]
+    }
+  ]
+}

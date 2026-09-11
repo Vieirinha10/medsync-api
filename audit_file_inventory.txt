@@ -1,0 +1,74 @@
+================================================================================
+MEDSYNC - INVENTARIO DO PACOTE DE AUDITORIA (FASE 2 DE CALIBRACAO TAXONOMICA)
+================================================================================
+Data de geracao: 2026-09-11
+Total de arquivos inventariados: 23
+--------------------------------------------------------------------------------
+CAMINHO                                                    TAMANHO  SHA-256                                                         
+--------------------------------------------------------------------------------
+services/taxonomy_state_machine.py                           24585  cbc2fc9a5f897f51867da30d15cdc83afe5a1fd3e5b41a0b26728526b1740687
+  -> Descricao: Maquina de estados, DurableCheckpoint atomico, hash SHA-256 canonico e runner em lotes de 10
+
+services/content_taxonomy_classifier.py                      12374  bbc58589b2463153c1edbba7e6c59c894cf4f383b3ea37dcf78f7781e3fb0f06
+  -> Descricao: Classificador base de taxonomia com verificacao e normalizacao
+
+scripts/build_pilot_dataset.py                               13143  310a78f6af25006786c554f7c46b6c41e2d321b2b48ddaaaa1c228587703377f
+  -> Descricao: Seletor deterministico com teto de 10 por especialidade e deteccao de bloqueio
+
+scripts/run_pilot_calibration.py                              4746  b1e34f34e8c16b0ae3394437622896780dcd17106d14af79d5b4f1429988f7ad
+  -> Descricao: Orquestrador de execucao, metricas e geracao da planilha de revisao CSV
+
+scripts/package_audit_zip.py                                  5491  af378e829a285758334ff1eb65071e813ed620071a46e2fa64d35a872c18da73
+  -> Descricao: Script de empacotamento, inventario e verificacao de integridade
+
+models.py                                                    33975  3a246f313356ea9f96d50a0f79fbb0f542ce777b10162089a61adeb64bd18018
+  -> Descricao: Modelos SQLAlchemy com ContentTaxonomyClassification, MedicalTaxonomyNode e Version
+
+alembic/versions/20260910_20_unified_content_taxonomy.py      10657  6c0d33cb10123c7b5362ac8c7970f5da866f5198b861cf6adaf54ba0220ef412
+  -> Descricao: Migracao de banco para tabelas sombra da taxonomia v1
+
+pyproject.toml                                                 272  13e114262ad64693c613e0679b8f101a8150826a75ffff9588d6a7411d6bb4a7
+  -> Descricao: Configuracao do ambiente de teste com pythonpath
+
+data/taxonomy_registry_pilot_v0_1.json                       23562  e80718f067b5e46f015a931a9306cd2d4bc8d3d05cc735588ea8272877045f2c
+  -> Descricao: Registro canonico controlado v0.1 de especialidades, temas, assuntos e competencias
+
+data/pilot_manifest_3000.json                              1668704  d4e92bc24c4a1da660ef6808eccac7ada3394040cdbf2759a5cae332ce7fe949
+  -> Descricao: Manifesto da Fase 1
+
+data/pilot_selection_report.json                               936  f027d2976cd1da6a657c796f85108ef72a2dd09ce7d898653bd75505d59dc74e
+  -> Descricao: Relatorio formal da selecao amostral e diagnostico de bloqueio
+
+data/pilot_inputs_100.jsonl                                      0  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  -> Descricao: Arquivo de entradas canonicas (bloqueado por falta de dados diversificados na fonte)
+
+data/pilot_classifications_100.jsonl                             0  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  -> Descricao: Resultados finais das classificacoes (bloqueado por falta de dados diversificados na fonte)
+
+data/pilot_checkpoint.json                                     604  13b77af3cb05270bde63e2a8b90e927081ab4b86f0420f38ad601a1aed35337e
+  -> Descricao: Checkpoint duravel atomico com registro do status bloqueado
+
+data/pilot_execution_log.jsonl                                 857  fcc662da6460c0d29e4080793e6988d20753991a20640ca56ec42777557f91e3
+  -> Descricao: Log sequencial de eventos de execucao e deteccao de bloqueio
+
+data/pilot_metrics.json                                        511  446a52a2ae4a965a990c98364fca5f0932d82494c915bceb02ff0fd02f97b399
+  -> Descricao: Metricas consolidadas do piloto
+
+data/pilot_review_sheet.csv                                    214  5597136cf7a4e4a7c0c2f7bda3f991efe7d7327219c3c5b6020abff8f4a4c75c
+  -> Descricao: Planilha CSV formatada para auditoria humana
+
+docs/PILOT_CLASSIFICATION_RUNBOOK.md                          5075  352ee154d3af38b6fc7704509387bd50028f8259649041cffc31e6834c8c4e87
+  -> Descricao: Runbook operacional detalhado com passos de retomada e resolucao de bloqueio
+
+tests/test_taxonomy_pilot_validation.py                      18007  f61a2a0df7e1b670b2da30b29f6aabc0f7ff784c3156c91a37cdf8847bee7d18
+  -> Descricao: Bateria completa de 12 testes automatizados das 15 garantias do protocolo
+
+audit_git_status.txt                                          1125  2b9545897736862c4c9ae49e9156404099d256ead3ea6baeaa114d353dfd40d3
+  -> Descricao: Saida completa de git status da auditoria
+
+audit_changes.patch                                            904  1bb3ae270ea6fdae5a921e46278b8fe68b9822b8024328f3fe5b136f65cb6085
+  -> Descricao: Patch unificado de todas as alteracoes locais
+
+audit_test_results.txt                                        1698  493fcc917cadb8aea683985bde7f03553a88b4997b6997ce0a1352359d052410
+  -> Descricao: Saida completa da execucao dos testes do pytest
+
